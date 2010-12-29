@@ -1,0 +1,11 @@
+
+proc foo (left 
+right) {
+	set a 42
+	if (< left right) {
+		return left
+	} else {
+		return right
+	}
+}
+

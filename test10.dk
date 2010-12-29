@@ -1,0 +1,3 @@
+proc foo [a] {puts a}
+foo 42
+

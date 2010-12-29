@@ -1,0 +1,7 @@
+if {
+lt a b
+} {
+	set a 42
+	set b (+ a 1)
+}
+
