@@ -1,0 +1,38 @@
+var a b
+
+set a 3
+set b 4
+
+if {< a b} {
+	puts "a"
+} else {
+	puts "b"
+}
+
+if {> a b} {
+	puts "a"
+} else {
+	puts "b"
+}
+
+
+if {< a b} {
+	puts "a"
+} {
+	puts "b"
+}
+
+if {> a b} {
+	puts "a"
+} {
+	puts "b"
+}
+
+
+if {< a b} {
+	puts "a"
+}
+
+if {> a b} {
+	puts "a"
+}

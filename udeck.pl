@@ -36,11 +36,12 @@ sub checkType {
 	or die "Expected 'LL::$type'; got @{[ref($self)]}$fname.\n";
 }
 
-sub checkNumber {die "Expected number, got @{[ref(shift)]}@_\n"}
-sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
-sub checkList {die "Expected list, got @{[ref(shift)]}@_\n"}
-sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
-sub checkQuote {die "Expected quoted expression, got @{[ref(shift)]}@_\n"}
+sub checkNumber {shift; die "Expected number, got @{[ref(shift)]}@_\n"}
+sub checkString {shift; die "Expected string, got @{[ref(shift)]}@_\n"}
+sub checkList   {shift; die "Expected list, got @{[ref(shift)]}@_\n"}
+sub checkSymbol {shift; die "Expected symbol, got @{[ref(shift)]}@_\n"}
+sub checkQuote  {shift; die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
+sub checkLoL    {shift; die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isEol {return 0}
@@ -52,19 +53,23 @@ sub isQuote {return 0}
 sub isNil {return 0}
 sub isMacro {return 0}
 sub isFunction {return 0}
+sub isTrue {return 1}
+sub isLoL {return 0}	# Is a quoted list containing only lists
 sub matchesOpen {return 0}
 sub printStr {my ($self) = @_; return "${$self}"};
 
 package LL::Number;
 use base 'LL::Object';
 sub checkNumber {}
+sub isTrue {my ($self) = @_; !! ${$self} }
 sub isLiteral {return 1}
 
 package LL::String;
 use base 'LL::Object';
 sub checkString {}
 sub isAtom {return 1}
-sub isLiteral {return 1}
+sub isLiteral {return 1}		# ???
+sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub printStr {my ($self) = @_; return "\"${$self}\""};
 
 package LL::Symbol;
@@ -77,21 +82,19 @@ package LL::List;
 use base 'LL::Object';
 sub checkList {}
 sub isEmptyList {my ($self) = @_; return scalar @{$self} == 0}
+sub isTrue {my ($self) = @_; return ! $self->isEmptyList()}
 sub isList {return 1}
 sub printStr {
   my ($self) = @_;
   return "[".join (" ", map { $_->printStr() } @{$self})."]";
 }
 
-package LL::Function;
-use base 'LL::Object';
-sub isAtom {return 1}
-
 package LL::Nil;
 use base 'LL::Object';
 sub new {my ($class) = @_; my $x = ''; return bless \$x, $class}
 sub isAtom {return 1}
 sub isNil {return 1}
+sub isTrue {return 0}
 sub printStr {"nil"};
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
@@ -99,6 +102,7 @@ use constant NIL => LL::Nil->new();	# The only instance you should use
 package LL::Eol;
 use base 'LL::Object';
 sub isEol {return 1}
+sub isTrue {return 0}	# Maybe not necessary
 sub printStr {"<EOL>"}
 
 package LL::Paren;
@@ -137,6 +141,22 @@ sub isQuote {return 1}
 sub checkQuote {}
 sub value {my ($self) = @_; return $self->[0]}
 sub printStr {my ($self) = @_; return ':' . $self->value()->printStr()}
+sub isLoL {	# Is this a quoted list of lists?
+  my ($self) = @_;
+
+  return 0 unless $self->value()->isList();
+  for my $elem ( @{$self->value()} ) {
+	return 0 unless $elem->isList();
+  }
+	
+  return 1;
+}
+sub checkLoL {
+  my ($self, @args) = @_;
+  die "Expecting a quoted LoL, got @{[$self->printStr()]}@_\n"
+	unless $self->isLoL();
+}
+
 
 
 package LL::Macro;
@@ -147,6 +167,7 @@ sub printStr {return "<macro>"}
 
 package LL::Function;
 use base 'LL::Object';
+sub isAtom {return 1}
 sub isFunction {return 1}
 sub printStr {return "<function>"}
 
@@ -487,7 +508,7 @@ sub evalExpr {
 	return $context->lookup(${$expr});
   };
 
-  $expr->isLiteral() and do {
+  ($expr->isLiteral() || $expr->isNil()) and do {
 	return $expr;
   };
 
@@ -499,7 +520,7 @@ sub evalExpr {
 	return evalFuncCall($expr, $context);
   };
 
-  die "WTF???";	
+  die "evalExpr: Don't know what to do with @{[$expr->printStr()]}.\n";
 }
 
 
@@ -746,7 +767,40 @@ sub macro_subfn {
   }
 
   return LL::List->new(\@args)
-};
+}
+
+
+sub macro_iffn {
+  my @args = @_;
+
+  $args[0] = LL::Symbol->new('_::if');
+
+  # Remove the 'else' word if present
+  if (defined($args[3]) && $args[3]->isSymbol()) {
+	die "Expecting 'else', got '@{[$args[3]->printStr()]}'\n"
+	  unless ${$args[3]} eq 'else';
+
+	my $elseClause = pop @args;
+	pop @args;
+	push @args, $elseClause;
+  }
+
+  die "Too many arguments to 'if'\n"
+	unless scalar @args <= 5;
+
+  my $sub = LL::Symbol->new('sub');
+
+  for my $i (1 .. $#args) {
+	$args[$i]->checkLoL();
+	$args[$i] = LL::List->new([$sub, $args[$i]]);
+  }
+
+  # Add the empty else clause
+  push @args, NIL
+	if scalar @args == 3;
+
+  return LL::List->new(\@args);
+}
 
 
 # ---------------------------------------------------------------------------
@@ -755,26 +809,34 @@ sub initGlobals {
   $Globals->def('nil');
 
   # Externally-defined primitive functions
-  for my $special (['println',	\&builtin_println],
+  for my $special (
+				   ['println',	\&builtin_println],
 				   ['puts',		\&builtin_println],
 				   ['_::proc',	\&builtin_proc],
 				   ['_::sub',	\&builtin_subfn],
+				   ['_::if',	\&builtin_iffn],
 				   ['_::set',	\&builtin_set],
-				   ['_::var',	\&builtin_var]) {
+				   ['_::var',	\&builtin_var],
+				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
 
   # Simple primitive functions
-  prim 'Number', '+', "Number Number", sub { return $ {$_[0]} + ${$_[1]} };
-  prim 'Number', '-', "Number Number", sub { return $ {$_[0]} - ${$_[1]} };
-  prim 'Number', '*', "Number Number", sub { return $ {$_[0]} * ${$_[1]} };
-  prim 'Number', '/', "Number Number", sub { return $ {$_[0]} / ${$_[1]} };
+  prim 'Number', '+', "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
+  prim 'Number', '-', "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
+  prim 'Number', '*', "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
+  prim 'Number', '/', "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
+  prim 'Number', '<', "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
+  prim 'Number', '<=',"Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
+  prim 'Number', '>', "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
+  prim 'Number', '>=',"Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
 
   # Macros
   macro 'var',	\&macro_var;
   macro 'proc', \&macro_proc;
   macro 'set',  \&macro_quoteSecond;
   macro 'sub',  \&macro_subfn;
+  macro 'if',   \&macro_iffn;
 }
 
 sub builtin_println {
@@ -840,6 +902,23 @@ sub builtin_subfn {
 }
 
 
+# Perform the 'if' operation.  Return the result of the last closure
+# evaluated.  The third closure (the 'else' clause) is optional and may be NIL.
+sub builtin_iffn {
+  my ($test, $trueBlock, $falseBlock) = @_;
+
+  my $result = $test->();
+  if ($result->isTrue()) {
+	$result = $trueBlock->();
+  } elsif ($falseBlock->isFunction()) {
+	$result = $falseBlock->();
+  }
+
+  $result;
+}
+
+
+
 =pod
 
 Notes:
@@ -855,5 +934,6 @@ Todo:
 	-implement a "compiler" to produce perl subs
 	-catch arg. count mismatches.
 	-consts
+	-equality, equivalence
 
 =cut
