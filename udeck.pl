@@ -36,11 +36,11 @@ sub checkType {
 	or die "Expected 'LL::$type'; got @{[ref($self)]}$fname.\n";
 }
 
-sub checkNumber {die "Expected number, got @{[ref(shift)]}\n"}
-sub checkString {die "Expected string, got @{[ref(shift)]}\n"}
-sub checkList {die "Expected list, got @{[ref(shift)]}\n"}
-sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}\n"}
-sub checkQuote {die "Expected quoted expression, got @{[ref(shift)]}\n"}
+sub checkNumber {die "Expected number, got @{[ref(shift)]}@_\n"}
+sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
+sub checkList {die "Expected list, got @{[ref(shift)]}@_\n"}
+sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
+sub checkQuote {die "Expected quoted expression, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isEol {return 0}
@@ -509,8 +509,10 @@ sub evalExpr {
 sub applyMacros {
   my ($expr, $context) = @_;
 
-  my @backtrace = ([@{$expr}]);
+  # Skip empty lists
+  return unless scalar @{$expr};
 
+  my @backtrace = ([@{$expr}]);
   while (1) {
 	my $name = $expr->[0];
 	last unless $name->isSymbol();
@@ -552,12 +554,16 @@ sub applyMacrosRecursively {
 sub evalFuncCall {
   my ($expr, $context) = @_;
 
+  die "Attempted to evaluate empty list.\n"
+	unless scalar @{$expr} > 0;
+
   my @args = map { evalExpr($_, $context) } @{$expr};
   my $fn = shift @args;
 
-  # _::set and _::var are special cases and get access to the context.
+  # _::set, _::sub and _::var are special cases and get access to the
+  # context.
   my $fname = $expr->[0]->isSymbol() ? ${$expr->[0]} : '';
-  if ($fname eq '_::set' || $fname eq '_::var') {
+  if ($fname =~ /^_::(set|var|sub)$/) {
 	unshift @args, $context;
   }
 
@@ -665,11 +671,36 @@ sub macro_proc {
   $result[0] = LL::Symbol->new('_::proc');
 
   my $sym = $result[1];
-  $sym->checkSymbol();
+  $sym->checkSymbol(" in macro 'proc' arg 1");
   $result[1] = LL::Quote->new($sym);
 
   my $args = $result[2];
-  $args->checkList();
+
+  # We tolerate three types of arg. lists: [a b c], '[a b c] and {a b c}
+  # This case handles the second two.  
+  if ($args->isQuote() && $args->value()->isList()) {
+
+	# Identify the list type.
+	my $type = ref($args->value()->[0]);
+	for my $arg (@{$args->value()}) {
+	  die "Malformed argument in list: '@{[$arg->printStr()]}'\n"
+		unless ref($arg) eq $type;
+	}
+
+	if ($type eq 'LL::Symbol') {
+	  $args = $args->value();
+	} else {
+	  my @flatArgs = ();
+
+	  for my $arg (@{$args->value()}) {
+		push @flatArgs, @{$arg};
+	  }
+
+	  $args = LL::List->new(\@flatArgs);
+	}
+  }
+
+  $args->checkList(" in macro 'proc' arg 2");
   $result[2] = LL::Quote->new($args);
 
   return LL::List->new(\@result);
@@ -700,6 +731,24 @@ sub macro_quoteSecond {
 }
 
 
+sub macro_subfn {
+  my @args = @_;
+
+  die "Too many arguments for 'sub'.\n"
+	if (scalar @args > 3);
+
+  $args[0] = LL::Symbol->new('_::sub');
+
+  # Insert the arg. list if it was omitted.
+  if (scalar @args == 2) {
+	$args[2] = $args[1];
+	$args[1] = LL::Quote->new(LL::List->new([]));
+  }
+
+  return LL::List->new(\@args)
+};
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
@@ -709,6 +758,7 @@ sub initGlobals {
   for my $special (['println',	\&builtin_println],
 				   ['puts',		\&builtin_println],
 				   ['_::proc',	\&builtin_proc],
+				   ['_::sub',	\&builtin_subfn],
 				   ['_::set',	\&builtin_set],
 				   ['_::var',	\&builtin_var]) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
@@ -724,25 +774,27 @@ sub initGlobals {
   macro 'var',	\&macro_var;
   macro 'proc', \&macro_proc;
   macro 'set',  \&macro_quoteSecond;
+  macro 'sub',  \&macro_subfn;
 }
 
 sub builtin_println {
   for my $obj (@_) {
 	print $obj->printStr(), "\n";
   }
+
+  return NIL;
 }
 
 sub builtin_set {
   my ($context, $name, $value) = @_;
-
-#  shift;	# Drop $context from @_;
-#  validateArgs ('set', 'Symbol Object', \@_);
 
   die "'set' expects 2 arguments, got @{[scalar @_ - 1]}\n"
 	unless scalar @_ == 3;
 
   $name->checkSymbol();
   $context->set(${$name}, $value);
+
+  return $value;
 }
 
 sub builtin_var {
@@ -754,6 +806,8 @@ sub builtin_var {
 
 	$context->defset(${$name}, NIL);
   }
+
+  return NIL;
 }
 
 
@@ -771,6 +825,18 @@ sub builtin_proc {
   my $func = compile ($Globals, $args, $body, ${$name});
 
   $Globals->defset(${$name}, $func);
+
+  return $func;
+}
+
+
+sub builtin_subfn {
+  my ($context, $args, $body) = @_;
+
+  $args->checkList();
+  $body->checkList();
+
+  return compile ($context, $args, $body);
 }
 
 

@@ -1,0 +1,12 @@
+proc foo {} {
+	var a
+	set a 42
+	
+	sub {puts a}
+}
+
+var x
+set x [foo]
+x
+
+

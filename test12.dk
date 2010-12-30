@@ -1,0 +1,15 @@
+proc foo {a} {
+	sub {puts a}
+}
+
+var a b c
+set a [foo 10]
+set b [foo 20]
+set c [foo "Hello, world"]
+
+a
+b
+c
+
+
+
