@@ -17,6 +17,9 @@ sub new {
   # reference
   die "Extra argument to 'new'\n" if $xxx;
 
+  die "Attempted to instantiate abstract class 'LL::Stringlike'\n"
+	if ($class eq 'LL::Stringlike');
+
   # Turn $ref into a reference if it isn't one
   if (!ref($ref)) {
 	my $v = $ref;
@@ -54,13 +57,16 @@ sub isNil {return 0}
 sub isMacro {return 0}
 sub isFunction {return 0}
 sub isTrue {return 1}
+sub isNumber {return 0}
 sub isLoL {return 0}	# Is a quoted list containing only lists
 sub matchesOpen {return 0}
 sub printStr {my ($self) = @_; return "${$self}"};
+
 sub equals {
   my ($self, $other) = @_;
-  return boolObj($self == $other);
+  return LL::Main::boolObj(ref($self) eq ref($other) && $self->inTypeEq($other));
 }
+sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 
 
 package LL::Number;
@@ -68,20 +74,30 @@ use base 'LL::Object';
 sub checkNumber {}
 sub isTrue {my ($self) = @_; !! ${$self} }
 sub isLiteral {return 1}
+sub isNumber {return 1}
+sub inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
+
+
+
+package LL::Stringlike;
+use base 'LL::Object';
+sub equals {my ($self, $other) = @_; return LL::Main::boolObj(${$self} eq ${$other})}
 
 package LL::String;
-use base 'LL::Object';
+use base 'LL::Stringlike';
 sub checkString {}
 sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
-sub printStr {my ($self) = @_; return "\"${$self}\""};
+sub printStr {my ($self) = @_; return "${$self}"};
 
 package LL::Symbol;
-use base 'LL::Object';
+use base 'LL::Stringlike';
 sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
+sub printStr {my ($self) = @_; return ":${$self}"};
+
 
 package LL::List;
 use base 'LL::Object';
@@ -93,6 +109,21 @@ sub printStr {
   my ($self) = @_;
   return "[".join (" ", map { $_->printStr() } @{$self})."]";
 }
+sub inTypeEq {
+  my ($self, $other) = @_;
+
+  my $nil = LL::Main::boolObj(0);
+
+  return $nil unless scalar @{$self} == scalar @{$self};
+
+  for my $n (0 .. $#{$self}) {
+	return $nil unless ( $self->[$n] -> equals($other->[$n]) )->isTrue();
+  }
+
+  return LL::Main::boolObj(1);
+}
+
+
 
 package LL::Nil;
 use base 'LL::Object';
@@ -100,7 +131,8 @@ sub new {my ($class) = @_; my $x = ''; return bless \$x, $class}
 sub isAtom {return 1}
 sub isNil {return 1}
 sub isTrue {return 0}
-sub printStr {"nil"};
+sub printStr {"nil"}
+sub inTypeEq {my ($self, $other) = @_; LL::Main::boolObj($other->isNil)}
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
 
@@ -161,7 +193,9 @@ sub checkLoL {
   die "Expecting a quoted LoL, got @{[$self->printStr()]}@_\n"
 	unless $self->isLoL();
 }
-
+sub inTypeEq {my ($self, $other) = @_;
+			  return $self->value()->equals($other->value())
+}
 
 
 package LL::Macro;
@@ -835,15 +869,16 @@ sub initGlobals {
   }
 
   # Simple primitive functions
-  prim 'Number', '+', "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
-  prim 'Number', '-', "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
-  prim 'Number', '*', "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
-  prim 'Number', '/', "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
-  prim 'Number', '<', "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
-  prim 'Number', '<=',"Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
-  prim 'Number', '>', "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
-  prim 'Number', '>=',"Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
-  prim '',     '===', "Object Object", sub { return boolObj($_[0] == $_[1])};
+  prim 'Number', '+',  "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
+  prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
+  prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
+  prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
+  prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
+  prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
+  prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
+  prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
+  prim '',      '===', "Object Object", sub { return boolObj($_[0] == $_[1])};
+  prim '',       '==', "Object Object", sub { return $_[0]->equals($_->[1]) };
 
   # Macros
   macro 'var',	\&macro_var;
@@ -855,8 +890,9 @@ sub initGlobals {
 
 sub builtin_println {
   for my $obj (@_) {
-	print $obj->printStr(), "\n";
+	print $obj->printStr();
   }
+  print "\n";
 
   return NIL;
 }
