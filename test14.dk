@@ -1,0 +1,9 @@
+
+var a b 
+
+set a 42
+set b 42
+puts [=== a b]
+
+set b a
+puts [=== a b]

@@ -36,3 +36,5 @@ if {< a b} {
 if {> a b} {
 	puts "a"
 }
+
+puts [if {> a b} {a} {b}

@@ -32,7 +32,7 @@ sub checkType {
   my $fname = "";
   $fname = " in '$name'" if $name;
 
-  ref($self) eq "LL::$type"
+  $self->isa("LL::$type")
 	or die "Expected 'LL::$type'; got @{[ref($self)]}$fname.\n";
 }
 
@@ -655,7 +655,7 @@ sub prim ( $$$$ ) {
   my $prim = sub {
 	validateArgs($name, $argsAndTypes, \@_);
 	my $retval = $function->(@_);
-	return "LL::$retType"->new($retval);
+	return $retType ? "LL::$retType"->new($retval) : $retval;
   };
 
   $Globals->defset($name, LL::Function->new($prim));
@@ -666,11 +666,11 @@ sub validateArgs {
   my ($name, $types, $args) = @_;
 
   my @typeList = split(/\s+/, $types);
-  my $count = 0;
 
   die "Argument count mismatch for '$name'\n"
 	if (scalar @typeList != scalar @{$args});
 
+  my $count = 0;
   for my $type (@typeList) {
 	$args->[$count++]->checkType($type, $name);	
   }
@@ -830,6 +830,11 @@ sub initGlobals {
   prim 'Number', '<=',"Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
   prim 'Number', '>', "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=',"Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
+
+  # More complex primitive functions
+  prim '', '===', "Object Object", sub { return $_[0] eq $_[1] ?
+										   LL::Number->new(1)  :
+											   NIL};
 
   # Macros
   macro 'var',	\&macro_var;
