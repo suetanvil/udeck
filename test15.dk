@@ -1,0 +1,30 @@
+
+proc cmp {a b} {
+	if {==  a b} {
+		puts a " == " b
+	} else {
+		puts a " != " b
+	}
+}
+
+
+cmp 1 1
+cmp 2 1
+cmp "foo" 4
+
+cmp "foo" "bar"
+cmp "foo" "foo"
+
+var f
+set f "foo"
+cmp f f
+
+cmp "foo" :foo
+cmp :foo "foo"
+cmp :foo :foo
+
+cmp :foo :bar
+
+
+
+

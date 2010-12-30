@@ -878,7 +878,7 @@ sub initGlobals {
   prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
   prim '',      '===', "Object Object", sub { return boolObj($_[0] == $_[1])};
-  prim '',       '==', "Object Object", sub { return $_[0]->equals($_->[1]) };
+  prim '',       '==', "Object Object", sub { return $_[0]->equals($_[1]) };
 
   # Macros
   macro 'var',	\&macro_var;
