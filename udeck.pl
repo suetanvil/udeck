@@ -64,7 +64,8 @@ sub printStr {my ($self) = @_; return "${$self}"};
 
 sub equals {
   my ($self, $other) = @_;
-  return LL::Main::boolObj(ref($self) eq ref($other) && $self->inTypeEq($other));
+  return LL::Main::boolObj(ref($self) eq ref($other) &&
+						   $self->inTypeEq($other));
 }
 sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 
@@ -81,7 +82,8 @@ sub inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
 
 package LL::Stringlike;
 use base 'LL::Object';
-sub equals {my ($self, $other) = @_; return LL::Main::boolObj(${$self} eq ${$other})}
+sub equals {my ($self, $other) = @_; 
+			return LL::Main::boolObj(${$self} eq ${$other})}
 
 package LL::String;
 use base 'LL::Stringlike';
@@ -112,15 +114,13 @@ sub printStr {
 sub inTypeEq {
   my ($self, $other) = @_;
 
-  my $nil = LL::Main::boolObj(0);
-
-  return $nil unless scalar @{$self} == scalar @{$self};
+  return 0 unless scalar @{$self} == scalar @{$other};
 
   for my $n (0 .. $#{$self}) {
-	return $nil unless ( $self->[$n] -> equals($other->[$n]) )->isTrue();
+	return 0 unless ( $self->[$n] -> equals($other->[$n]) )->isTrue();
   }
 
-  return LL::Main::boolObj(1);
+  return 1;
 }
 
 
@@ -132,7 +132,7 @@ sub isAtom {return 1}
 sub isNil {return 1}
 sub isTrue {return 0}
 sub printStr {"nil"}
-sub inTypeEq {my ($self, $other) = @_; LL::Main::boolObj($other->isNil)}
+sub inTypeEq {my ($self, $other) = @_; $other->isNil}
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
 
@@ -193,9 +193,13 @@ sub checkLoL {
   die "Expecting a quoted LoL, got @{[$self->printStr()]}@_\n"
 	unless $self->isLoL();
 }
-sub inTypeEq {my ($self, $other) = @_;
-			  return $self->value()->equals($other->value())
+sub equals {
+  my ($self, $other) = @_;
+
+  return 0 unless $other->isQuote();
+  return $self->value() -> equals($other->value());
 }
+
 
 
 package LL::Macro;
@@ -724,6 +728,13 @@ sub validateArgs {
 }
 
 
+sub prim2 ( $$ ) {
+  my ($name, $function) = @_;
+
+  $Globals->defset($name, LL::Function->new($function));
+}
+
+
 # ---------------------------------------------------------------------------
 
 sub macro ( $$ ) {
@@ -877,8 +888,11 @@ sub initGlobals {
   prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
   prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
-  prim '',      '===', "Object Object", sub { return boolObj($_[0] == $_[1])};
-  prim '',       '==', "Object Object", sub { return $_[0]->equals($_[1]) };
+
+  prim2 '===',	sub { return boolObj($_[0] == $_[1])};
+  prim2 '==',	sub { $DB::single = 1; return $_[0]->equals($_[1]) };
+  prim2 'list', sub { return LL::List->new(\@_) };
+
 
   # Macros
   macro 'var',	\&macro_var;
