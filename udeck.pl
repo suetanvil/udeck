@@ -879,6 +879,24 @@ sub macro_iffn {
 }
 
 
+sub macro_whilefn {
+  my @args = @_;
+
+  die "Expecting 2 arguments to 'while'; got @{[scalar @args - 1]}\n"
+	unless scalar @args == 3;
+
+  $args[0] = LL::Symbol->new('_::while');
+
+  my $sub = LL::Symbol->new('sub');
+  for my $i (1 .. $#args) {
+	$args[$i]->checkLoL();
+	$args[$i] = LL::List->new([$sub, $args[$i]]);
+  }
+
+  return LL::List->new(\@args);
+}
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
@@ -891,6 +909,7 @@ sub initGlobals {
 				   ['_::proc',	\&builtin_proc],
 				   ['_::sub',	\&builtin_subfn],
 				   ['_::if',	\&builtin_iffn],
+				   ['_::while',	\&builtin_whilefn],
 				   ['_::set',	\&builtin_set],
 				   ['_::var',	\&builtin_var],
 				  ) {
@@ -922,6 +941,7 @@ sub initGlobals {
   macro 'set',  \&macro_quoteSecond;
   macro 'sub',  \&macro_subfn;
   macro 'if',   \&macro_iffn;
+  macro 'while',\&macro_whilefn;
 }
 
 sub builtin_println {
@@ -1003,6 +1023,16 @@ sub builtin_iffn {
   $result;
 }
 
+sub builtin_whilefn {
+  my ($test, $body) = @_;
+
+  my $result = NIL;
+  while ($test->()->isTrue()) {
+	$result = $body->();
+  }
+
+  return $body;
+}
 
 
 =pod

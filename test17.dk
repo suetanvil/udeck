@@ -1,0 +1,8 @@
+var n
+
+set n 0
+while {< n 10} {
+	puts n
+	set n [+ n 1]
+}
+
