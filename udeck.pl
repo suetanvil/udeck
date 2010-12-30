@@ -95,6 +95,24 @@ sub printStr {my ($self) = @_; return "${$self}"};
 
 package LL::Symbol;
 use base 'LL::Stringlike';
+
+{
+  my $symbols = {};
+
+  sub new {
+	my ($class, $str) = @_;
+
+	die "Unexpected ref '@{[ref($str)]}' in LL::Symbol->new.\n"
+	  if ref($str);
+
+	if (!exists($symbols->{$str})) {
+	  $symbols->{$str} = bless \$str, $class;
+	}
+	
+	return $symbols->{$str};
+  }
+}
+
 sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
