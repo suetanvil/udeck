@@ -30,3 +30,7 @@ cmp [list 1 2 3] [list 4 5 6]
 cmp [list 1 2 3 "foo"] [list 1 2 3 "foo"]
 cmp [list 1 2 3 "foo"] [list 1 2 3 "foo" 5 6]
 
+cmp ::1 ::2
+cmp ::1 ::1
+cmp ::"foo" ::"foo"
+cmp ::"foo" ::"bar"

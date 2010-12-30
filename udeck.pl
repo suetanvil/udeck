@@ -879,7 +879,7 @@ sub initGlobals {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
 
-  # Simple primitive functions
+  # Simple numeric primitive functions
   prim 'Number', '+',  "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
   prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
   prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
@@ -889,8 +889,12 @@ sub initGlobals {
   prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
 
+  # Other simple primitives
+  prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
+
+  # More complex primitive functions
   prim2 '===',	sub { return boolObj($_[0] == $_[1])};
-  prim2 '==',	sub { $DB::single = 1; return $_[0]->equals($_[1]) };
+  prim2 '==',	sub { return $_[0]->equals($_[1]) };
   prim2 'list', sub { return LL::List->new(\@_) };
 
 
