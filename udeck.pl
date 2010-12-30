@@ -57,6 +57,11 @@ sub isTrue {return 1}
 sub isLoL {return 0}	# Is a quoted list containing only lists
 sub matchesOpen {return 0}
 sub printStr {my ($self) = @_; return "${$self}"};
+sub equals {
+  my ($self, $other) = @_;
+  return boolObj($self == $other);
+}
+
 
 package LL::Number;
 use base 'LL::Object';
@@ -496,7 +501,15 @@ sub readLoL {
   }
 }
 
+# ---------------------------------------------------------------------------
 
+# Return the canonical Deck true or false value given a Perl true or
+# false.
+sub boolObj {
+  my ($trueOrFalse) = @_;
+
+  return $trueOrFalse ? LL::Number->new(1) : NIL;
+}
 
 # ---------------------------------------------------------------------------
 
@@ -830,11 +843,7 @@ sub initGlobals {
   prim 'Number', '<=',"Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
   prim 'Number', '>', "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=',"Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
-
-  # More complex primitive functions
-  prim '', '===', "Object Object", sub { return $_[0] eq $_[1] ?
-										   LL::Number->new(1)  :
-											   NIL};
+  prim '',     '===', "Object Object", sub { return boolObj($_[0] == $_[1])};
 
   # Macros
   macro 'var',	\&macro_var;
