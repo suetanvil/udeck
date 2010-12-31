@@ -662,12 +662,14 @@ sub evalFuncCall {
 
 # ---------------------------------------------------------------------------
 
+# Return a blessed func. ref which executes a sub with $args and $body
+# in the given context.  If $context is undef, the $Global context is
+# used, allowing the function to define and set global variables.
+# $name is used for error messages and may be omitted.
 sub compile {
   my ($outerContext, $args, $body, $name) = @_;
 
   $name ||= 'unnamed function';
-  $outerContext ||= $Globals;
-
 
   my $nargs = scalar @{$args};
   my $isVararg = $nargs > 0 && ${$args->[-1]} eq 'args';
@@ -677,9 +679,13 @@ sub compile {
   }
 
   my @fixedBody;
-  for my $expr (@{$body}) {
-	push @fixedBody, applyMacrosRecursively ($expr, $outerContext);
+  {
+	my $macroContext = $outerContext ? $outerContext : $Global;
+	for my $expr (@{$body}) {
+	  push @fixedBody, applyMacrosRecursively ($expr, $macroContext);
+	}
   }
+# XXXXXXX
 
 
   my $fn = sub {
@@ -849,6 +855,9 @@ sub macro_subfn {
 	$args[2] = $args[1];
 	$args[1] = LL::Quote->new(LL::List->new([]));
   }
+
+  # Normalize the arg list.
+  $args[1] = fixFormalArgs($args[1]);
 
   return LL::List->new(\@args)
 }
