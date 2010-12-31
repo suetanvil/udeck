@@ -91,7 +91,7 @@ sub checkString {}
 sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
-sub printStr {my ($self) = @_; return "${$self}"};
+sub printStr {my ($self) = @_; return "\"${$self}\""};
 
 package LL::Symbol;
 use base 'LL::Stringlike';
@@ -116,7 +116,7 @@ use base 'LL::Stringlike';
 sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
-sub printStr {my ($self) = @_; return ":${$self}"};
+sub printStr {my ($self) = @_; return "${$self}"};
 
 
 package LL::List;
@@ -657,6 +657,7 @@ sub evalFuncCall {
 	unshift @args, $context;
   }
 
+$DB::single = 1 unless $fn->isa("LL::Function");
   return $fn->(@args);
 }
 
@@ -680,16 +681,14 @@ sub compile {
 
   my @fixedBody;
   {
-	my $macroContext = $outerContext ? $outerContext : $Global;
+	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
 	  push @fixedBody, applyMacrosRecursively ($expr, $macroContext);
 	}
   }
-# XXXXXXX
-
 
   my $fn = sub {
-	my $context = LL::Context->new($outerContext);
+	my $context = $outerContext ? LL::Context->new($outerContext) : $Globals;
 
 	#  Check for argument mismatch
 	(scalar @_ == $nargs || $isVararg && scalar @_ > $nargs)
