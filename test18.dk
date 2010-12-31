@@ -5,13 +5,24 @@ set a [sub {val "this is the result"}]
 puts a
 puts [a]
 
-set a [sub {}{val "this is the result"}]
+set a [sub {}{puts "this is the result"}]
 a
 
-set a [sub []{val "this is the result"}]
+
+set a [sub []{puts "this is the result"}]
 a
 
-set a [sub :[] {val "this is the result"}]
+
+set a [sub :[]{puts "this is the result"}]
 a
+
+proc p1 {} { puts "p1" }
+p1
+
+proc p2 [] { puts "p2" }
+p2
+
+proc p3 :[]{ puts "p3" }
+p3
 
 
