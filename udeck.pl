@@ -762,43 +762,51 @@ sub macro ( $$ ) {
 }
 
 
+# Normalize the arg. list into a quoted list of words
+sub fixFormalArgs {
+  my ($args) = @_;
+
+  $args = $args->value()
+	if $args->isQuote();
+
+  die "Expecting argument list, got @{[ref($args)]}\n"
+	unless $args->isList();
+
+  # It should now be either a list of words or a list of lists of
+  # words, depending on whether the source used "[]" or "{}".
+  my $type = ref($args->[0]);
+  for my $arg (@{$args}) {
+	die "Malformed argument in list: '@{[$arg->printStr()]}'\n"
+	  unless ref($arg) eq $type;
+  }
+
+  if ($type ne 'LL::Symbol') {
+	my @flatArgs = ();
+
+	for my $arg (@{$args}) {
+	  push @flatArgs, @{$arg};
+	}
+
+	$args = LL::List->new(\@flatArgs);
+  }
+
+  return LL::Quote->new($args);
+}
+
+
+
 sub macro_proc {
   my @result = @_;
 
   $result[0] = LL::Symbol->new('_::proc');
 
   my $sym = $result[1];
-  $sym->checkSymbol(" in macro 'proc' arg 1");
+  $sym->checkSymbol(" in 'proc' arg 1");
   $result[1] = LL::Quote->new($sym);
 
-  my $args = $result[2];
+  $result[2] = fixFormalArgs($result[2]);
 
-  # We tolerate three types of arg. lists: [a b c], '[a b c] and {a b c}
-  # This case handles the second two.  
-  if ($args->isQuote() && $args->value()->isList()) {
-
-	# Identify the list type.
-	my $type = ref($args->value()->[0]);
-	for my $arg (@{$args->value()}) {
-	  die "Malformed argument in list: '@{[$arg->printStr()]}'\n"
-		unless ref($arg) eq $type;
-	}
-
-	if ($type eq 'LL::Symbol') {
-	  $args = $args->value();
-	} else {
-	  my @flatArgs = ();
-
-	  for my $arg (@{$args->value()}) {
-		push @flatArgs, @{$arg};
-	  }
-
-	  $args = LL::List->new(\@flatArgs);
-	}
-  }
-
-  $args->checkList(" in macro 'proc' arg 2");
-  $result[2] = LL::Quote->new($args);
+  $result[3]->checkLoL(" in function body of 'proc'.");
 
   return LL::List->new(\@result);
 }
@@ -1043,7 +1051,9 @@ Notes:
 
 	-let's use ':' as the quote.
 
-	-let's use a [] list for the args to proc
+	-Tolerates [x], {x} and :[x] as proc argument lists.
+
+
 
 Todo:
 	-return values
