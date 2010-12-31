@@ -657,7 +657,6 @@ sub evalFuncCall {
 	unshift @args, $context;
   }
 
-$DB::single = 1 unless $fn->isa("LL::Function");
   return $fn->(@args);
 }
 
@@ -949,6 +948,7 @@ sub initGlobals {
   prim2 '===',	sub { return boolObj($_[0] == $_[1])};
   prim2 '==',	sub { return $_[0]->equals($_[1]) };
   prim2 'list', sub { return LL::List->new(\@_) };
+  prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
 
 
   # Macros
