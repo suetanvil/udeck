@@ -356,7 +356,7 @@ sub interp {
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
-	my $fn = compile(undef, $args, $expr, "REPL");
+	my $fn = compile(undef, $args, $expr, "*top*");
 
 	my $result = $fn->();
 
