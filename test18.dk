@@ -1,0 +1,16 @@
+
+var a
+
+set a [sub {42}]
+puts a
+
+set a [sub {}{42}]
+a
+
+set a [sub []{42}]
+a
+
+set a [sub '[] {42}]
+a
+
+
