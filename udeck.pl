@@ -324,12 +324,12 @@ if (@ARGV) {
 	open $Input, "< $ifile"
 	  or die "Unable to open '$ifile'.";
 
-	interp();
+	interp(0);
   }
 } else {
 
   while (1) {
-	eval {interp()};
+	eval {interp(1)};
 	last unless $@;
 	print "Error: $@\n";
   }
@@ -345,18 +345,23 @@ exit(0);
 
 
 sub interp {
+  my ($print) = @_;
+
   while (1) {
 	$NeedPrompt = 1;
 
 	my $expr = readLoLLine(0);
 	next if ($expr->isEmptyList());
 
-	$expr = applyMacrosRecursively($expr, $Globals);
+	$expr = LL::List->new([$expr]);
+	my $args = LL::List->new([]);
 
-	print $expr->printStr(), "\n"
-	  if $dumpExpr;
+	my $fn = compile(undef, $args, $expr, "REPL");
 
-	evalExpr($expr, $Globals);
+	my $result = $fn->();
+
+	print $result->printStr(), "\n"
+	  if $print;
   }
 }
 
@@ -682,9 +687,13 @@ sub compile {
   {
 	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
-	  push @fixedBody, applyMacrosRecursively ($expr, $macroContext);
+	  my $newExpr =  applyMacrosRecursively ($expr, $macroContext);
+	  push @fixedBody, $newExpr;
 	}
   }
+
+  print "$name: ", LL::List->new(\@fixedBody)->printStr(), "\n"
+	if $dumpExpr;
 
   my $fn = sub {
 	my $context = $outerContext ? LL::Context->new($outerContext) : $Globals;
