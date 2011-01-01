@@ -39,12 +39,12 @@ sub checkType {
 	or die "Expected 'LL::$type'; got @{[ref($self)]}$fname.\n";
 }
 
-sub checkNumber {shift; die "Expected number, got @{[ref(shift)]}@_\n"}
-sub checkString {shift; die "Expected string, got @{[ref(shift)]}@_\n"}
-sub checkList   {shift; die "Expected list, got @{[ref(shift)]}@_\n"}
-sub checkSymbol {shift; die "Expected symbol, got @{[ref(shift)]}@_\n"}
-sub checkQuote  {shift; die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
-sub checkLoL    {shift; die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
+sub checkNumber {die "Expected number, got @{[ref(shift)]}@_\n"}
+sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
+sub checkList   {die "Expected list, got @{[ref(shift)]}@_\n"}
+sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
+sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
+sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isEol {return 0}
@@ -241,14 +241,18 @@ package LL::Context;
 
 sub new {
   my ($class, $parent) = @_;
-  return bless {' ' => $parent}, $class;
+  return bless {
+				# Reserved fields:
+				' parent'		=> $parent,
+				' consts'		=> {},	# <- list of const names
+			   }, $class;
 }
 
 sub def {
   my ($self, $symbol) = @_;
 
   die "Expecting string, not reference!\n" unless ref($symbol) eq '';
-  die "Illegal variable name: one ASCII space.\n" if $symbol eq ' ';
+  die "Name contains whitespace.\n" if $symbol =~ /\s/;
 
   $self->{$symbol} = LL::Nil::NIL;
 }
@@ -257,13 +261,15 @@ sub set {
   my ($self, $symbol, $value) = @_;
 
   die "Expecting string, not reference!\n" unless ref($symbol) eq '';
+  die "Attempted to modify a const: $symbol.\n"
+	if defined($self->{' consts'}->{$symbol});
 
   exists($self->{$symbol}) and do {
 	$self->{$symbol} = $value;
 	return;
   };
 
-  defined($self->{' '}) and return $self->{' '}->set($symbol, $value);
+  defined($self->{' parent'}) and return $self->{' parent'}->set($symbol, $value);
 
   die "Unknown variable: '$symbol'\n";
 }
@@ -275,11 +281,19 @@ sub defset {
   $self->set($symbol, $value);
 }
 
+sub defsetconst {
+  my ($self, $symbol, $value) = @_;
+
+  $self->defset($symbol, $value);
+  $self->{' consts'}->{$symbol} = 1;
+}
+
+
 sub lookup {
   my ($self, $symbol) = @_;
 
   exists($self->{$symbol})	and return $self->{$symbol};
-  defined($self->{' '})		and return $self->{' '}->lookup($symbol);
+  defined($self->{' parent'})		and return $self->{' parent'}->lookup($symbol);
 
   die "Unknown variable: '$symbol'\n";
 }
@@ -288,7 +302,7 @@ sub present {
   my ($self, $symbol) = @_;
 
   exists($self->{$symbol}) and return 1;
-  defined($self->{' '}) and return $self->{' '}->present($symbol);
+  defined($self->{' parent'}) and return $self->{' parent'}->present($symbol);
 
   return 0;
 }
@@ -658,7 +672,7 @@ sub evalFuncCall {
   # _::set, _::sub and _::var are special cases and get access to the
   # context.
   my $fname = $expr->[0]->isSymbol() ? ${$expr->[0]} : '';
-  if ($fname =~ /^_::(set|var|sub)$/) {
+  if ($fname =~ /^_::(set|var|sub|const)$/) {
 	unshift @args, $context;
   }
 
@@ -837,6 +851,34 @@ sub macro_var {
   return LL::List->new(\@result);
 }
 
+sub macro_const {
+  my @result = (LL::Symbol->new('_::const'));
+
+  shift @_;	# Drop the word 'const'
+
+  my $name = shift @_;
+  $name && $name->isSymbol()
+	or die "Missing or invalid name for 'const'.";
+
+  my $val = shift @_;
+
+  # If the second word is '=', drop it and fetch the third.
+  if ($val and $val->isSymbol() and ${$val} eq '=') {
+	$val = shift @_;
+  }
+
+  die "Value missing in 'const' declaration.\n" unless $val;
+
+  die "Too many arguments to 'const'.\n"
+	if scalar @_;
+
+  push @result, LL::Quote->new($name);
+  push @result, $val;
+
+  return LL::List->new(\@result);
+}
+
+
 sub macro_quoteSecond {
   my @result = @_;
   $result[0] = LL::Symbol->new('_::' . $ {$result[0]} );
@@ -936,6 +978,7 @@ sub initGlobals {
 				   ['_::while',	\&builtin_whilefn],
 				   ['_::set',	\&builtin_set],
 				   ['_::var',	\&builtin_var],
+				   ['_::const', \&builtin_const],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -962,6 +1005,7 @@ sub initGlobals {
 
   # Macros
   macro 'var',	\&macro_var;
+  macro 'const',\&macro_const;
   macro 'proc', \&macro_proc;
   macro 'set',  \&macro_quoteSecond;
   macro 'sub',  \&macro_subfn;
@@ -994,11 +1038,18 @@ sub builtin_var {
   my ($context, @names) = @_;
 
   for my $name (@names) {
-	die "'var' arguments must be symbols.\n"
-	  unless $name->isSymbol();
-
+	$name->checkSymbol(" in var argument.");
 	$context->defset(${$name}, NIL);
   }
+
+  return NIL;
+}
+
+sub builtin_const {
+  my ($context, $name, $value) = @_;
+
+  $name->checkSymbol(" in const argument.");
+  $context->defsetconst(${$name}, $value);
 
   return NIL;
 }
