@@ -748,7 +748,7 @@ sub compile {
 	  die "Too many arguments to $retname\n" unless scalar @_ <= 1;
 
 	  $lastexpr = $retval;
-	  die $context;
+	  die "$context\n";
 	};
 	$context->defsetconst($retname, LL::Function->new($ret))
 	  if $retname;
@@ -758,7 +758,9 @@ sub compile {
 		$lastexpr = evalExpr($expr, $context);
 	  }
 	};
-	die $@ if ($@ && !(looks_like_number($@) && $@ == $context));
+	if ($@ && $@ ne "$context\n") {
+	  die $@;
+	}
 
 	return $lastexpr;
   };

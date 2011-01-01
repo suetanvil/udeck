@@ -1,0 +1,22 @@
+
+proc outer {} {
+	return "return value"
+	puts "not reached"
+}
+
+puts [outer]
+
+
+proc f1 {} {
+	f2 return
+	puts "not reached"
+}
+
+proc f2 {r} {
+	r "return value 2"
+	puts "also not reached."
+}
+
+puts [f1]
+
+
