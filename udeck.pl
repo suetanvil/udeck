@@ -60,7 +60,8 @@ sub isTrue {return 1}
 sub isNumber {return 0}
 sub isLoL {return 0}	# Is a quoted list containing only lists
 sub matchesOpen {return 0}
-sub printStr {my ($self) = @_; return "${$self}"};
+sub storeStr {my ($self) = @_; return "${$self}"}
+sub printStr {my ($self) = @_; return $self->storeStr()};
 
 sub equals {
   my ($self, $other) = @_;
@@ -84,6 +85,7 @@ package LL::Stringlike;
 use base 'LL::Object';
 sub equals {my ($self, $other) = @_; 
 			return LL::Main::boolObj(${$self} eq ${$other})}
+sub printStr {my ($self) = @_; return $ {$self} }
 
 package LL::String;
 use base 'LL::Stringlike';
@@ -91,7 +93,8 @@ sub checkString {}
 sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
-sub printStr {my ($self) = @_; return "\"${$self}\""};
+sub storeStr {my ($self) = @_; return "\"${$self}\""};
+
 
 package LL::Symbol;
 use base 'LL::Stringlike';
@@ -116,7 +119,7 @@ use base 'LL::Stringlike';
 sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
-sub printStr {my ($self) = @_; return "${$self}"};
+#sub storeStr {my ($self) = @_; return "${$self}"};
 
 
 package LL::List;
@@ -125,6 +128,10 @@ sub checkList {}
 sub isEmptyList {my ($self) = @_; return scalar @{$self} == 0}
 sub isTrue {my ($self) = @_; return ! $self->isEmptyList()}
 sub isList {return 1}
+sub storeStr {
+  my ($self) = @_;
+  return "[".join (" ", map { $_->storeStr() } @{$self})."]";
+}
 sub printStr {
   my ($self) = @_;
   return "[".join (" ", map { $_->printStr() } @{$self})."]";
@@ -149,7 +156,7 @@ sub new {my ($class) = @_; my $x = ''; return bless \$x, $class}
 sub isAtom {return 1}
 sub isNil {return 1}
 sub isTrue {return 0}
-sub printStr {"nil"}
+sub storeStr {"nil"}
 sub inTypeEq {my ($self, $other) = @_; $other->isNil}
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
@@ -158,7 +165,7 @@ package LL::Eol;
 use base 'LL::Object';
 sub isEol {return 1}
 sub isTrue {return 0}	# Maybe not necessary
-sub printStr {"<EOL>"}
+sub storeStr {"<EOL>"}
 
 package LL::Paren;
 use base 'LL::Object';
@@ -168,7 +175,7 @@ sub isClose {local $_ = ${ shift() }; return /^( \) | \) |\})$/x }
 sub isBrace {local $_ = ${ shift() }; return /^[{}]$/x }
 sub isRoundParen {local $_ = ${ shift() }; return /^[()]$/x }
 sub isSquareParen {local $_ = ${ shift() }; return /^[\[\]]$/x }
-sub printStr {my ($self) = @_; return "paren:'${$self}'"};
+sub storeStr {my ($self) = @_; return "paren:'${$self}'"};
 
 sub matchesOpen {
   my ($self, $open) = @_;
@@ -195,7 +202,7 @@ sub new {
 sub isQuote {return 1}
 sub checkQuote {}
 sub value {my ($self) = @_; return $self->[0]}
-sub printStr {my ($self) = @_; return ':' . $self->value()->printStr()}
+sub storeStr {my ($self) = @_; return ':' . $self->value()->storeStr()}
 sub isLoL {	# Is this a quoted list of lists?
   my ($self) = @_;
 
@@ -208,7 +215,7 @@ sub isLoL {	# Is this a quoted list of lists?
 }
 sub checkLoL {
   my ($self, @args) = @_;
-  die "Expecting a quoted LoL, got @{[$self->printStr()]}@_\n"
+  die "Expecting a quoted LoL, got @{[$self->storeStr()]}@_\n"
 	unless $self->isLoL();
 }
 sub equals {
@@ -223,14 +230,14 @@ sub equals {
 package LL::Macro;
 use base 'LL::Object';
 sub isMacro {return 1}
-sub printStr {return "<macro>"}
+sub storeStr {return "<macro>"}
 
 
 package LL::Function;
 use base 'LL::Object';
 sub isAtom {return 1}
 sub isFunction {return 1}
-sub printStr {return "<function>"}
+sub storeStr {return "<function>"}
 
 
 
@@ -314,6 +321,7 @@ sub present {
 package LL::Main;
 
 use Term::ReadLine;
+use Scalar::Util qw(looks_like_number);
 
 use constant NIL => LL::Nil::NIL;
 
@@ -370,11 +378,11 @@ sub interp {
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
-	my $fn = compile(undef, $args, $expr, "*top*");
+	my $fn = compile(undef, $args, $expr, 'toplevel', "*top*");
 
 	my $result = $fn->();
 
-	print $result->printStr(), "\n"
+	print $result->storeStr(), "\n"
 	  if $print;
   }
 }
@@ -439,7 +447,7 @@ sub readExpr {
 	  and die "Round parens currently unsupported.\n";
   };
 
-  die "Unexpected token type: @{[ref($tok)]} (@{[$tok->printStr()]}).\n";
+  die "Unexpected token type: @{[ref($tok)]} (@{[$tok->storeStr()]}).\n";
 }
 
 
@@ -608,7 +616,7 @@ sub evalExpr {
 	return evalFuncCall($expr, $context);
   };
 
-  die "evalExpr: Don't know what to do with @{[$expr->printStr()]}.\n";
+  die "evalExpr: Don't know what to do with @{[$expr->storeStr()]}.\n";
 }
 
 
@@ -624,7 +632,7 @@ sub applyMacros {
   my @backtrace = ([@{$expr}]);
   while (1) {
 	my $name = $expr->[0];
-	last unless $name->isSymbol();
+	last unless ($name->isSymbol() && $context->present($ {$name})) ;
 	
 	my $val = $context->lookup(${$name});
 	last unless $val->isMacro();
@@ -634,7 +642,7 @@ sub applyMacros {
 	push @backtrace, $expr;
 	if (scalar @backtrace > 20) {
 	  die "Probable recursive macro:\n" .
-		join("\n", map { $_->printString()."\n" } @backtrace) . "\n";
+		join("\n", map { $_->storeString()."\n" } @backtrace) . "\n";
 	}
   }
 
@@ -686,7 +694,7 @@ sub evalFuncCall {
 # used, allowing the function to define and set global variables.
 # $name is used for error messages and may be omitted.
 sub compile {
-  my ($outerContext, $args, $body, $name) = @_;
+  my ($outerContext, $args, $body, $mode, $name) = @_;
 
   $name ||= 'unnamed function';
 
@@ -706,7 +714,7 @@ sub compile {
 	}
   }
 
-  print "$name: ", LL::List->new(\@fixedBody)->printStr(), "\n"
+  print "$name: ", LL::List->new(\@fixedBody)->storeStr(), "\n"
 	if $dumpExpr;
 
   my $fn = sub {
@@ -719,7 +727,7 @@ sub compile {
 
 	# Bind arguments
 	for my $arg (@{$args}) {
-	  $context->defset(${$arg}, shift @_);
+	  $context->defset ($ {$arg}, shift @_ );
 	}
 
 	# Bind varargs
@@ -728,11 +736,29 @@ sub compile {
 
 	  $context->defset(LL::Symbol->new('args'), \@args);
 	}
-
+	
 	my $lastexpr;
-	for my $expr (@fixedBody) {
-	  $lastexpr = evalExpr($expr, $context);
-	}
+	my $retname =
+	  ($mode eq 'proc') ? 'return' :
+	  ($mode eq 'sub') ? '_lreturn' : '';
+	my $ret = sub {
+	  my ($retval) = @_;
+	  $retval ||= NIL;
+
+	  die "Too many arguments to $retname\n" unless scalar @_ <= 1;
+
+	  $lastexpr = $retval;
+	  die $context;
+	};
+	$context->defsetconst($retname, LL::Function->new($ret))
+	  if $retname;
+
+	eval {
+	  for my $expr (@fixedBody) {
+		$lastexpr = evalExpr($expr, $context);
+	  }
+	};
+	die $@ if ($@ && !(looks_like_number($@) && $@ == $context));
 
 	return $lastexpr;
   };
@@ -803,7 +829,7 @@ sub fixFormalArgs {
   # words, depending on whether the source used "[]" or "{}".
   my $type = ref($args->[0]);
   for my $arg (@{$args}) {
-	die "Malformed argument in list: '@{[$arg->printStr()]}'\n"
+	die "Malformed argument in list: '@{[$arg->storeStr()]}'\n"
 	  unless ref($arg) eq $type;
   }
 
@@ -843,7 +869,7 @@ sub macro_var {
 
   shift;
   for my $sym (@_) {
-	die "Argument for 'var' '@{[$sym->printStr()]}' is not a symbol.\n"
+	die "Argument for 'var' '@{[$sym->storeStr()]}' is not a symbol.\n"
 	  unless $sym->isSymbol();
 
 	push @result, LL::Quote->new($sym);
@@ -919,7 +945,7 @@ sub macro_iffn {
 
   # Remove the 'else' word if present
   if (defined($args[3]) && $args[3]->isSymbol()) {
-	die "Expecting 'else', got '@{[$args[3]->printStr()]}'\n"
+	die "Expecting 'else', got '@{[$args[3]->storeStr()]}'\n"
 	  unless ${$args[3]} eq 'else';
 
 	my $elseClause = pop @args;
@@ -1066,7 +1092,7 @@ sub builtin_proc {
   $args->checkList();
   $body->checkList();
 
-  my $func = compile ($Globals, $args, $body, ${$name});
+  my $func = compile ($Globals, $args, $body, 'proc', ${$name});
 
   $Globals->defset(${$name}, $func);
 
@@ -1080,7 +1106,7 @@ sub builtin_subfn {
   $args->checkList();
   $body->checkList();
 
-  return compile ($context, $args, $body);
+  return compile ($context, $args, $body, 'sub');
 }
 
 
