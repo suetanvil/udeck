@@ -1,0 +1,7 @@
+
+const foo = 42
+puts foo
+
+const bar 11
+puts bar
+
