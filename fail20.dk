@@ -1,0 +1,15 @@
+
+var bigret
+
+proc f1 {} {
+	f2 return
+	puts "f1"
+}
+
+proc f2 {r} {
+	set bigret r
+	puts "f2"
+}
+
+f1
+bigret

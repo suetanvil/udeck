@@ -56,6 +56,7 @@ sub isQuote {return 0}
 sub isNil {return 0}
 sub isMacro {return 0}
 sub isFunction {return 0}
+sub isCallable {return 0}
 sub isTrue {return 1}
 sub isNumber {return 0}
 sub isLoL {return 0}	# Is a quoted list containing only lists
@@ -231,12 +232,13 @@ package LL::Macro;
 use base 'LL::Object';
 sub isMacro {return 1}
 sub storeStr {return "<macro>"}
-
+# isCallable?
 
 package LL::Function;
 use base 'LL::Object';
 sub isAtom {return 1}
 sub isFunction {return 1}
+sub isCallable {return 1}
 sub storeStr {return "<function>"}
 
 
@@ -380,7 +382,15 @@ sub interp {
 
 	my $fn = compile(undef, $args, $expr, 'toplevel', "*top*");
 
-	my $result = $fn->();
+	my $result;
+	eval {
+	  $result = $fn->();
+	};
+	if ($@) {
+	  die "Called return continuation on a returned function.\n"
+		if $@ =~ /^LL::Context=HASH/;
+	  die $@;
+	}
 
 	print $result->storeStr(), "\n"
 	  if $print;
@@ -683,6 +693,9 @@ sub evalFuncCall {
   if ($fname =~ /^_::(set|var|sub|const)$/) {
 	unshift @args, $context;
   }
+
+  die "Attempted to call a non-function as a function.\n"
+	unless $fn->isCallable();
 
   return $fn->(@args);
 }

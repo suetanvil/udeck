@@ -19,4 +19,18 @@ proc f2 {r} {
 
 puts [f1]
 
+var s1 s2
+
+set s1 [sub {} {
+	s2 _lreturn
+	puts "not reached"
+}]
+
+set s2 [sub {r} {
+	r "return value 3"
+	puts "also not reached."
+}]
+
+puts [s1]
+
 
