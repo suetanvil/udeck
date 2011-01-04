@@ -48,6 +48,7 @@ sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isEol {return 0}
+sub isExplicitEol {return 0}
 sub isParen {return 0}
 sub isLiteral {return 0}
 sub isEmptyList {return 0}
@@ -167,6 +168,7 @@ use base 'LL::Object';
 sub isEol {return 1}
 sub isTrue {return 0}	# Maybe not necessary
 sub storeStr {"<EOL>"}
+sub isExplicitEol {my ($self) = @_; return ${$self} eq ';'}
 
 package LL::Paren;
 use base 'LL::Object';
@@ -469,7 +471,11 @@ sub readSexp {
   while (1) {
 	my $tok = readExpr($openChar);
 
-	next if $tok->isEol();
+	if ($tok->isEol()) {
+	  dkwarn("Found a ';' inside a list.  Probably not what you want.")
+		if $tok->isExplicitEol();
+	  next;
+	}
 
 	last if $tok->matchesOpen($openChar);
 
@@ -537,6 +543,12 @@ sub readLoL {
 		  next;
 		};
 
+		# ';' is the alternate EOL.
+		$line =~ s/^;// and do {
+		  push @tokens, LL::Eol->new(';');
+		  next;
+		};
+
 		# Quote characters return an empty Quote object.  It's up to
 		# the caller to put them together with the following
 		# expression.
@@ -575,7 +587,7 @@ sub readLoL {
 		die "Syntax error: >> '$line'\n";
 	  }
 
-	  push @tokens, LL::Eol->new(';');
+	  push @tokens, LL::Eol->new("\n");
 	}
   }
 }
@@ -603,6 +615,12 @@ sub boolObj {
 
   return $trueOrFalse ? LL::Number->new(1) : NIL;
 }
+
+# Print a warning.
+sub dkwarn {
+  print STDERR "WARNING: ", join(" ", @_), "\n";
+}
+
 
 # ---------------------------------------------------------------------------
 
@@ -694,7 +712,7 @@ sub evalFuncCall {
 	unshift @args, $context;
   }
 
-  die "Attempted to call a non-function as a function.\n"
+  die "Attempted to call non-function '@{[$fn->storeStr()]}' as a function.\n"
 	unless $fn->isCallable();
 
   return $fn->(@args);
