@@ -423,6 +423,14 @@ sub readLoLLine {
 	push @result, $item;
   }
 
+  # Warn of the case where an explicit list is the only element of a
+  # line because the programmer may have accidentally bracketted the
+  # line.
+  if (scalar @result == 1 && $result[0]->isList()) {
+	dkwarn ("Entire input line is bracketed.  This may not be what",
+			"you want.");
+  }
+
   return LL::List->new(\@result);
 }
 

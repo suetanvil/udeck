@@ -1,0 +1,4 @@
+
+proc foo {} {
+	[+ 1 2]		# Wrong.  Should issue warning.
+}

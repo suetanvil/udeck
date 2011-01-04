@@ -1,0 +1,14 @@
+
+puts "Hello, World"; puts "Yo!";
+
+var x
+set x [sub {puts 1; puts 2; puts 3}]
+x; x; x
+
+proc foo {a b c} {
+	+ a [+ b c]
+}
+
+var y
+set y [foo 1; 2; 3]
+puts y
