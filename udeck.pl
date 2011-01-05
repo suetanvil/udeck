@@ -427,7 +427,7 @@ sub readLoLLine {
   # line because the programmer may have accidentally bracketted the
   # line.
   if (scalar @result == 1 && $result[0]->isList()) {
-	dkwarn ("Entire input line is bracketed.  This may not be what",
+	dkwarn ("Entire LoL line is bracketed.  This may not be what",
 			"you want.");
   }
 
@@ -534,7 +534,7 @@ sub readLoL {
 
   sub fillTokList {
 	while (!@tokens) {
-	  my $line = $Input ? <$Input> : getLine();
+	  my $line = getLine();
 	  if (!defined($line)) {
 		exit (0);
 	  }
@@ -548,6 +548,12 @@ sub readLoL {
 
 		# Comments are removed
 		$line =~ s{^#.*$}{} and do {
+		  next;
+		};
+
+		# A single '\' is the line continuation
+		$line =~ s{^\\ \s* (\#.*)? $}{}x and do {
+		  $line = getLine();
 		  next;
 		};
 
@@ -604,6 +610,8 @@ sub readLoL {
 {
   my $term;
   sub getLine {
+	return scalar <$Input> if $Input;
+
 	my $prompt = $NeedPrompt ? "udeck> " : "";
 	$NeedPrompt = 0;	# Reset the next time we start reading an expression
 
@@ -613,6 +621,7 @@ sub readLoL {
 	return $term->readline($prompt);
   }
 }
+
 
 # ---------------------------------------------------------------------------
 
