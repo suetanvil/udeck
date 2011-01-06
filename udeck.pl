@@ -132,6 +132,7 @@ sub checkList {}
 sub isEmptyList {my ($self) = @_; return scalar @{$self} == 0}
 sub isTrue {my ($self) = @_; return ! $self->isEmptyList()}
 sub isList {return 1}
+sub asPrefixList {return shift}
 sub storeStr {
   my ($self) = @_;
   return "[".join (" ", map { $_->storeStr() } @{$self})."]";
@@ -153,10 +154,39 @@ sub inTypeEq {
 }
 
 
+
 package LL::InfixList;
 use base 'LL::List';
 sub isInfixList {return 1}
+{
+  my @precedence = ([qw{-> . @}],	# method lookup, field lookup, seq. access
+					[qw{**}],		# power
+					[qw{* / // %}], # mult, div, div rounded toward zero, modulo
+					[qw{+ -}],				# add, subtract
+					[qw{<< >> >>> <<<}],	# shifts	
+					[qw{== === != !== < > <= >=}],	# Equality and magnitude
+					[qw{&}],		# Bitwise AND.
+					[qw{| ^}],		# Bitwise OR, bitwise XOR
+					[qw{&&}],		# Logical AND, short-circuited
+					[qw{||}],		# Logical OR, short-circuited
+					[qw{=}],		# Assignment
+				   );
+  my %precPerOp = ();
+  {
+	my $prec = 0;
+	for my $lev (reverse @precedence) {
+	  map { $precPerOp{$_} = $prec } @{$lev};
+	  ++$prec;
+	}
+  }
 
+  sub asPrefixList {
+	my ($self) = @_;
+
+	# XXX
+
+  }
+}
 
 package LL::Nil;
 use base 'LL::Object';
