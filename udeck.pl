@@ -47,6 +47,8 @@ sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
+sub isOperator {return 0}
+sub isUnescapedOperator {return 0}
 sub isEol {return 0}
 sub isExplicitEol {return 0}
 sub isParen {return 0}
@@ -123,7 +125,12 @@ use base 'LL::Stringlike';
 sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
-#sub storeStr {my ($self) = @_; return "${$self}"};
+sub isOperator {my ($self) = @_; return ${$self} =~ m{^ \W+ $}x }
+sub isUnescapedOperator {
+  my ($self) = @_; 
+  return ${$self} =~ m{^\\} && $self->isOperator();
+}
+
 
 
 package LL::List;
@@ -173,17 +180,37 @@ sub isInfixList {return 1}
 				   );
   my %precPerOp = ();
   {
-	my $prec = 0;
+	my $prec = 1;
 	for my $lev (reverse @precedence) {
 	  map { $precPerOp{$_} = $prec } @{$lev};
 	  ++$prec;
 	}
   }
 
+  sub _findPivot {
+	my ($self) = @_;
+	my $prec = 0;
+	my $index = -1;
+
+	for my $ndx (0 .. $#{$self} ) {
+	  my $entry = $self->[$ndx];
+	  next unless $entry->isUnescapedOperator();
+
+	  my $p = $precPerOp{${$entry}} || 0;
+	  if ($p < $prec) {
+# XXX
+	  }
+	}
+	
+  }
+
   sub asPrefixList {
 	my ($self) = @_;
 
-	# XXX
+	return LL::List->new(@{$self}) if scalar @{$self} <= 1;
+
+	
+
 
   }
 }
@@ -1235,7 +1262,7 @@ Notes:
 
 	-Tolerates [x], {x} and :[x] as proc argument lists.
 
-
+	-** is not right-associative.
 
 Todo:
 	-return values
