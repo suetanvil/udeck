@@ -50,9 +50,11 @@ sub isSymbol {return 0}
 sub isEol {return 0}
 sub isExplicitEol {return 0}
 sub isParen {return 0}
+sub isRoundParen {return 0}
 sub isLiteral {return 0}
 sub isEmptyList {return 0}
 sub isList {return 0}
+sub isInfixList {return 0}
 sub isQuote {return 0}
 sub isNil {return 0}
 sub isMacro {return 0}
@@ -150,6 +152,10 @@ sub inTypeEq {
   return 1;
 }
 
+
+package LL::InfixList;
+use base 'LL::List';
+sub isInfixList {return 1}
 
 
 package LL::Nil;
@@ -455,7 +461,7 @@ sub readExpr {
   };
 
   $tok->isParen() and do {
-	($tok->isSquareParen() && $tok->isOpen()) and do {
+	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
 	  return readSexp(${$tok});
 	};
 	
@@ -463,8 +469,8 @@ sub readExpr {
 	  return readLoL();
 	};
 
-	$tok->isRoundParen()
-	  and die "Round parens currently unsupported.\n";
+#	$tok->isRoundParen()
+#	  and die "Round parens currently unsupported.\n";
   };
 
   die "Unexpected token type: @{[ref($tok)]} (@{[$tok->storeStr()]}).\n";
@@ -490,7 +496,9 @@ sub readSexp {
 	push @result, $tok;
   }
 
-  return LL::List->new(\@result);
+  return $openChar eq '('			?
+	LL::InfixList->new(\@result)	:
+	LL::List->new(\@result);
 }
 
 
