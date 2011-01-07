@@ -187,31 +187,53 @@ sub isInfixList {return 1}
 	}
   }
 
-  sub _findPivot {
+  sub _findOuterOp {
 	my ($self) = @_;
-	my $prec = 0;
-	my $index = -1;
 
+	# Find the lowest-precedence operator in $self
+	my ($prec, $index, $op) =  (0, -1, '');
 	for my $ndx (0 .. $#{$self} ) {
 	  my $entry = $self->[$ndx];
 	  next unless $entry->isUnescapedOperator();
 
 	  my $p = $precPerOp{${$entry}} || 0;
 	  if ($p < $prec) {
-# XXX
+		$index = $ndx;
+		$prec = $p;
+		$op = ${$entry};
 	  }
 	}
 	
+	# '=' is right-associative, so if that's the op, we're done.
+	return $index if $op eq '=';
+
+	# Find the left-most use of the operator
+	for my $ndx (0 .. $#{$self}) {
+	  return $ndx if ${ $self->[$ndx] } eq $op;
+	}
+
+	die "_findOuterOp: WTF???";
   }
 
   sub asPrefixList {
 	my ($self) = @_;
 
-	return LL::List->new(@{$self}) if scalar @{$self} <= 1;
+	return LL::List->new([]) if scalar @{$self} == 0;
+	return $self->[0] if scalar @{$self} == 1;
 
-	
+	my $mfi = "Malformed infix expression: @{[$self->printStr()]}\n";
+	die $mfi
+	  unless scalar @{$self} % 2;
 
+	my $middle = $self->_findOuterOp();
+	die $mfi unless ($middle > 0 && $middle < $#{$self});
 
+	my $left = LL::InfixList->new([ @{$self}[0 .. ($middle - 1)] ]);
+	my $right = LL::InfixList->new([ @{$self}[($middle + 1) .. $#{$self}] ]);
+
+	return LL::List->new([$self->[$middle],
+						  $left->asPrefixList(),
+						  $right->asPrefixList()]);
   }
 }
 
@@ -519,7 +541,7 @@ sub readExpr {
 
   $tok->isParen() and do {
 	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
-	  return readSexp(${$tok});
+	  return readSexp(${$tok})->asPrefixList();
 	};
 	
 	($tok->isBrace() && $tok->isOpen()) and do {
@@ -1263,6 +1285,8 @@ Notes:
 	-Tolerates [x], {x} and :[x] as proc argument lists.
 
 	-** is not right-associative.
+
+	-I think I'll bow to starting arrays with index 0.
 
 Todo:
 	-return values
