@@ -212,7 +212,7 @@ sub isInfixList {return 1}
 	  return $ndx if ${ $self->[$ndx] } eq $op;
 	}
 
-	die "_findOuterOp: WTF???";
+	die "_findOuterOp: '$op', $prec WTF???";
   }
 
   sub asPrefixList {
@@ -648,7 +648,7 @@ sub readLoL {
 		$line =~ s/^;// and do {
 		  push @tokens, LL::Eol->new(';');
 		  next;
-		};
+		s/^( [a-zA-Z_]\w* | [!@\$\%^&*+-=?<>\/]+ )//x};
 
 		# Quote characters return an empty Quote object.  It's up to
 		# the caller to put them together with the following
@@ -675,7 +675,7 @@ sub readLoL {
 		  next;
 		};
 
-		$line =~ s/^( \w+ | [!@\$\%^&*+-=?<>\/]+ )//x and do {
+		$line =~ s/^( [a-zA-Z_]\w* | [-!@\$\%^&*+=?<>\/]+ )//x and do {
 		  push @tokens, LL::Symbol->new($1);
 		  next;
 		};
