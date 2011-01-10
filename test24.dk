@@ -1,0 +1,16 @@
+puts :()
+puts :(1)
+puts :(a)
+
+puts :(2+2)
+puts :(1+2+3)
+puts :(2+3*4)
+
+puts :(a = b = c + d)
+
+# To do: thoroughly test all levels of precision.
+
+
+
+
+

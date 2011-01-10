@@ -128,7 +128,7 @@ sub isSymbol {return 1};
 sub isOperator {my ($self) = @_; return ${$self} =~ m{^ \W+ $}x }
 sub isUnescapedOperator {
   my ($self) = @_; 
-  return ${$self} =~ m{^\\} && $self->isOperator();
+  return ${$self} !~ m{^\\} && $self->isOperator();
 }
 
 
@@ -191,9 +191,10 @@ sub isInfixList {return 1}
 	my ($self) = @_;
 
 	# Find the lowest-precedence operator in $self
-	my ($prec, $index, $op) =  (0, -1, '');
+	my ($prec, $index, $op) =  (999999, -1, '');
 	for my $ndx (0 .. $#{$self} ) {
 	  my $entry = $self->[$ndx];
+
 	  next unless $entry->isUnescapedOperator();
 
 	  my $p = $precPerOp{${$entry}} || 0;
@@ -204,6 +205,9 @@ sub isInfixList {return 1}
 	  }
 	}
 	
+	# Fail if we don't find a unescaped operator
+	return -1 unless $index > -1;
+
 	# '=' is right-associative, so if that's the op, we're done.
 	return $index if $op eq '=';
 
@@ -212,7 +216,7 @@ sub isInfixList {return 1}
 	  return $ndx if ${ $self->[$ndx] } eq $op;
 	}
 
-	die "_findOuterOp: '$op', $prec WTF???";
+	die "_findOuterOp: ('$op', $prec, $index) WTF???";
   }
 
   sub asPrefixList {
