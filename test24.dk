@@ -8,6 +8,9 @@ puts :(2+3*4)
 
 puts :(a = b = c + d)
 
+puts :(\++ = 42)
+puts :(\++ = (a < \%%%))
+
 # To do: thoroughly test all levels of precision.
 
 

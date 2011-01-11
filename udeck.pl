@@ -49,6 +49,7 @@ sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isOperator {return 0}
 sub isUnescapedOperator {return 0}
+sub isEscapedOperator {return 0}
 sub isEol {return 0}
 sub isExplicitEol {return 0}
 sub isParen {return 0}
@@ -126,11 +127,24 @@ sub checkSymbol {}
 sub isAtom {return 1}
 sub isSymbol {return 1};
 sub isOperator {my ($self) = @_; return ${$self} =~ m{^ \W+ $}x }
+sub isEscapedOperator {
+  my ($self) = @_;
+  return ($self->isOperator() && ${$self} =~ m{^\\});
+}
 sub isUnescapedOperator {
-  my ($self) = @_; 
+  my ($self) = @_;
   return ${$self} !~ m{^\\} && $self->isOperator();
 }
+sub asUnescapedOperator {
+  my ($self) = @_;
 
+  die "Called 'asUnescapedOperator' on a non-operator.\n"
+	unless $self->isOperator();
+
+  my $op = ${$self};
+  $op =~ s/^\\//;
+  return LL::Symbol->new($op);
+}
 
 
 package LL::List;
@@ -160,7 +174,21 @@ sub inTypeEq {
   return 1;
 }
 
+# Recursively replace all escaped operators in $self or its sublists
+# with their unescaped equivalents.
+sub unescapeAllOperators {
+  my ($self) = @_;
 
+  for my $entry (@{$self}) {
+	$entry = $entry->asUnescapedOperator()
+	  if $entry->isEscapedOperator();
+
+	$entry->unescapeAllOperators()
+	  if $entry->isList();
+  }
+
+  return undef;
+}
 
 package LL::InfixList;
 use base 'LL::List';
@@ -205,7 +233,7 @@ sub isInfixList {return 1}
 	  }
 	}
 	
-	# Fail if we don't find a unescaped operator
+	# Fail if we don't find an unescaped operator
 	return -1 unless $index > -1;
 
 	# '=' is right-associative, so if that's the op, we're done.
@@ -223,7 +251,13 @@ sub isInfixList {return 1}
 	my ($self) = @_;
 
 	return LL::List->new([]) if scalar @{$self} == 0;
-	return $self->[0] if scalar @{$self} == 1;
+
+	if (scalar @{$self} == 1) {
+	  my $retval = $self->[0];
+	  $retval = $retval->asUnescapedOperator()
+		if $retval->isEscapedOperator();
+	  return $retval;
+	}
 
 	my $mfi = "Malformed infix expression: @{[$self->printStr()]}\n";
 	die $mfi
@@ -235,9 +269,13 @@ sub isInfixList {return 1}
 	my $left = LL::InfixList->new([ @{$self}[0 .. ($middle - 1)] ]);
 	my $right = LL::InfixList->new([ @{$self}[($middle + 1) .. $#{$self}] ]);
 
-	return LL::List->new([$self->[$middle],
-						  $left->asPrefixList(),
-						  $right->asPrefixList()]);
+	my $result = LL::List->new([$self->[$middle],
+								$left->asPrefixList(),
+								$right->asPrefixList()]);
+
+	$result->unescapeAllOperators();
+
+	return $result;
   }
 }
 
@@ -679,7 +717,7 @@ sub readLoL {
 		  next;
 		};
 
-		$line =~ s/^( [a-zA-Z_]\w* | [-!@\$\%^&*+=?<>\/]+ )//x and do {
+		$line =~ s/^( [a-zA-Z_]\w* | \\? [-!@\$\%^&*+=?<>\/]+ )//x and do {
 		  push @tokens, LL::Symbol->new($1);
 		  next;
 		};
@@ -1293,10 +1331,15 @@ Notes:
 	-I think I'll bow to starting arrays with index 0.
 
 Todo:
-	-return values
+X	-return values
 	-implement a "compiler" to produce perl subs
 	-catch arg. count mismatches.
-	-consts
-	-equality, equivalence
+X	-consts
+X	-equality, equivalence
+
+	- '=' as alias for 'set'
+	- infix in LoLs.
+	- escaped operators
+	- procs should return nil by default.
 
 =cut
