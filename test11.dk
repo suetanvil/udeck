@@ -9,4 +9,7 @@ var x
 set x [foo]
 x
 
+var y
+val (y = [foo])
+y
 

@@ -1083,11 +1083,12 @@ sub macro_const {
   return LL::List->new(\@result);
 }
 
-
-sub macro_quoteSecond {
+# Handle the 'set' and '=' functions.
+sub macro_assign {
   my @result = @_;
-  $result[0] = LL::Symbol->new('_::' . $ {$result[0]} );
+  $result[0] = LL::Symbol->new('_::set');
 
+  # To do: handle list and object-field assignments as well
   my $sym = $result[1];
   $sym->checkSymbol();
   $result[1] = LL::Quote->new($sym);
@@ -1212,7 +1213,8 @@ sub initGlobals {
   macro 'var',	\&macro_var;
   macro 'const',\&macro_const;
   macro 'proc', \&macro_proc;
-  macro 'set',  \&macro_quoteSecond;
+  macro 'set',  \&macro_assign;
+  macro '=',    \&macro_assign;
   macro 'sub',  \&macro_subfn;
   macro 'if',   \&macro_iffn;
   macro 'while',\&macro_whilefn;
