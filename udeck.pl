@@ -190,6 +190,22 @@ sub unescapeAllOperators {
   return undef;
 }
 
+sub couldBeImpliedInfix {
+  my ($self) = @_;
+
+  return 0
+	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
+
+  return 0 if scalar @{$self} & 2 == 0;
+
+  for my $ndx (0 .. $#{$self}) {
+	return 0 if ($ndx % 2 == 0 || !$self->[$ndx]->isUnescapedOperator());
+  }
+
+  return 1;
+}
+
+
 package LL::InfixList;
 use base 'LL::List';
 sub isInfixList {return 1}
@@ -550,15 +566,21 @@ sub readLoLLine {
 	push @result, $item;
   }
 
+  # Create the result object
+  my $rlist = LL::List->new(\@result);
+
+  # See if this line could be treated as infix
+  $rlist = LL::InfixList->new(\@result) if $rlist->couldBeImpliedInfix();
+
   # Warn of the case where an explicit list is the only element of a
   # line because the programmer may have accidentally bracketted the
   # line.
-  if (scalar @result == 1 && $result[0]->isList()) {
+  if (scalar @{$rlist} == 1 && $rlist->[0]->isList()) {
 	dkwarn ("Entire LoL line is bracketed.  This may not be what",
 			"you want.");
   }
 
-  return LL::List->new(\@result);
+  return $rlist
 }
 
 
