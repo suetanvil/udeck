@@ -190,6 +190,7 @@ sub unescapeAllOperators {
   return undef;
 }
 
+# Assignment statements are turned infix
 sub couldBeImpliedInfix {
   my ($self) = @_;
 
@@ -197,8 +198,6 @@ sub couldBeImpliedInfix {
 
   return 0
 	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
-
-  return 0 if scalar @{$self} % 2 == 0;
 
   return 1;
 }

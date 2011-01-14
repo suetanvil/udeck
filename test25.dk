@@ -1,5 +1,6 @@
 
 puts {a = b = c}
+puts {a = 42; b = 11; }
 puts {a = 5 * (n+1)}
 puts {\+ = 42}
 puts {\= = \===}
