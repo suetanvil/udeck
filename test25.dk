@@ -1,0 +1,10 @@
+
+puts {a = b = c}
+puts {a = 5 * (n+1)}
+puts {\+ = 42}
+puts {\= = \===}
+puts {a + b + c}		# not a valid infix
+puts {for n = 1 to 500 by 5 {puts n}}	# Also not valid infix
+
+
+

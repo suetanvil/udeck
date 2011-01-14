@@ -193,14 +193,12 @@ sub unescapeAllOperators {
 sub couldBeImpliedInfix {
   my ($self) = @_;
 
+  return 0 if scalar @{$self} < 3;	
+
   return 0
 	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
 
-  return 0 if scalar @{$self} & 2 == 0;
-
-  for my $ndx (0 .. $#{$self}) {
-	return 0 if ($ndx % 2 == 0 || !$self->[$ndx]->isUnescapedOperator());
-  }
+  return 0 if scalar @{$self} % 2 == 0;
 
   return 1;
 }
@@ -570,7 +568,9 @@ sub readLoLLine {
   my $rlist = LL::List->new(\@result);
 
   # See if this line could be treated as infix
-  $rlist = LL::InfixList->new(\@result) if $rlist->couldBeImpliedInfix();
+  if ($rlist->couldBeImpliedInfix()) {
+	$rlist = LL::InfixList->new(\@result)->asPrefixList();
+  }
 
   # Warn of the case where an explicit list is the only element of a
   # line because the programmer may have accidentally bracketted the
