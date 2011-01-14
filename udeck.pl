@@ -77,6 +77,9 @@ sub equals {
 }
 sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 
+sub at {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
+sub atPut {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
+
 
 package LL::Number;
 use base 'LL::Object';
@@ -200,6 +203,12 @@ sub couldBeImpliedInfix {
 	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
 
   return 1;
+}
+
+sub at {
+  my ($self, $index) = @_;
+  $index->checkNumber();
+  return $self->[$index];
 }
 
 
@@ -1228,7 +1237,7 @@ sub initGlobals {
   prim2 '==',	sub { return $_[0]->equals($_[1]) };
   prim2 'list', sub { return LL::List->new(\@_) };
   prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
-
+  prim2 '@',	sub { my ($list, $index) = @_; return $list->at($index) };
 
   # Macros
   macro 'var',	\&macro_var;
@@ -1249,7 +1258,6 @@ sub builtin_println {
 
   return NIL;
 }
-
 sub builtin_set {
   my ($context, $name, $value) = @_;
 
@@ -1360,9 +1368,18 @@ X	-return values
 X	-consts
 X	-equality, equivalence
 
-	- '=' as alias for 'set'
-	- infix in LoLs.
-	- escaped operators
+
+X	- '=' as alias for 'set'
+X	- infix in LoLs.
+X	- escaped operators
 	- procs should return nil by default.
+	- list access via @, @= and set macro.
+		-need to update infix to handle it.
+		-foreach
+	- macros
+	- namespaces
+	- objects
+	- integers
+
 
 =cut
