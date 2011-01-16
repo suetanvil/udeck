@@ -1258,13 +1258,13 @@ sub initGlobals {
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',	sub { return boolObj($_[0] == $_[1])};
-  prim2 '==',	sub { return $_[0]->equals($_[1]) };
+  prim2 '===',  sub { return boolObj($_[0] == $_[1])};
+  prim2 '==',   sub { return $_[0]->equals($_[1]) };
   prim2 'list', sub { return LL::List->new(\@_) };
   prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
-  prim2 '@',	sub { my ($list, $index) = @_; return $list->at($index) };
-
-  prim2 'size',	sub { my ($l) = @_; return LL::Number->new($l->size()); };
+  prim2 '@',    sub { my ($l, $ndx) = @_; return $l->at($ndx) };
+  prim2 'atput',sub { my ($l, $ndx, $v) = @_; return $l->atput($ndx, $v) };
+  prim2 'size', sub { my ($l) = @_; return LL::Number->new($l->size()) };
 
   # Macros
   macro 'var',	\&macro_var;
