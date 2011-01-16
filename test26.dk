@@ -1,0 +1,30 @@
+
+var x;
+
+x = :[a b c d e]
+
+puts (x@0)
+puts (x@1)
+puts (x@2)
+puts (x@3)
+puts (x@4)
+
+puts "-----------------------"
+
+puts (x@3.6)
+
+puts "-----------------------"
+
+puts (x@-1)
+puts (x@-2)
+puts (x@-3)
+puts (x@-4)
+puts (x@-5)
+
+puts "-----------------------"
+
+puts [atput x 1 :xxx]
+puts x
+
+atput x 4 :asdf
+puts x

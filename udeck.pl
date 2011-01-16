@@ -1268,7 +1268,7 @@ sub initGlobals {
   prim2 'list', sub { return LL::List->new(\@_) };
   prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
   prim2 '@',    sub { my ($l, $ndx) = @_; return $l->at($ndx) };
-  prim2 'atput',sub { my ($l, $ndx, $v) = @_; return $l->atput($ndx, $v) };
+  prim2 'atput',sub { my ($l, $ndx, $v) = @_; return $l->atPut($ndx, $v) };
   prim2 'size', sub { my ($l) = @_; return LL::Number->new($l->size()) };
 
   # Macros
