@@ -47,6 +47,7 @@ sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
+sub isStringlike {0}
 sub isOperator {return 0}
 sub isUnescapedOperator {return 0}
 sub isEscapedOperator {return 0}
@@ -79,7 +80,7 @@ sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 
 sub at {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 sub atPut {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
-
+sub size {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 
 package LL::Number;
 use base 'LL::Object';
@@ -96,6 +97,7 @@ use base 'LL::Object';
 sub equals {my ($self, $other) = @_; 
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
+sub isStringlike {1}
 
 package LL::String;
 use base 'LL::Stringlike';
@@ -205,11 +207,34 @@ sub couldBeImpliedInfix {
   return 1;
 }
 
+
+sub _sanitizeIndex {
+  my ($self, $index) = @_;
+
+  $index->checkNumber();
+  die "Index out of range: ${$index}\n"
+	if (int(${$index}) > $#{$self} || int(${$index}) < -scalar(@{$self}));
+
+  return int(${$index});
+}
+
+sub size {
+  my ($self) = @_;
+  return scalar @{$self};
+}
+
 sub at {
   my ($self, $index) = @_;
-  $index->checkNumber();
-  return $self->[$index];
+  return $self->[$self->_sanitizeIndex($index)];
 }
+
+sub atPut {
+  my ($self, $index, $value) = @_;
+  $self->[$self->_sanitizeIndex($index)] = $value;
+
+  return $value;
+}
+
 
 
 package LL::InfixList;
@@ -1238,6 +1263,8 @@ sub initGlobals {
   prim2 'list', sub { return LL::List->new(\@_) };
   prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
   prim2 '@',	sub { my ($list, $index) = @_; return $list->at($index) };
+
+  prim2 'size',	sub { my ($l) = @_; return LL::Number->new($l->size()); };
 
   # Macros
   macro 'var',	\&macro_var;
