@@ -717,6 +717,11 @@ sub readLoL {
   }
 
   sub fillTokList {
+
+	# Regexp to match operators: may begin with '\'; may not end with
+	# '-' (to keep from interfering with trailing negative int).
+	my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]* [!@\$\%^&*+=?<>\/]}x;
+
 	while (!@tokens) {
 	  my $line = getLine();
 	  if (!defined($line)) {
@@ -755,13 +760,13 @@ sub readLoL {
 		  next;
 		};
 
-		$line =~ s/^(\d+)\.(\d+)(\W?)/$3/ and do {
+		$line =~ s/^(\-?\d+)\.(\d+)(\W?)/$3/ and do {
 		  $tok = "$1.$2" + 0;
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
 
-		$line =~ s/^(\d+)(\W?)/$2/ and do {
+		$line =~ s/^(\-?\d+)(\W?)/$2/ and do {
 		  $tok = $1 + 0;
 		  push @tokens, LL::Number->new($tok);
 		  next;
@@ -772,7 +777,7 @@ sub readLoL {
 		  next;
 		};
 
-		$line =~ s/^( [a-zA-Z_]\w* | \\? [-!@\$\%^&*+=?<>\/]+ )//x and do {
+		$line =~ s/^( [a-zA-Z_]\w* | ${OPER_REGEX} )//x and do {
 		  push @tokens, LL::Symbol->new($1);
 		  next;
 		};
