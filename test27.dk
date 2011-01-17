@@ -1,0 +1,6 @@
+
+var a
+a = [list 1 2 3 4 5]
+val (a@1 = 4)
+puts a
+

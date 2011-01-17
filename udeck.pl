@@ -1044,6 +1044,12 @@ sub prim2 ( $$ ) {
   $Globals->defset($name, LL::Function->new($function));
 }
 
+# Make $dest reference the same thing as $src
+sub alias {
+  my ($src, $dest) = @_;
+  $Globals->defset($dest, $Globals->lookup($src));
+}
+
 
 # ---------------------------------------------------------------------------
 
@@ -1148,10 +1154,22 @@ sub macro_assign {
   my @result = @_;
   $result[0] = LL::Symbol->new('_::set');
 
-  # To do: handle list and object-field assignments as well
-  my $sym = $result[1];
-  $sym->checkSymbol();
-  $result[1] = LL::Quote->new($sym);
+  my $target = $result[1];
+
+  if ($target->isSymbol()) {
+	# Case 1: simple assignment to variable
+	$result[1] = LL::Quote->new($target);
+  } elsif ($target->isList() && scalar @{$target} == 3 &&
+		   $target->[0]->isUnescapedOperator() &&
+		   ${$target->[0]} eq '@') {
+	# Case 2: List element assignment (eg: 'l@5 = 42')
+	@result = (LL::Symbol->new('_::atput'), @{$target}[1..2],
+			   @result[2..$#result]);
+  } else {
+	my $err = LL::List->new(\@_)->printStr();
+	die "Malformed assignment: $err\n";
+	# To do: handle list and object-field assignments as well
+  }
 
   return LL::List->new(\@result);
 }
@@ -1245,6 +1263,8 @@ sub initGlobals {
 				   ['_::set',	\&builtin_set],
 				   ['_::var',	\&builtin_var],
 				   ['_::const', \&builtin_const],
+				   ['_::atput', \&builtin_atput],
+				   ['atput',    \&builtin_atput],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -1263,13 +1283,13 @@ sub initGlobals {
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',  sub { return boolObj($_[0] == $_[1])};
-  prim2 '==',   sub { return $_[0]->equals($_[1]) };
-  prim2 'list', sub { return LL::List->new(\@_) };
-  prim2 'val',  sub { return NIL unless scalar @_; return $_[-1] };
-  prim2 '@',    sub { my ($l, $ndx) = @_; return $l->at($ndx) };
-  prim2 'atput',sub { my ($l, $ndx, $v) = @_; return $l->atPut($ndx, $v) };
-  prim2 'size', sub { my ($l) = @_; return LL::Number->new($l->size()) };
+  prim2 '===',      sub { return boolObj($_[0] == $_[1])};
+  prim2 '==',       sub { return $_[0]->equals($_[1]) };
+  prim2 'list',     sub { return LL::List->new(\@_) };
+  prim2 'val',      sub { return NIL unless scalar @_; return $_[-1] };
+  prim2 '@',        sub { my ($l, $ndx) = @_; return $l->at($ndx) };
+
+  prim2 'size',     sub { my ($l) = @_; return LL::Number->new($l->size()) };
 
   # Macros
   macro 'var',	\&macro_var;
@@ -1290,6 +1310,7 @@ sub builtin_println {
 
   return NIL;
 }
+
 sub builtin_set {
   my ($context, $name, $value) = @_;
 
@@ -1301,6 +1322,17 @@ sub builtin_set {
 
   return $value;
 }
+
+
+sub builtin_atput {
+  my ($l, $ndx, $v) = @_;
+
+  die "'atput' expects 3 arguments, got @{[scalar @_ - 1]}\n"
+	unless scalar @_ == 3;
+
+  return $l->atPut($ndx, $v);
+};
+
 
 sub builtin_var {
   my ($context, @names) = @_;
@@ -1408,10 +1440,11 @@ X	- escaped operators
 	- list access via @, @= and set macro.
 		-need to update infix to handle it.
 		-foreach
+		-multi-dimensional list access (e.g. 'a@b@c = 42')
 	- macros
 	- namespaces
 	- objects
 	- integers
-
+	- Shouldn't allow user-defined operators
 
 =cut
