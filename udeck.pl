@@ -199,12 +199,17 @@ sub unescapeAllOperators {
 sub couldBeImpliedInfix {
   my ($self) = @_;
 
+  # True if it takes the form <x> = <z> ...
   return 0 if scalar @{$self} < 3;	
+  return 1 if ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
 
-  return 0
-	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '=');
+  # True if it takes the form <x> @ <y> = <z> ...
+  return 0 if scalar @{$self} < 5;
+  return 1 if ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '@' &&
+			   $self->[3]->isUnescapedOperator() && ${$self->[3]} eq '=');
 
-  return 1;
+  # False otherwise
+  return 0;
 }
 
 
