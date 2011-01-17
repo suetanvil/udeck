@@ -724,8 +724,9 @@ sub readLoL {
   sub fillTokList {
 
 	# Regexp to match operators: may begin with '\'; may not end with
-	# '-' (to keep from interfering with trailing negative int).
-	my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]* [!@\$\%^&*+=?<>\/]}x;
+	# '-' (to keep from interfering with trailing negative int) except
+	# if it's the minus operator..
+	my $OPER_REGEX = qr{\\? (?: \- | [-!@\$\%^&*+=?<>\/]* [!@\$\%^&*+=?<>\/])}x;
 
 	while (!@tokens) {
 	  my $line = getLine();

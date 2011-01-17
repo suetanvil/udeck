@@ -1,0 +1,19 @@
+
+puts {a@b = 34}
+
+var x y
+x = [list 1 2 3 4 5]
+y = 3
+
+x@y = 42
+puts x
+
+x@-4 = 999
+puts x
+
+x@(y+1) = 888;
+puts x
+
+([[sub {x}]])@(y-1) = 777
+puts x
+
