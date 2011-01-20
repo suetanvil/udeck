@@ -725,7 +725,7 @@ sub readLoL {
 
 	# Regexp to match operators: may begin with '\'; may not end with
 	# '-' (to keep from interfering with trailing negative int) except
-	# if it's the minus operator..
+	# if it's the minus operator.
 	my $OPER_REGEX = qr{\\? (?: \- | [-!@\$\%^&*+=?<>\/]* [!@\$\%^&*+=?<>\/])}x;
 
 	while (!@tokens) {
@@ -1452,5 +1452,11 @@ X	- escaped operators
 	- objects
 	- integers
 	- Shouldn't allow user-defined operators
+
+	- x-1 vs. x -1 -- the former is binary; the latter unary.
+		- "x - 1", "x- 1" always binary because of the space
+		- "x-1" always binary.
+		- "x+-1" always binary because no operator can end with '-' except for '-'.
+		- "x -1" unary
 
 =cut
