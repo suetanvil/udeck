@@ -14,7 +14,6 @@ puts x
 x@(y + 1) = 888;
 puts x
 
-([[sub {x}]])@(y - 1) = 777
-#x@(y - 1) = 777
+([[sub {val x}]])@(y - 1) = 777
 puts x
 

@@ -293,7 +293,8 @@ sub isInfixList {return 1}
 
 	# Find the left-most use of the operator
 	for my $ndx (0 .. $#{$self}) {
-	  return $ndx if ${ $self->[$ndx] } eq $op;
+	  my $elem = $self->[$ndx];
+	  return $ndx if ($elem->isSymbol() && ${ $elem } eq $op);
 	}
 
 	die "_findOuterOp: ('$op', $prec, $index) WTF???";
