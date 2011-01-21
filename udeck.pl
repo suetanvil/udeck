@@ -726,7 +726,7 @@ sub readLoL {
 	# Regexp to match operators: may begin with '\'; may not end with
 	# '-' (to keep from interfering with trailing negative int) except
 	# if it's the minus operator.
-	my $OPER_REGEX = qr{\\? (?: \- | [-!@\$\%^&*+=?<>\/]* [!@\$\%^&*+=?<>\/])}x;
+	my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]+}x;
 
 	while (!@tokens) {
 	  my $line = getLine();
@@ -756,7 +756,7 @@ sub readLoL {
 		$line =~ s/^;// and do {
 		  push @tokens, LL::Eol->new(';');
 		  next;
-		s/^( [a-zA-Z_]\w* | [!@\$\%^&*+-=?<>\/]+ )//x};
+		};
 
 		# Quote characters return an empty Quote object.  It's up to
 		# the caller to put them together with the following
@@ -1453,10 +1453,6 @@ X	- escaped operators
 	- integers
 	- Shouldn't allow user-defined operators
 
-	- x-1 vs. x -1 -- the former is binary; the latter unary.
-		- "x - 1", "x- 1" always binary because of the space
-		- "x-1" always binary.
-		- "x+-1" always binary because no operator can end with '-' except for '-'.
-		- "x -1" unary
+	- Unary minus: space (e.g. "- 1") -> binary, no space (e.g. "-1") -> unary
 
 =cut
