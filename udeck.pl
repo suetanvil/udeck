@@ -982,6 +982,7 @@ sub compile {
 	}
 	
 	my $lastexpr;
+
 	my $retname =
 	  ($mode eq 'proc') ? 'return' :
 	  ($mode eq 'sub') ? '_lreturn' : '';
@@ -1005,6 +1006,10 @@ sub compile {
 	if ($@ && $@ ne "$context\n") {
 	  die $@;
 	}
+
+	# Procs return NIL by default.  Only explicit returns return a
+	# value.
+	return NIL if ($mode eq 'proc' && !$@);
 
 	return $lastexpr;
   };
