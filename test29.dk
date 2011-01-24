@@ -5,6 +5,8 @@ puts a b c
 var {d = 5; e g h; f = 11}
 puts d e f g h
 
+var i = 42
+puts i
 
 
 # var a = 5

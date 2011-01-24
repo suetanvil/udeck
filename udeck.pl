@@ -212,6 +212,13 @@ sub couldBeImpliedInfix {
   return 0;
 }
 
+sub parsedAsInfix {
+  my ($self) = @_;
+
+  return LL::InfixList->new($self)->asPrefixList();
+}
+
+
 
 sub _sanitizeIndex {
   my ($self, $index) = @_;
@@ -1125,10 +1132,20 @@ sub macro_proc {
 sub launder_varconst {
   my ($isConst, @macroArgs) = @_;
 
-  my $argList = shift @macroArgs;
-  my @args = @{ $argList->value() };
+  my @args;
+  if (scalar @macroArgs == 1) {
+	my $argList = shift @macroArgs;
+	$argList->checkLoL();
+	@args = @{ $argList->value() };
+  } else {
+	my $argList = LL::List->new(\@macroArgs);
 
-  die "WTF?" if scalar @macroArgs;
+	if ($argList->couldBeImpliedInfix()) {
+	  $argList = $argList->parsedAsInfix();
+	}
+
+	push @args, $argList;
+  }
 
   my @result = ();
   for my $decl (@args) {
@@ -1143,10 +1160,11 @@ sub launder_varconst {
 	}
 
 	for my $word (@{ $decl }) {
-	  $word->checkSymbol();
+	  $word->checkSymbol(" (@{[$word->printStr()]})");
+	  die "Const '${$word}' declared without a value.\n" if $isConst;
+
 	  push @result, LL::Quote->new($word), NIL;
 	}
-
   }
 
   return \@result;
