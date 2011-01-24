@@ -1170,62 +1170,12 @@ sub launder_varconst {
   return \@result;
 }
 
-=pod
-sub launder_varconst {
-  my ($isConst, @args) = @_;
-
-  # If we don't get a LoL of initializations, wrap @args
-  if (scalar @args != 1 || $args[0]->isList()) {
-	@args = ( LL::List->new([@args]) );
-  }
-
-  my @result = ();
-
-  while (@args) {
-	my $inner = shift @args;
-
-	die "Malformed var arguments\n" unless $inner->isList();
-
-	my @innerArgs = @{$inner};
-	while (@innerArgs) {
-	  my $sym = shift @innerArgs;
-
-	  die "Argument for 'var' '@{[$sym->storeStr()]}' is not a symbol.\n"
-		unless $sym->isSymbol();
-
-	  # If it's a single variable, set it to NIL and go on to the next one.
-	  my $nextSym = shift @innerArgs;
-	  if (!$nextSym->isSymbol() || ${$nextSym} ne '=') {
-		unshift @innerArgs, $nextSym;
-
-		die "Constant '${$sym}' declared without a value.\n"
-		  if $isConst;
-
-		push @result, LL::Quote->new($sym), NIL;
-		next;
-	  }
-
-	  # Otherwise, it's a normal "name = value" expression
-	  my $value = shift @innerArgs;
-	  push @result, LL::Quote->new($sym), $value;
-
-	  # ...which needs to end the list.
-	  die "Extra text in variable declaration: '... ".
-		"@{[LL::List->new(@innerArgs)->printStr()]}'\n"
-		  if scalar @innerArgs;
-	}
-  }
-
-  return \@result;
-}
-=cut
-
 
 # Macro to handle 'var' and 'const'
 sub macro_varconst {
   my ($name, @args) = @_;
 
-  my $isConst = ($name eq 'const');
+  my $isConst = (${$name} eq 'const');
 
   my $result = launder_varconst($isConst, @args);
   unshift @{ $result }, LL::Symbol->new($isConst ? '_::const' : '_::var');

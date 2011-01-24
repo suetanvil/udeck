@@ -8,14 +8,12 @@ puts d e f g h
 var i = 42
 puts i
 
+var j k l
+puts j k l
 
-# var a = 5
-# var {b = 52; c; d = 11}
-# var e f g
+const aa = 42
+puts aa
 
-# puts a b c d e f g
+const {bb = "foo"; cc = "bar"; dd = 44.7}
+puts bb cc dd
 
-# const g = 5
-# const {h = 42; i = 11; j = 1}
-
-# puts g h i j

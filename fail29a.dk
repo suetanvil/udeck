@@ -1,0 +1,4 @@
+# consts without values
+
+const a b c
+puts a b c
