@@ -1121,6 +1121,26 @@ sub macro_proc {
   return LL::List->new(\@result);
 }
 
+
+sub launder_varconst {
+  my ($isConst, @args) = @_;
+
+  # If we get a LoL of initializations
+  if (scalar @args == 1 && $args[0]->isList()) {
+	@args = @{ $args[0] };
+  }
+
+  my @result = ();
+
+  while (@args) {
+	
+  }
+
+
+
+}
+
+
 sub macro_var {
   my @result = (LL::Symbol->new('_::var'));
 
@@ -1448,16 +1468,18 @@ X	-equality, equivalence
 X	- '=' as alias for 'set'
 X	- infix in LoLs.
 X	- escaped operators
-	- procs should return nil by default.
-	- list access via @, @= and set macro.
-		-need to update infix to handle it.
+X	- procs should return nil by default.
+X	- list access via @, @= and set macro.
+X		-need to update infix to handle it.
 		-foreach
 		-multi-dimensional list access (e.g. 'a@b@c = 42')
 	- macros
 	- namespaces
 	- objects
 	- integers
-	- Shouldn't allow user-defined operators
+	- var and const should have consistent grammer
+
+	- What to do about user-defined operators?
 
 	- Unary minus: space (e.g. "- 1") -> binary, no space (e.g. "-1") -> unary
 
