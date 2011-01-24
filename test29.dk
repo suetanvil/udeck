@@ -1,0 +1,19 @@
+
+var {a = 42; b = 5; c = 11}
+puts a b c
+
+var {d = 5; e g h; f = 11}
+puts d e f g h
+
+
+
+# var a = 5
+# var {b = 52; c; d = 11}
+# var e f g
+
+# puts a b c d e f g
+
+# const g = 5
+# const {h = 42; i = 11; j = 1}
+
+# puts g h i j

@@ -1123,63 +1123,98 @@ sub macro_proc {
 
 
 sub launder_varconst {
+  my ($isConst, @macroArgs) = @_;
+
+  my $argList = shift @macroArgs;
+  my @args = @{ $argList->value() };
+
+  die "WTF?" if scalar @macroArgs;
+
+  my @result = ();
+  for my $decl (@args) {
+	$decl->checkList();
+	next unless scalar @{$decl};
+
+	$decl->[0]->checkSymbol(" instead of '=' in var or const declaration.");
+
+	if (${ $decl->[0] } eq '=') {
+	  push @result, LL::Quote->new($decl->[1]), $decl->[2];
+	  next;
+	}
+
+	for my $word (@{ $decl }) {
+	  $word->checkSymbol();
+	  push @result, LL::Quote->new($word), NIL;
+	}
+
+  }
+
+  return \@result;
+}
+
+=pod
+sub launder_varconst {
   my ($isConst, @args) = @_;
 
-  # If we get a LoL of initializations
-  if (scalar @args == 1 && $args[0]->isList()) {
-	@args = @{ $args[0] };
+  # If we don't get a LoL of initializations, wrap @args
+  if (scalar @args != 1 || $args[0]->isList()) {
+	@args = ( LL::List->new([@args]) );
   }
 
   my @result = ();
 
   while (@args) {
-	
+	my $inner = shift @args;
+
+	die "Malformed var arguments\n" unless $inner->isList();
+
+	my @innerArgs = @{$inner};
+	while (@innerArgs) {
+	  my $sym = shift @innerArgs;
+
+	  die "Argument for 'var' '@{[$sym->storeStr()]}' is not a symbol.\n"
+		unless $sym->isSymbol();
+
+	  # If it's a single variable, set it to NIL and go on to the next one.
+	  my $nextSym = shift @innerArgs;
+	  if (!$nextSym->isSymbol() || ${$nextSym} ne '=') {
+		unshift @innerArgs, $nextSym;
+
+		die "Constant '${$sym}' declared without a value.\n"
+		  if $isConst;
+
+		push @result, LL::Quote->new($sym), NIL;
+		next;
+	  }
+
+	  # Otherwise, it's a normal "name = value" expression
+	  my $value = shift @innerArgs;
+	  push @result, LL::Quote->new($sym), $value;
+
+	  # ...which needs to end the list.
+	  die "Extra text in variable declaration: '... ".
+		"@{[LL::List->new(@innerArgs)->printStr()]}'\n"
+		  if scalar @innerArgs;
+	}
   }
 
+  return \@result;
+}
+=cut
 
 
+# Macro to handle 'var' and 'const'
+sub macro_varconst {
+  my ($name, @args) = @_;
+
+  my $isConst = ($name eq 'const');
+
+  my $result = launder_varconst($isConst, @args);
+  unshift @{ $result }, LL::Symbol->new($isConst ? '_::const' : '_::var');
+
+  return LL::List->new($result);
 }
 
-
-sub macro_var {
-  my @result = (LL::Symbol->new('_::var'));
-
-  shift;
-  for my $sym (@_) {
-	die "Argument for 'var' '@{[$sym->storeStr()]}' is not a symbol.\n"
-	  unless $sym->isSymbol();
-
-	push @result, LL::Quote->new($sym);
-  }
-  return LL::List->new(\@result);
-}
-
-sub macro_const {
-  my @result = (LL::Symbol->new('_::const'));
-
-  shift @_;	# Drop the word 'const'
-
-  my $name = shift @_;
-  $name && $name->isSymbol()
-	or die "Missing or invalid name for 'const'.";
-
-  my $val = shift @_;
-
-  # If the second word is '=', drop it and fetch the third.
-  if ($val and $val->isSymbol() and ${$val} eq '=') {
-	$val = shift @_;
-  }
-
-  die "Value missing in 'const' declaration.\n" unless $val;
-
-  die "Too many arguments to 'const'.\n"
-	if scalar @_;
-
-  push @result, LL::Quote->new($name);
-  push @result, $val;
-
-  return LL::List->new(\@result);
-}
 
 # Handle the 'set' and '=' functions.
 sub macro_assign {
@@ -1324,8 +1359,8 @@ sub initGlobals {
   prim2 'size',     sub { my ($l) = @_; return LL::Number->new($l->size()) };
 
   # Macros
-  macro 'var',	\&macro_var;
-  macro 'const',\&macro_const;
+  macro 'var',	\&macro_varconst;
+  macro 'const',\&macro_varconst;
   macro 'proc', \&macro_proc;
   macro 'set',  \&macro_assign;
   macro '=',    \&macro_assign;
@@ -1367,21 +1402,29 @@ sub builtin_atput {
 
 
 sub builtin_var {
-  my ($context, @names) = @_;
+  my ($context, @argPairs) = @_;
 
-  for my $name (@names) {
-	$name->checkSymbol(" in var argument.");
-	$context->defset(${$name}, NIL);
+  while (@argPairs) {
+	my $name = shift @argPairs;
+	my $value = shift @argPairs;
+
+	$name->checkSymbol(" in 'var' argument.");
+	$context->defset(${$name}, $value);
   }
 
   return NIL;
 }
 
 sub builtin_const {
-  my ($context, $name, $value) = @_;
+  my ($context, @argPairs) = @_;
 
-  $name->checkSymbol(" in const argument.");
-  $context->defsetconst(${$name}, $value);
+  while (@argPairs) {
+	my $name = shift @argPairs;
+	my $value = shift @argPairs;
+
+	$name->checkSymbol(" in 'const' argument.");
+	$context->defsetconst(${$name}, $value);
+  }
 
   return NIL;
 }
@@ -1478,6 +1521,11 @@ X		-need to update infix to handle it.
 	- objects
 	- integers
 	- var and const should have consistent grammer
+		-3 cases:
+			a) <name> = <value>
+			b) <name> <name> ...
+			c) { <a) or b)> ; ...}
+		-output: _::var :<name> <value> ...
 
 	- What to do about user-defined operators?
 
