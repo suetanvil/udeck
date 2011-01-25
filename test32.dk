@@ -1,0 +1,5 @@
+
+# Test various cases of single-quote strings
+
+# Empty strings
+puts "[" '' '''' '''''' "]"

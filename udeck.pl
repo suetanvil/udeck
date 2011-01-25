@@ -785,6 +785,13 @@ sub readLoL {
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
+
+		# Empty single-quoted string is a special case, since there
+		# needs to be an even number of quotes.
+		$line =~ s/^(\'\')+// and do {
+		  push @tokens, LL::String->new("");
+		  next;
+		};
 		
 		$line =~ /^"/ and do {
 		  my $string;
