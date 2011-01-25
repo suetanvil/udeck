@@ -285,7 +285,7 @@ sub isInfixList {return 1}
 	  next unless $entry->isUnescapedOperator();
 
 	  my $p = $precPerOp{${$entry}} || 0;
-	  if ($p < $prec) {
+	  if ($p <= $prec) {
 		$index = $ndx;
 		$prec = $p;
 		$op = ${$entry};
@@ -296,9 +296,9 @@ sub isInfixList {return 1}
 	return -1 unless $index > -1;
 
 	# '=' is right-associative, so if that's the op, we're done.
-	return $index if $op eq '=';
+	return $index unless ($op eq '=');
 
-	# Find the left-most use of the operator
+	# Find the right-most use of the operator
 	for my $ndx (0 .. $#{$self}) {
 	  my $elem = $self->[$ndx];
 	  return $ndx if ($elem->isSymbol() && ${ $elem } eq $op);
@@ -1484,16 +1484,17 @@ X	- list access via @, @= and set macro.
 X		-need to update infix to handle it.
 		-foreach
 		-multi-dimensional list access (e.g. 'a@b@c = 42')
+			-read works
 	- macros
 	- namespaces
 	- objects
 	- integers
-	- var and const should have consistent grammer
-		-3 cases:
-			a) <name> = <value>
-			b) <name> <name> ...
-			c) { <a) or b)> ; ...}
-		-output: _::var :<name> <value> ...
+X	- var and const should have consistent grammer
+X		-3 cases:
+X			a) <name> = <value>
+X			b) <name> <name> ...
+X			c) { <a) or b)> ; ...}
+X		-output: _::var :<name> <value> ...
 
 	- What to do about user-defined operators?
 
