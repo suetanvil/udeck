@@ -786,7 +786,7 @@ sub readLoL {
 		  next;
 		};
 		
-		$line =~ s/^\"([^\"]+)\"// and do {
+		$line =~ s{^ \" ([^\"] | \\ " )* \" }{}x and do {
 		  push @tokens, LL::String->new($1);
 		  next;
 		};
@@ -807,6 +807,13 @@ sub readLoL {
 	  push @tokens, LL::Eol->new("\n");
 	}
   }
+
+  sub _readString {
+	my ($delim, $expand, $line) = @_;
+
+	# xxx
+  }
+
 }
 
 
@@ -1468,6 +1475,8 @@ Notes:
 
 	-I think I'll bow to starting arrays with index 0.
 
+	- Unary minus: space (e.g. "- 1") -> binary, no space (e.g. "-1") -> unary
+
 Todo:
 X	-return values
 	-implement a "compiler" to produce perl subs
@@ -1483,12 +1492,15 @@ X	- procs should return nil by default.
 X	- list access via @, @= and set macro.
 X		-need to update infix to handle it.
 		-foreach
-		-multi-dimensional list access (e.g. 'a@b@c = 42')
-			-read works
+X		-multi-dimensional list access (e.g. 'a@b@c = 42')
+
 	- macros
 	- namespaces
 	- objects
 	- integers
+	- byte arrays
+	- single-quoted strings
+	- string interpolation
 X	- var and const should have consistent grammer
 X		-3 cases:
 X			a) <name> = <value>
@@ -1498,6 +1510,5 @@ X		-output: _::var :<name> <value> ...
 
 	- What to do about user-defined operators?
 
-	- Unary minus: space (e.g. "- 1") -> binary, no space (e.g. "-1") -> unary
 
 =cut
