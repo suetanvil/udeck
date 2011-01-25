@@ -829,6 +829,16 @@ sub readLoL {
 
 	while (1) {
 
+	  if ($line eq '') {
+		$result .= "\n";
+
+		$line = getLine();
+		die "Reached end-of-file inside a string constant.\n"
+		  unless defined($line);
+
+		chomp $line;
+	  }
+
 	  my $char = substr($line, 0, 1);
 	  $line = substr($line, 1);
 

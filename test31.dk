@@ -4,3 +4,8 @@ puts "\a\a\a\f"
 puts "Hello, world!"
 puts "\tHello, world!\nD00D!"
 puts "xxxx\ryy"
+
+puts "Hello
+Newline\n
+World!"
+
