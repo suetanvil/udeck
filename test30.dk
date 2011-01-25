@@ -1,0 +1,7 @@
+
+
+puts :(a+b+c+d)
+
+puts :(a@b@c)
+
+puts :(a = b = foo + c * 54 + 6)
