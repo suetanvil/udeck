@@ -1,0 +1,6 @@
+
+# Test various forms of double quote
+puts "\a\a\a\f"
+puts "Hello, world!"
+puts "\tHello, world!\nD00D!"
+puts "xxxx\ryy"

@@ -786,8 +786,10 @@ sub readLoL {
 		  next;
 		};
 		
-		$line =~ s{^ \" ([^\"] | \\ " )* \" }{}x and do {
-		  push @tokens, LL::String->new($1);
+		$line =~ /^"/ and do {
+		  my $string;
+		  ($line, $string) = _readDoubleQuoteString($line);
+		  push @tokens, LL::String->new($string);
 		  next;
 		};
 
@@ -808,10 +810,44 @@ sub readLoL {
 	}
   }
 
-  sub _readString {
-	my ($delim, $expand, $line) = @_;
 
-	# xxx
+  my $escapes;
+  sub _readDoubleQuoteString {
+	my ($line) = @_;
+	
+	$escapes = {n => "\n",
+				r => "\r",
+				f => "\f",
+				a => "\a",
+				t => "\t"}
+	  unless $escapes;
+
+	die "WTF????" unless $line =~ /^\"/;
+	$line = substr($line, 1);
+
+	my $result = "";
+
+	while (1) {
+
+	  my $char = substr($line, 0, 1);
+	  $line = substr($line, 1);
+
+	  if ($char eq '\\') {
+		my $nc = substr($line, 0, 1);
+		$line = substr ($line, 1);
+
+		defined ($escapes->{$nc}) and do {
+		  $result .= $escapes->{$nc};
+		  next;
+		};
+
+		$result .= $nc;
+	  } elsif ($char eq '"') {
+		return ($line, $result);
+	  } else {
+		$result .= $char;
+	  }
+	}
   }
 
 }
