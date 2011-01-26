@@ -1,5 +1,18 @@
-
 # Test various cases of single-quote strings
 
 # Empty strings
 puts "[" '' '''' '''''' "]"
+puts '''Hello, 'World!' '''
+puts '''Hello, 'World!''''
+puts '''Hello, 'World!''''''
+
+puts '''Hello, ''
+' World.'''
+
+puts '''''''''Hello, world!  '''
+more quotes
+and more
+and more still!
+''''''''''''
+
+

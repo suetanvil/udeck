@@ -788,7 +788,7 @@ sub readLoL {
 
 		# Empty single-quoted string is a special case, since there
 		# needs to be an even number of quotes.
-		$line =~ s/^(\'\')+// and do {
+		$line =~ s/^(\'\')+([^'])/$2/ and do {
 		  push @tokens, LL::String->new("");
 		  next;
 		};
@@ -796,6 +796,13 @@ sub readLoL {
 		$line =~ /^"/ and do {
 		  my $string;
 		  ($line, $string) = _readDoubleQuoteString($line);
+		  push @tokens, LL::String->new($string);
+		  next;
+		};
+
+		$line =~ /^'/ and do {
+		  my $string;
+		  ($line, $string) = _readSingleQuoteString($line);
 		  push @tokens, LL::String->new($string);
 		  next;
 		};
@@ -861,6 +868,55 @@ sub readLoL {
 		$result .= $nc;
 	  } elsif ($char eq '"') {
 		return ($line, $result);
+	  } else {
+		$result .= $char;
+	  }
+	}
+  }
+
+
+  sub _readSingleQuoteString {
+	my ($line) = @_;
+
+	$line =~ s/^('+)//
+	  or die "WTF???\n";
+	my $delimCount = length($1);
+
+	my $result = '';
+	while (1) {
+
+	  if ($line eq '') {
+		$line = getLine();
+		die "Reached end-of-file inside a string constant.\n"
+		  unless defined($line);
+
+		chomp $line;
+
+		$line = "\n" . $line;
+	  }
+
+	  my $char = substr($line, 0, 1);
+	  $line = substr($line, 1);
+
+	  if ($char eq q{'}) {
+		my $quotesFound = 1;
+		
+		while (1) {
+		  $char = substr($line, 0, 1);
+		  last unless $char eq q{'};
+
+		  $line = substr($line, 1);
+
+		  ++$quotesFound;
+		}
+		
+		if ($quotesFound < $delimCount) {
+		  $result .= q{'} x $quotesFound;
+		} else {
+		  $result .= q{'} x ($quotesFound - $delimCount);
+		  return ($line, $result);
+		}
+
 	  } else {
 		$result .= $char;
 	  }
@@ -1552,8 +1608,17 @@ X		-multi-dimensional list access (e.g. 'a@b@c = 42')
 	- objects
 	- integers
 	- byte arrays
+
 	- single-quoted strings
+		-consider '''foo''''': should only the last 3 quotes be the delimiter with
+		 the rest being part of the string?  YES!  If possible.
+
+		-"foo $a [b 1]" should be shorthand for: [string "foo " [a->printStr] [[b 1]->printStr] ]
+
+
 	- string interpolation
+X		-\[nrfat] now works
+
 X	- var and const should have consistent grammer
 X		-3 cases:
 X			a) <name> = <value>
