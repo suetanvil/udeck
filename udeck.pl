@@ -95,7 +95,7 @@ sub inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
 
 package LL::Stringlike;
 use base 'LL::Object';
-sub equals {my ($self, $other) = @_; 
+sub equals {my ($self, $other) = @_;
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
 sub isStringlike {1}
@@ -138,6 +138,18 @@ sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {my ($self) = @_; return "\"${$self}\""};
+
+
+
+package LL::ByteArray;
+use base 'LL::Stringlike';
+sub isAtom {return 1}
+sub isTrue {my ($self) = @_; return ${$self} ne ''}
+sub storeStr {
+  my ($self) = @_;
+  my $body = join (" ", map { sprintf '%2x ', ord($_) } split(//, ${$self}) );
+  return "[byteArray $body]";
+}
 
 
 package LL::Symbol;
