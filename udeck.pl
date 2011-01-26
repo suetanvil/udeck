@@ -58,6 +58,7 @@ sub isRoundParen {return 0}
 sub isLiteral {return 0}
 sub isEmptyList {return 0}
 sub isList {return 0}
+sub isByteArray {return 0}
 sub isInfixList {return 0}
 sub isQuote {return 0}
 sub isNil {return 0}
@@ -98,6 +99,37 @@ sub equals {my ($self, $other) = @_;
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
 sub isStringlike {1}
+
+sub _sanitizeIndex {
+  my ($self, $index) = @_;
+
+  $index->checkNumber();
+  die "Index out of range: ${$index}\n"
+	if (int(${$index}) > length (${$self}) - 1 ||
+		int(${$index}) < -length(${$self}) );
+
+  return int(${$index});
+}
+
+sub size {my ($self) = @_; return length(${$self}) }
+sub at {
+  my ($self, $index) = @_;
+  return LL::String->new( substr(${$self}, $self->_sanitizeIndex($index), 1) );
+}
+
+sub atPut {
+  my ($self, $index, $value) = @_;
+
+  $value->checkString();
+  die "Attempted to store a multi-character string inside another string.\n"
+	if length(${$value}) != 1;
+
+  $index = $self->_sanitizeIndex($index);
+  substr(${$self}, $index, 1) = ${$value};
+
+  return $value;
+}
+
 
 package LL::String;
 use base 'LL::Stringlike';
@@ -150,6 +182,7 @@ sub asUnescapedOperator {
   $op =~ s/^\\//;
   return LL::Symbol->new($op);
 }
+sub atPut {die "Attempted to alter a symbol.\n"}
 
 
 package LL::List;
@@ -1608,10 +1641,11 @@ X		-multi-dimensional list access (e.g. 'a@b@c = 42')
 	- objects
 	- integers
 	- byte arrays
+X	- strings should have at and atput
 
-	- single-quoted strings
-		-consider '''foo''''': should only the last 3 quotes be the delimiter with
-		 the rest being part of the string?  YES!  If possible.
+X	- single-quoted strings
+X		-consider '''foo''''': should only the last 3 quotes be the delimiter with
+X		 the rest being part of the string?  YES!  If possible.
 
 		-"foo $a [b 1]" should be shorthand for: [string "foo " [a->printStr] [[b 1]->printStr] ]
 

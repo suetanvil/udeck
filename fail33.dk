@@ -1,0 +1,5 @@
+
+# Ensure that you can't alter a symbol
+
+var a = :abcde
+a@3 = 'x'

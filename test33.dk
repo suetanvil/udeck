@@ -1,0 +1,17 @@
+# Test access to individual characters in a string
+
+puts ("abcde"@1)
+
+var a = "abcde"
+puts (a@0) (a@4) (a@ -1) (a@ -5)
+
+a = :abcde
+puts (a@0) (a@4) (a@ -1) (a@ -5)
+
+a = "abcde"
+a@4 = 'x'
+puts a
+
+a@0 = '@'
+puts a
+
