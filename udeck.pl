@@ -40,6 +40,7 @@ sub checkType {
 }
 
 sub checkNumber {die "Expected number, got @{[ref(shift)]}@_\n"}
+sub checkByte   {die "Expected integer from 0 to 255, got @{[ref(shift)]}@_\n"}
 sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
 sub checkList   {die "Expected list, got @{[ref(shift)]}@_\n"}
 sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
@@ -86,6 +87,14 @@ sub size {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 package LL::Number;
 use base 'LL::Object';
 sub checkNumber {}
+sub checkByte {
+  my ($self) = @_;
+  my $val = ${$self};
+
+  $self->SUPER::checkNumber()
+	unless ( $val >= 0 && $val <= 255 && $val eq int($val) );
+}
+
 sub isTrue {my ($self) = @_; !! ${$self} }
 sub isLiteral {return 1}
 sub isNumber {return 1}
@@ -143,6 +152,29 @@ sub storeStr {my ($self) = @_; return "\"${$self}\""};
 
 package LL::ByteArray;
 use base 'LL::Stringlike';
+
+sub new {
+  my ($class, @bytes) = @_;
+
+  for my $byte (@bytes) {
+	$byte->checkByte();
+  }
+
+  my $contents = join("", map { chr(${$_}) } @bytes);
+  my $self = \$contents;
+
+  return bless $self, $class;
+}
+
+sub newSized {
+  my ($class, $size) = @_;
+
+  my $contents = "\0" x $size;
+  my $self = \$contents;
+
+  return bless $self, $class;
+}
+
 sub isAtom {return 1}
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {
@@ -150,6 +182,24 @@ sub storeStr {
   my $body = join (" ", map { sprintf '%2x ', ord($_) } split(//, ${$self}) );
   return "[byteArray $body]";
 }
+
+sub at {
+  my ($self, $index) = @_;
+
+  my $char = substr(${$self}, $self->_sanitizeIndex($index), 1);
+  return LL::Number->new(ord($char));
+}
+
+sub atPut {
+  my ($self, $index, $value) = @_;
+
+  $value->checkByte();
+  $index = $self->_sanitizeIndex($index);
+  substr(${$self}, $index, 1) = chr(${$value});
+
+  return $value;
+}
+
 
 
 package LL::Symbol;
@@ -1479,13 +1529,20 @@ sub initGlobals {
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',      sub { return boolObj($_[0] == $_[1])};
-  prim2 '==',       sub { return $_[0]->equals($_[1]) };
-  prim2 'list',     sub { return LL::List->new(\@_) };
-  prim2 'val',      sub { return NIL unless scalar @_; return $_[-1] };
-  prim2 '@',        sub { my ($l, $ndx) = @_; return $l->at($ndx) };
+  prim2 '===',			sub { return boolObj($_[0] == $_[1])};
+  prim2 '==',			sub { return $_[0]->equals($_[1]) };
+  prim2 'list',			sub { return LL::List->new(\@_) };
+  prim2 'val',			sub { return NIL unless scalar @_; return $_[-1] };
+  prim2 '@',			sub { my ($l, $ndx) = @_; return $l->at($ndx) };
+  prim2 'size',			sub { my ($l) = @_; return LL::Number->new($l->size())};
+  prim2 'byteArray',	sub { return LL::ByteArray->new(@_) };
+  prim2 'bytesSized',	sub { my ($size) = @_;
+							  $size->checkNumber();
+							  die "Invalid byteArray size: ${$size}\n"
+								unless ${$size} > 0;
+							  return LL::ByteArray->newSized(${$size})
+							};
 
-  prim2 'size',     sub { my ($l) = @_; return LL::Number->new($l->size()) };
 
   # Macros
   macro 'var',	\&macro_varconst;

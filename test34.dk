@@ -1,0 +1,27 @@
+
+# Test byte arrays
+var x = [byteArray 33 34 35 36 37]
+
+puts [size x]
+puts (x@0)
+
+x@0 = 42
+puts (x@0)
+
+puts (x@ -1)
+puts (x@4)
+
+
+var y = [bytesSized 9]
+puts [size y]
+
+puts (y@3)
+y@3 = 12
+puts (y@3)
+
+var n
+while { n < [size x] } {
+	puts x@n
+	n = n + 1
+}
+
