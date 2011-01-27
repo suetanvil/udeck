@@ -19,9 +19,9 @@ puts (y@3)
 y@3 = 12
 puts (y@3)
 
-var n
-while { n < [size x] } {
-	puts x@n
+var n = 0
+while { val (n < [size x]) } {
+	puts "Value at " n " = " (x@n)
 	n = n + 1
 }
 

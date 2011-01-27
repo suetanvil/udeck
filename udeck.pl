@@ -1283,6 +1283,18 @@ sub alias {
 
 # ---------------------------------------------------------------------------
 
+# Given a LoL, return an expression that creates a sub containing the
+# LoL as its body.
+sub subify {
+  my ($lol) = @_;
+
+  $lol->checkLoL();
+  return  LL::List->new([	LL::Symbol->new('_::sub'),
+							LL::Quote->new( LL::List->new([]) ),
+							$lol
+						]);
+}
+
 sub macro ( $$ ) {
   my ($name, $transformation) = @_;
 
@@ -1476,20 +1488,13 @@ sub macro_iffn {
 
 
 sub macro_whilefn {
-  my @args = @_;
+  my ($while, $cond, $body) = @_;
 
-  die "Expecting 2 arguments to 'while'; got @{[scalar @args - 1]}\n"
-	unless scalar @args == 3;
+  die "Expecting 2 arguments to 'while'; got @{[scalar @_ - 1]}\n"
+	unless scalar @_ == 3;
 
-  $args[0] = LL::Symbol->new('_::while');
-
-  my $sub = LL::Symbol->new('sub');
-  for my $i (1 .. $#args) {
-	$args[$i]->checkLoL();
-	$args[$i] = LL::List->new([$sub, $args[$i]]);
-  }
-
-  return LL::List->new(\@args);
+  my @result = (LL::Symbol->new('_::while'), subify($cond), subify($body));
+  return LL::List->new(\@result);
 }
 
 
