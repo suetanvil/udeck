@@ -1291,7 +1291,7 @@ sub subify {
 
   if ($expr->isLoL()) {
 	$body = $expr;
-  } elsif ($expr->isQuote() && $expr->value()->isList()) {
+  } elsif ($expr->isList()) {
 	my $outer = LL::List->new([$expr]);
 	$body = LL::Quote->new($outer);
   } else {
@@ -1701,6 +1701,10 @@ Notes:
 	-I think I'll bow to starting arrays with index 0.
 
 	- Unary minus: space (e.g. "- 1") -> binary, no space (e.g. "-1") -> unary
+
+	- if and while can take either a LoL or a single unquoted list as
+	  an expression and either will be turned into a sub.  New subify
+	  behaviour.
 
 Todo:
 X	-return values
