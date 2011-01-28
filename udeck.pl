@@ -53,6 +53,7 @@ sub isOperator {return 0}
 sub isUnescapedOperator {return 0}
 sub isEscapedOperator {return 0}
 sub isEol {return 0}
+sub isEof {return 0}
 sub isExplicitEol {return 0}
 sub isParen {return 0}
 sub isRoundParen {return 0}
@@ -453,6 +454,13 @@ sub isTrue {return 0}	# Maybe not necessary
 sub storeStr {"<EOL>"}
 sub isExplicitEol {my ($self) = @_; return ${$self} eq ';'}
 
+package LL::Eof;
+use base 'LL::Object';
+sub isEof {return 1}
+sub isTrue {return 0}	# Maybe not necessary
+sub storeStr {"<EOF>"}
+
+
 package LL::Paren;
 use base 'LL::Object';
 sub isParen {return 1}
@@ -662,6 +670,11 @@ sub interp {
 	my $expr = readLoLLine(0);
 	next if ($expr->isEmptyList());
 
+	# Exit if the first (and only) element of $expr is EOF.  Ignore it
+	# if EOF is at the end, since we'll see it again next iteration.
+	last if ($expr->[0]->isEof());
+	pop @{$expr} if $expr->[-1]->isEof();
+
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
@@ -701,8 +714,8 @@ sub readLoLLine {
 	  unread($item);
 	  last;
 	}
-
-	last if $item->isEol();
+# XXXXX
+	last if ($item->isEol() || $item->isEof());
 	push @result, $item;
   }
 
@@ -737,9 +750,10 @@ sub readExpr {
 	return $tok;
   };
 
-  ($tok->isLiteral() || $tok->isSymbol() || $tok->isEol()) and do {
-	return $tok
-  };
+  ($tok->isLiteral() || $tok->isSymbol() || $tok->isEol() || $tok->isEof())
+	and do {
+	  return $tok
+	};
 
   ($open && $tok->matchesOpen($open)) and do {
 	return $tok;
@@ -778,6 +792,8 @@ sub readSexp {
 
 	last if $tok->matchesOpen($openChar);
 
+	die "End of file inside an expression!\n" if $tok->isEof();
+
 	push @result, $tok;
   }
 
@@ -801,6 +817,8 @@ sub readLoL {
 
 	# We skip empty lines
 	next if $line->isEmptyList();
+$DB::single = 1;
+	die "File ends inside of a LoL.\n" if $line->[-1]->isEof();
 
 	if ($line->isList()) {
 	  push @result, $line;
@@ -835,7 +853,8 @@ sub readLoL {
 	while (!@tokens) {
 	  my $line = getLine();
 	  if (!defined($line)) {
-		exit (0);
+		push @tokens, LL::Eof->new('');
+		last;
 	  }
 	  chomp $line;
 

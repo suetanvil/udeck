@@ -1,0 +1,4 @@
+
+proc foo (a) {
+	val a
+	# No close brace.
