@@ -1485,8 +1485,7 @@ sub macro_iffn {
   my $sub = LL::Symbol->new('sub');
 
   for my $i (1 .. $#args) {
-	$args[$i]->checkLoL();
-	$args[$i] = LL::List->new([$sub, $args[$i]]);
+	$args[$i] = subify($args[$i]);
   }
 
   # Add the empty else clause
@@ -1723,12 +1722,13 @@ X	- list access via @, @= and set macro.
 X		-need to update infix to handle it.
 		-foreach
 X		-multi-dimensional list access (e.g. 'a@b@c = 42')
+		-if needs to be properly subified.
 
 	- macros
 	- namespaces
 	- objects
 	- integers
-	- byte arrays
+X	- byte arrays
 X	- strings should have at and atput
 
 X	- single-quoted strings
