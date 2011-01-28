@@ -15,3 +15,12 @@ puts a
 a@0 = '@'
 puts a
 
+
+var x = [byteArray 33 34 35 36 37]
+var n = 0
+
+while (n < [size x]) {
+	puts "Value at " n " = " (x@n)
+	n = n + 1
+}
+

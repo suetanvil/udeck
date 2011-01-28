@@ -179,9 +179,10 @@ sub isAtom {return 1}
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {
   my ($self) = @_;
-  my $body = join (" ", map { sprintf '%2x ', ord($_) } split(//, ${$self}) );
+  my $body = join (" ", map {sprintf '0x%02x', ord($_)} split(//, ${$self}) );
   return "[byteArray $body]";
 }
+sub printStr {my ($self) = @_; return $self->storeStr() }
 
 sub at {
   my ($self, $index) = @_;
@@ -1749,5 +1750,7 @@ X		-output: _::var :<name> <value> ...
 
 	- What to do about user-defined operators?
 
+	- handle unescaped operator in prefix LoL expression
 
+	- 0xXX, 0bXX digits
 =cut
