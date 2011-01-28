@@ -11,6 +11,10 @@ puts i
 var j k l
 puts j k l
 
+var m
+m = "single variable"
+puts m
+
 const aa = 42
 puts aa
 

@@ -1283,15 +1283,25 @@ sub alias {
 
 # ---------------------------------------------------------------------------
 
-# Given a LoL, return an expression that creates a sub containing the
-# LoL as its body.
+# Produce a sub from a list.  List may be either a LoL or a single
+# quoted expression.
 sub subify {
-  my ($lol) = @_;
+  my ($expr) = @_;
+  my $body;
 
-  $lol->checkLoL();
+  if ($expr->isLoL()) {
+	$body = $expr;
+  } elsif ($expr->isQuote() && $expr->value()->isList()) {
+	my $outer = LL::List->new([$expr]);
+	$body = LL::Quote->new($outer);
+  } else {
+	my $bs = $expr->storeStr();
+	die "Expecting a single expression or quoted list of list. Got '$bs'\n";
+  }
+
   return  LL::List->new([	LL::Symbol->new('_::sub'),
 							LL::Quote->new( LL::List->new([]) ),
-							$lol
+							$body
 						]);
 }
 
@@ -1356,9 +1366,8 @@ sub launder_varconst {
   my ($isConst, @macroArgs) = @_;
 
   my @args;
-  if (scalar @macroArgs == 1) {
+  if (scalar @macroArgs == 1 && $macroArgs[0]->isLoL()) {
 	my $argList = shift @macroArgs;
-	$argList->checkLoL();
 	@args = @{ $argList->value() };
   } else {
 	my $argList = LL::List->new(\@macroArgs);

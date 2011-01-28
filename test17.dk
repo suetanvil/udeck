@@ -1,14 +1,24 @@
 var n
 
-set n 0
+n = 0
 while {< n 10} {
 	puts n
-	set n [+ n 1]
+	n = n + 1
 }
 
+# n = 0
+# while (n < 10) {
+# 	puts n
+# 	n = n + 1
+# }
 
-set n 11
-while {< n 10} {
-	puts n
-	set n [+ n 1]
-}
+
+# n = 11
+# while {< n 10} {
+# 	puts n
+# 	n = n + 1
+# }
+
+# n = 0
+#while {< n 10} (n = n + 1)
+
