@@ -714,9 +714,12 @@ sub readLoLLine {
 	  unread($item);
 	  last;
 	}
-# XXXXX
-	last if ($item->isEol() || $item->isEof());
+
+	last if $item->isEol();
 	push @result, $item;
+
+	# The EOF is expected to be in the result
+	last if $item->isEof();
   }
 
   # Create the result object
@@ -817,7 +820,7 @@ sub readLoL {
 
 	# We skip empty lines
 	next if $line->isEmptyList();
-$DB::single = 1;
+
 	die "File ends inside of a LoL.\n" if $line->[-1]->isEof();
 
 	if ($line->isList()) {
