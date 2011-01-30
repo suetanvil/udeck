@@ -1826,6 +1826,10 @@ Notes:
 	- if and while can take either a LoL or a single unquoted list as
 	  an expression and either will be turned into a sub.  New subify
 	  behaviour.
+		-this applies to all subified functions.  Will probably also be default
+		 behaviour for subified mproc arguments
+
+
 
 Todo:
 X	-return values
