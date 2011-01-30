@@ -46,6 +46,7 @@ sub checkList   {die "Expected list, got @{[ref(shift)]}@_\n"}
 sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
 sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
+sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isStringlike {0}
@@ -531,6 +532,7 @@ package LL::Function;
 use base 'LL::Object';
 sub isAtom {return 1}
 sub isFunction {return 1}
+sub checkFun {}
 sub isCallable {return 1}
 sub storeStr {return "<function>"}
 
@@ -1307,9 +1309,11 @@ sub alias {
 # ---------------------------------------------------------------------------
 
 # Produce a sub from a list.  List may be either a LoL or a single
-# quoted expression.
+# quoted expression.  @args is the list of formal arguments.  If it
+# contains only a number, this is the number of single-letter
+# arguments automatically created.
 sub subify {
-  my ($expr) = @_;
+  my ($expr, @args) = @_;
   my $body;
 
   if ($expr->isLoL()) {
@@ -1322,8 +1326,31 @@ sub subify {
 	die "Expecting a single expression or quoted list of list. Got '$bs'\n";
   }
 
+  my $arglist;
+  if (scalar @args == 0) {
+	# Case 1: No args? Just make a zero-arg sub
+	LL::Quote->new( LL::List->new([]) );
+  } elsif (scalar @args == 1 && looks_like_number($args[0])) {
+	# Case 2: Just a number.  In this case, generate an arg list
+
+	my $nargs = $args[0];
+	die "Invalid argument count: $nargs\n"
+	  if $nargs < 0 || $nargs > 26;
+
+	my @autoArgs;
+	for my $letter ('a' .. 'z') {
+	  last unless $nargs--;
+	  push @autoArgs, LL::Symbol->new($letter);
+	}
+	$arglist = LL::Quote->new( LL::List->new(\@autoArgs) );
+  } else {
+	# Case 3: we have a list of args.
+	map { $_->checkSymbol() } @args;
+	$arglist = LL::Quote->new( LL::List->new(\@args) );
+  }
+
   return  LL::List->new([	LL::Symbol->new('_::sub'),
-							LL::Quote->new( LL::List->new([]) ),
+							$arglist,
 							$body
 						]);
 }
@@ -1528,6 +1555,34 @@ sub macro_whilefn {
   return LL::List->new(\@result);
 }
 
+sub macro_foreachfn {
+  my ($foreach, $var, $in, $list, $body) = @_;
+
+  die "Malformed 'foreach' macro call: expecting 4 arguments, got " .
+	"@{[scalar @_ - 1]}.\n"
+	  unless scalar @_ == 5;
+
+  $var->checkSymbol();
+  $in->checkSymbol();
+
+  die "Malformed 'foreach': expecting 'in', got '@{[$in->printStr()]}'.\n"
+	unless ${$in} eq 'in';
+
+  my @result = (LL::Symbol->new('_::foreach'),
+				$list,
+				subify($body, $var)
+			   );
+  return LL::List->new(\@result);
+}
+
+sub macro_mapfn {
+  my ($map, $fn, $list) = @_;
+
+  return LL::List->new( [LL::Symbol->new('_::map'),
+						 subify($fn, 1),
+						 $list] );
+}
+
 
 # ---------------------------------------------------------------------------
 sub initGlobals {
@@ -1536,17 +1591,19 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-				   ['println',	\&builtin_println],
-				   ['puts',		\&builtin_println],
-				   ['_::proc',	\&builtin_proc],
-				   ['_::sub',	\&builtin_subfn],
-				   ['_::if',	\&builtin_iffn],
-				   ['_::while',	\&builtin_whilefn],
-				   ['_::set',	\&builtin_set],
-				   ['_::var',	\&builtin_var],
-				   ['_::const', \&builtin_const],
-				   ['_::atput', \&builtin_atput],
-				   ['atput',    \&builtin_atput],
+				   ['println',		\&builtin_println],
+				   ['puts',			\&builtin_println],
+				   ['_::proc',		\&builtin_proc],
+				   ['_::sub',		\&builtin_subfn],
+				   ['_::if',		\&builtin_iffn],
+				   ['_::while',		\&builtin_whilefn],
+				   ['_::set',		\&builtin_set],
+				   ['_::var',		\&builtin_var],
+				   ['_::const',		\&builtin_const],
+				   ['_::atput',		\&builtin_atput],
+				   ['atput',		\&builtin_atput],
+				   ['_::map',		\&builtin_mapfn],
+				   ['_::foreach',	\&builtin_foreachfn],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -1579,16 +1636,17 @@ sub initGlobals {
 							  return LL::ByteArray->newSized(${$size})
 							};
 
-
   # Macros
-  macro 'var',	\&macro_varconst;
-  macro 'const',\&macro_varconst;
-  macro 'proc', \&macro_proc;
-  macro 'set',  \&macro_assign;
-  macro '=',    \&macro_assign;
-  macro 'sub',  \&macro_subfn;
-  macro 'if',   \&macro_iffn;
-  macro 'while',\&macro_whilefn;
+  macro 'var',			\&macro_varconst;
+  macro 'const',		\&macro_varconst;
+  macro 'proc',			\&macro_proc;
+  macro 'set',			\&macro_assign;
+  macro '=',			\&macro_assign;
+  macro 'sub',			\&macro_subfn;
+  macro 'if',			\&macro_iffn;
+  macro 'while',		\&macro_whilefn;
+  macro 'foreach',		\&macro_foreachfn;
+  macro 'map',			\&macro_mapfn;
 }
 
 sub builtin_println {
@@ -1708,6 +1766,31 @@ sub builtin_whilefn {
 }
 
 
+sub builtin_mapfn {
+  my ($fn, $list) = @_;
+
+  $list->checkList();
+  $fn->checkFun();
+
+  my @result = map { $fn->($_) } @{$list};
+  return LL::List->new(\@result);
+}
+
+
+sub builtin_foreachfn {
+  my ($list, $fn) = @_;
+
+  $list->checkList();
+  $fn->checkFun();
+
+  for my $item (@{$list}) {
+	$fn->($item);
+  }
+
+  return NIL;
+}
+
+
 =pod
 
 Notes:
@@ -1744,7 +1827,7 @@ X	- list access via @, @= and set macro.
 X		-need to update infix to handle it.
 		-foreach
 X		-multi-dimensional list access (e.g. 'a@b@c = 42')
-		-if needs to be properly subified.
+X		-if needs to be properly subified.
 
 	- macros
 	- namespaces
