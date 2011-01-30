@@ -61,6 +61,7 @@ sub isRoundParen {return 0}
 sub isLiteral {return 0}
 sub isEmptyList {return 0}
 sub isList {return 0}
+sub isIndexable {return 0}
 sub isByteArray {return 0}
 sub isInfixList {return 0}
 sub isQuote {return 0}
@@ -85,6 +86,13 @@ sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 sub at {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 sub atPut {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 sub size {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
+sub checkIndexable {
+  my ($self) = @_;
+  die "Expecting indexable type, got @{[ref($self)]}\n"
+	unless $self->isIndexable();
+}
+
+
 
 package LL::Number;
 use base 'LL::Object';
@@ -110,6 +118,7 @@ sub equals {my ($self, $other) = @_;
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
 sub isStringlike {1}
+sub isIndexable {return 1}
 
 sub _sanitizeIndex {
   my ($self, $index) = @_;
@@ -256,6 +265,7 @@ sub checkList {}
 sub isEmptyList {my ($self) = @_; return scalar @{$self} == 0}
 sub isTrue {my ($self) = @_; return ! $self->isEmptyList()}
 sub isList {return 1}
+sub isIndexable {return 1}
 sub asPrefixList {return shift}
 sub storeStr {
   my ($self) = @_;
@@ -1769,10 +1779,15 @@ sub builtin_whilefn {
 sub builtin_mapfn {
   my ($fn, $list) = @_;
 
-  $list->checkList();
+  $list->checkIndexable();
   $fn->checkFun();
 
-  my @result = map { $fn->($_) } @{$list};
+  my @result = ();
+  for my $index (0 .. $list->size() - 1) {
+	my $item = $list->at(LL::Number->new($index));
+	push @result, $fn->($item);
+  }
+
   return LL::List->new(\@result);
 }
 
@@ -1780,10 +1795,11 @@ sub builtin_mapfn {
 sub builtin_foreachfn {
   my ($list, $fn) = @_;
 
-  $list->checkList();
+  $list->checkIndexable();
   $fn->checkFun();
 
-  for my $item (@{$list}) {
+  for my $index (0 .. $list->size() - 1) {
+	my $item = $list->at(LL::Number->new($index));
 	$fn->($item);
   }
 

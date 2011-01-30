@@ -4,6 +4,23 @@ var x = :[1 2 3 4 5 6 7 8]
 foreach y in x {
 	puts "y = " y
 }
+puts
 
 var z = [map (a+1) x]
 puts z
+puts
+
+var a = "hello, world"
+foreach c in a {
+	puts c
+}
+puts
+
+a = :message_in_a_symbol
+foreach c in a {
+	puts c
+}
+puts
+
+var b = [byteArray 1 2 3 5 7 11 13 17 23]
+map {puts a} b
