@@ -1379,7 +1379,7 @@ sub subify {
   my $arglist;
   if (scalar @args == 0) {
 	# Case 1: No args? Just make a zero-arg sub
-	LL::Quote->new( LL::List->new([]) );
+	$arglist = LL::Quote->new( LL::List->new([]) );
   } elsif (scalar @args == 1 && looks_like_number($args[0])) {
 	# Case 2: Just a number.  In this case, generate an arg list
 
@@ -1577,6 +1577,23 @@ sub macro_subfn {
 
 
 sub macro_iffn {
+
+#   my ($if, $cond, $trueBlock, $else, $falseBlock) = @_;
+
+#   if (defined($else)) {
+# 	if ($else->isList()) {
+# 	  die "Malformed 'if' statement.\n"
+# 		unless !defined($falseBlock);
+# 	  $falseBlock = $else;
+# 	} else {
+# 	  die "Malformed 'if': expecting 'else', got @{[$else->printStr()]}\n"
+# 		unless ($else->isSymbol() && ${$else} eq 'else');
+# 	}
+#   }
+
+#   my $result = [LL::Symbol->new('_::if')
+#			   ];
+	
   my @args = @_;
 
   $args[0] = LL::Symbol->new('_::if');
@@ -1605,6 +1622,8 @@ sub macro_iffn {
 	if scalar @args == 3;
 
   return LL::List->new(\@args);
+
+
 }
 
 

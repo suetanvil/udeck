@@ -1,3 +1,5 @@
+# Test 'if' -- note: this predates infix expressions.
+
 var a b
 
 set a 3
