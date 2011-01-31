@@ -1,3 +1,15 @@
+# Basic proc. tests
+
 proc foo [a] {puts a}
 foo 42
+
+
+proc bar [a b c args] {
+	puts a " " b " " c
+	puts args
+	puts "---------"
+}
+
+bar 1 2 3 4 5 6
+bar "foo" :bar 42
 
