@@ -1,0 +1,17 @@
+
+# Test macro definitions
+
+macro foo {args} {
+	puts "Macro 'foo' called with " args
+
+	args@0 = :bar
+	return args
+}
+
+proc bar {args} {
+	puts "bar called with '" args "'"
+}
+
+foo 1 2 3 4 5
+
+

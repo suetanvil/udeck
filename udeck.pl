@@ -629,6 +629,7 @@ package LL::Main;
 
 use Term::ReadLine;
 use Scalar::Util qw(looks_like_number);
+use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Objects
 
 use constant NIL => LL::Nil::NIL;
 
@@ -1159,7 +1160,7 @@ sub applyMacros {
   while (1) {
 	my $name = $expr->[0];
 	last unless ($name->isSymbol() && $context->present($ {$name})) ;
-	
+
 	my $val = $context->lookup(${$name});
 	last unless $val->isMacro();
 
@@ -1227,12 +1228,19 @@ sub compile {
 
   $name ||= 'unnamed function';
 
+  my $isMacro = 0;
+  if ($mode eq 'macro') {
+	$isMacro = 1;
+	$mode = 'proc';
+  }
+
   my $nargs = scalar @{$args};
   my $isVararg = $nargs > 0 && ${$args->[-1]} eq 'args';
   if ($isVararg) {
 	pop @{$args};
 	--$nargs;
   }
+
 
   my @fixedBody;
   {
@@ -1256,14 +1264,14 @@ sub compile {
 
 	# Bind arguments
 	for my $arg (@{$args}) {
-	  $context->defset ($ {$arg}, shift @_ );
+	  $context->defset (${$arg}, shift @_ );
 	}
 
 	# Bind varargs
 	if ($isVararg) {
-	  my @args = @_;
+	  my $args = LL::List->new([@_]);
 
-	  $context->defset(LL::Symbol->new('args'), \@args);
+	  $context->defset('args', $args);
 	}
 	
 	my $lastexpr;
@@ -1299,7 +1307,7 @@ sub compile {
 	return $lastexpr;
   };
 
-  return LL::Function->new($fn);
+  return $isMacro ? LL::Macro->new($fn) : LL::Function->new($fn);
 }
 
 
@@ -1436,7 +1444,6 @@ sub fixFormalArgs {
 }
 
 
-
 sub macro_proc {
   my @result = @_;
 
@@ -1451,6 +1458,20 @@ sub macro_proc {
   $result[3]->checkLoL(" in function body of 'proc'.");
 
   return LL::List->new(\@result);
+}
+
+
+sub macro_macro {
+  my ($macro, $name, $args, $body) = @_;
+
+  $name->checkSymbol();
+  $args = fixFormalArgs($args);
+  $body->checkLoL();
+
+  return LL::List->new([LL::Symbol->new('_::macro'),
+						LL::Quote->new($name),
+						$args,
+						$body]);
 }
 
 
@@ -1646,6 +1667,7 @@ sub initGlobals {
 				   ['atput',		\&builtin_atput],
 				   ['_::map',		\&builtin_mapfn],
 				   ['_::foreach',	\&builtin_foreachfn],
+				   ['_::macro',		\&builtin_macro],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -1689,10 +1711,13 @@ sub initGlobals {
   macro 'while',		\&macro_whilefn;
   macro 'foreach',		\&macro_foreachfn;
   macro 'map',			\&macro_mapfn;
+  macro 'macro',		\&macro_macro;
 }
 
 sub builtin_println {
   for my $obj (@_) {
+	die "Not an object: '$obj'\n"
+	  unless (ref($obj) && isa($obj, 'LL::Object'));
 	print $obj->printStr();
   }
   print "\n";
@@ -1771,6 +1796,25 @@ sub builtin_proc {
 }
 
 
+sub builtin_macro {
+  my ($name, $args, $body) = @_;
+
+  # Argument checking.
+  die "'macro' expects 3 arguments: got @{[scalar @_]}\n"
+	unless scalar @_ == 3;
+
+  $name->checkSymbol();
+  $args->checkList();
+  $body->checkList();
+
+  my $macro = compile ($Globals, $args, $body, 'macro', ${$name});
+
+  $Globals->defset(${$name}, $macro);
+
+  return $macro;
+}
+
+
 sub builtin_subfn {
   my ($context, $args, $body) = @_;
 
@@ -1839,6 +1883,9 @@ sub builtin_foreachfn {
 }
 
 
+
+
+
 =pod
 
 Notes:
@@ -1861,6 +1908,7 @@ Notes:
 		-this applies to all subified functions.  Will probably also be default
 		 behaviour for subified mproc arguments
 
+	- okay, user-defined macros use the function arg convention.
 
 
 Todo:
@@ -1881,8 +1929,10 @@ X		-need to update infix to handle it.
 X		-multi-dimensional list access (e.g. 'a@b@c = 42')
 X		-if needs to be properly subified.
 
-	- pod
-	- macros
+X	- pod
+X	- macros
+		-mprocs
+
 	- namespaces
 	- objects
 	- integers
