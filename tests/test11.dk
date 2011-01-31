@@ -1,8 +1,10 @@
+# Test returning closures
+
 proc foo {} {
 	var a
 	set a 42
 	
-	sub {puts a}
+	return [sub {puts a}]
 }
 
 var x
