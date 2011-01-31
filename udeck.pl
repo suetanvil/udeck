@@ -904,12 +904,14 @@ sub readLoL {
 		  next;
 		};
 
+		# Floating-point literal
 		$line =~ s/^(\-?\d+)\.(\d+)(\W?)/$3/ and do {
 		  $tok = "$1.$2" + 0;
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
 
+		# Hex literal
 		$line =~ s/^(\-?)0x([0-9a-fA-F]+)(\W?)/$3/ and do {
 		  $tok = oct("0x$2");
 		  $tok = -$tok if $1 eq '-';
@@ -917,6 +919,7 @@ sub readLoL {
 		  next;
 		};
 
+		# Binary literal
 		$line =~ s/^(\-?)0b([01]+)(\W?)/$3/ and do {
 		  $tok = oct("0b$2");
 		  $tok = -$tok if $1 eq '-';
@@ -924,6 +927,8 @@ sub readLoL {
 		  next;
 		};
 
+		# Decimal literal.  Perl's conversion to number ignores
+		# leading zeroes
 		$line =~ s/^(\-?\d+)(\W?)/$2/ and do {
 		  $tok = $1 + 0;
 		  push @tokens, LL::Number->new($tok);
@@ -1892,7 +1897,7 @@ X		-output: _::var :<name> <value> ...
 
 	- handle unescaped operator in prefix LoL expression
 
-	- 0xXX, 0bXX digits
+X	- 0xXX, 0bXX digits
 	- allow _ in numbers
 	- scientific notation
 
