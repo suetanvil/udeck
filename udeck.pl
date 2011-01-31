@@ -1699,6 +1699,7 @@ sub initGlobals {
 								unless ${$size} > 0;
 							  return LL::ByteArray->newSized(${$size})
 							};
+  prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
 
   # Macros
   macro 'var',			\&macro_varconst;
@@ -1931,8 +1932,10 @@ X		-if needs to be properly subified.
 
 X	- pod
 X	- macros
+		-subify
 		-mprocs
 
+	- die
 	- namespaces
 	- objects
 	- integers
