@@ -13,3 +13,9 @@ proc bar [a b c args] {
 bar 1 2 3 4 5 6
 bar "foo" :bar 42
 
+proc quux {args} {
+	puts args
+}
+
+quux 1 2 3 4 5
+quux
