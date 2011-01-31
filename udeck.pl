@@ -910,6 +910,20 @@ sub readLoL {
 		  next;
 		};
 
+		$line =~ s/^(\-?)0x([0-9a-fA-F]+)(\W?)/$3/ and do {
+		  $tok = oct("0x$2");
+		  $tok = -$tok if $1 eq '-';
+		  push @tokens, LL::Number->new($tok);
+		  next;
+		};
+
+		$line =~ s/^(\-?)0b([01]+)(\W?)/$3/ and do {
+		  $tok = oct("0b$2");
+		  $tok = -$tok if $1 eq '-';
+		  push @tokens, LL::Number->new($tok);
+		  next;
+		};
+
 		$line =~ s/^(\-?\d+)(\W?)/$2/ and do {
 		  $tok = $1 + 0;
 		  push @tokens, LL::Number->new($tok);
@@ -1849,6 +1863,7 @@ X		-need to update infix to handle it.
 X		-multi-dimensional list access (e.g. 'a@b@c = 42')
 X		-if needs to be properly subified.
 
+	- pod
 	- macros
 	- namespaces
 	- objects
@@ -1878,4 +1893,7 @@ X		-output: _::var :<name> <value> ...
 	- handle unescaped operator in prefix LoL expression
 
 	- 0xXX, 0bXX digits
+	- allow _ in numbers
+	- scientific notation
+
 =cut

@@ -1,0 +1,12 @@
+
+# Test hex and binary constants
+puts 0b101010
+puts -0b101010
+
+puts 0x2a
+puts -0x2a
+
+puts 42
+puts -42
+puts -42.0
+puts 42.0
