@@ -873,6 +873,19 @@ sub readLoL {
 	  }
 	  chomp $line;
 
+	  # If this is the start of a POD section, skip ahead to the end
+	  if ($line =~ /^=\w+/) {
+		my $podLine;
+		do {
+		  $podLine = getLine();
+		  die "End-of-file inside a POD section.\n"
+			unless defined($podLine);
+
+		} while ($podLine !~ /^=cut\s/);
+
+		next;
+	  }
+
 	  while (1) {
 		my $tok;
 

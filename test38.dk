@@ -1,0 +1,27 @@
+
+# Test inline POD documention.  This is not valid POD.
+
+puts "Code..."
+
+=pod
+
+stuff stuff otherstuff
+
+=cut
+
+puts "More code..."
+
+puts '''
+This string contains a POD.  It should print:
+=pod foo
+stuff
+=cut
+See?
+'''
+=pod pods without lines between
+should also be ignored
+=cut
+=pod and pods without anything in them
+=cut and stuff after the cut
+
+puts "Done!"
