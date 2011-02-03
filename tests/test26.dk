@@ -1,5 +1,6 @@
+# Some @ and atput tests
 
-var x;
+var x
 
 x = :[a b c d e]
 
@@ -15,11 +16,11 @@ puts (x@3.6)
 
 puts "-----------------------"
 
-puts (x@-1)
-puts (x@-2)
-puts (x@-3)
-puts (x@-4)
-puts (x@-5)
+puts (x@ -1)
+puts (x@ -2)
+puts (x@ -3)
+puts (x@ -4)
+puts (x@ -5)
 
 puts "-----------------------"
 

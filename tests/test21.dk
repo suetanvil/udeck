@@ -1,3 +1,4 @@
+# Test ; syntax.  May issue warnings.
 
 puts "Hello, World"; puts "Yo!";
 
