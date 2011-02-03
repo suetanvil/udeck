@@ -1,0 +1,3 @@
+Called return continuation on a returned function.
+f2
+f1

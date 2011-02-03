@@ -1,0 +1,10 @@
+Code...
+More code...
+
+This string contains a POD.  It should print:
+=pod foo
+stuff
+=cut
+See?
+
+Done!

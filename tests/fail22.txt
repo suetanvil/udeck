@@ -1,0 +1,1 @@
+WARNING: Entire LoL line is bracketed.  This may not be what you want.

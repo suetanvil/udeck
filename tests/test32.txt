@@ -1,0 +1,11 @@
+[]
+Hello, 'World!' 
+Hello, 'World!'
+Hello, 'World!'''
+Hello, ''
+' World.
+Hello, world!  '''
+more quotes
+and more
+and more still!
+'''

@@ -1,0 +1,2 @@
+Macro 'foo' called with [foo 1 2 3 4 5]
+bar called with '[1 2 3 4 5]'
