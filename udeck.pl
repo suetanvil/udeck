@@ -1719,6 +1719,12 @@ sub initGlobals {
 							  return LL::ByteArray->newSized(${$size})
 							};
   prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
+  prim2 'listSized',	sub { my ($size) = @_;
+							  $size->checkNumber();
+							  die "Invalid list size: ${$size}\n"
+								unless ${$size} > 0;
+							  return LL::List->new([(NIL) x ${$size}]);
+							};
 
   # Macros
   macro 'var',			\&macro_varconst;

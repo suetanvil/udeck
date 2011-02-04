@@ -1,0 +1,6 @@
+
+# test 'listSized' function
+var l = [listSized 5]
+puts [size l]
+puts l
+

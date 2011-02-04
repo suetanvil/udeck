@@ -23,6 +23,10 @@ Notes:
 	- okay, user-defined macros use the function arg convention.
 
 
+Functions Todo:
+	-listSized
+
+
 Todo:
 X	-return values
 	-implement a "compiler" to produce perl subs

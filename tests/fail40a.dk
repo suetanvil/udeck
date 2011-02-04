@@ -1,0 +1,3 @@
+
+# Test invalid list size
+var x = [listSized 0]
