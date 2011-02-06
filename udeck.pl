@@ -6,6 +6,8 @@
 use strict;
 use warnings;
 
+use feature "switch";
+
 # ---------------------------------------------------------------------------
 
 package LL::Object;
@@ -1464,11 +1466,13 @@ sub macro_proc {
 sub macro_mproc {
   my ($mproc, $name, $args, $body) = @_;
 
-  my $fnname = "__::${$name}";
+  $name->checkSymbol();
+  my $qname = LL::Quote->new($name);
 
-
-
-
+  return LL::List->new([LL::Symbol->new("_::mproc"),
+						$name,
+						$args,
+						$body]);
 }
 
 
@@ -1741,6 +1745,7 @@ sub initGlobals {
   macro 'var',			\&macro_varconst;
   macro 'const',		\&macro_varconst;
   macro 'proc',			\&macro_proc;
+  macro 'mproc',		\&macro_mproc;
   macro 'set',			\&macro_assign;
   macro '=',			\&macro_assign;
   macro 'sub',			\&macro_subfn;
@@ -1833,6 +1838,86 @@ sub builtin_proc {
 }
 
 
+# Return a macro (i.e. blessed Perl sub) which performs mproc argument
+# munging on its argument list.  $args is dismantled.
+sub mk_proc_macro {
+  my ($name, $args) = @_;
+
+  my $resultName = LL::Symbol->new("__::$name");
+
+  my @filters = ();
+  for my $arg (@{$args}) {
+
+	foreach my $elem (@{$arg}) {$elem->checkSym(" in mproc argument element.")}
+
+	my $argName = ${ pop @{$arg} };
+
+	my $strict = (scalar @{$args} && ${$args->[0]} eq 'strict');
+	shift @{$args} if $strict;
+
+	my $mod = '';
+	$mod = shift @{$args} if scalar @{$args};
+
+
+	given ($mod) {
+	  when (/^sub([0-9]*)$/) {
+# 		push @filters,
+# 		  (
+# 		   sub {
+# 			 my $a = shift;
+# 			 $a->checkLoL(" when calling mproc argument '$argName'");
+# 			 return $a;
+# 		   },
+# 		   sub {
+
+# XXXXX
+		
+
+	  }
+
+	  default {
+		die "Invalid mproc argument '$mod'\n" if $mod ne '';
+		die "mproc argument contains 'strict' by itself.\n" if $strict;
+	  }
+	}
+
+
+  }
+
+}
+
+
+
+sub builtin_mproc {
+  my ($name, $args, $body) = @_;
+
+  # Argument checking.
+  die "'mproc' expects 3 arguments: got @{[scalar @_]}\n"
+	unless scalar @_ == 3;
+
+  $name->checkSymbol();
+  $args->checkLoL(" for mproc argument list.");
+  $body->checkList();
+
+  # Ensure that this macro hasn't already been defined.
+  die "Redefinition of macro '${$name}'.\n"
+	if ($Globals->present(${$name}) && $Globals->{${$name}}->isMacro());
+
+  # Create the wrapper macro.
+  my $macro = mk_mproc_macro($name, $args);
+
+  # Create the function to call.
+  my $procArgs = map { $_->[-1] } @{$args};
+  my $proc = builtin_proc (LL::Symbol->new("__::${$name}"), $procArgs, $body);
+
+  # Give the macro a name.
+  $Globals->defset(${$name}, $macro);
+
+  return $proc;
+}
+
+
+
 sub builtin_macro {
   my ($name, $args, $body) = @_;
 
@@ -1918,3 +2003,4 @@ sub builtin_foreachfn {
 
   return NIL;
 }
+

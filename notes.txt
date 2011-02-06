@@ -30,19 +30,21 @@ X	-listSized
 
 mprocs:
 
-	form: mproc <name> [(<arg> <modifier>*) *] <body>
+	form: mproc <name> [ [strict? (sub[0..26]?|sym|list) <arg>]* ] <body>
 
 	modifiers:
-		Sub [number]	-- If a list, subify's with number arguments.
-		QuoteSym		-- If a symbol, quote
-		QuoteList		-- If a list, quote
-		Strict			-- Require that the other modifier activate.
+		sub[number]		-- If a list, subify's with number arguments.
+		sym				-- If a symbol, quote
+		list			-- If a list, quote
+		strict			-- Require that the other modifier activate.
 		
+	so basically, mproc args must be LoLs.
+
 
 =example
 
 mproc map {
-	Sub1 block
+	strict sub1 block
 	items
 } {
 	var result = [listSized [block size]]
