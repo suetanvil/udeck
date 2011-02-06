@@ -1461,6 +1461,17 @@ sub macro_proc {
 }
 
 
+sub macro_mproc {
+  my ($mproc, $name, $args, $body) = @_;
+
+  my $fnname = "__::${$name}";
+
+
+
+
+}
+
+
 sub macro_macro {
   my ($macro, $name, $args, $body) = @_;
 

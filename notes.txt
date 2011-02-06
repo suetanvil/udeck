@@ -24,61 +24,58 @@ Notes:
 
 
 Functions Todo:
-	-listSized
+X	-listSized
 
+
+
+mprocs:
+
+	form: mproc <name> [(<arg> <modifier>*) *] <body>
+
+	modifiers:
+		Sub [number]	-- If a list, subify's with number arguments.
+		QuoteSym		-- If a symbol, quote
+		QuoteList		-- If a list, quote
+		Strict			-- Require that the other modifier activate.
+		
+
+=example
+
+mproc map {
+	Sub1 block
+	items
+} {
+	var result = [listSized [block size]]
+	var index = 0
+
+	foreach item in items {
+		result@index = [block item]
+		index = index + 1
+	}
+
+	return result
+}
+
+=done
 
 Todo:
-X	-return values
 	-implement a "compiler" to produce perl subs
 	-catch arg. count mismatches.
-X	-consts
-X	-equality, equivalence
-
-
-X	- '=' as alias for 'set'
-X	- infix in LoLs.
-X	- escaped operators
-X	- procs should return nil by default.
-X	- list access via @, @= and set macro.
-X		-need to update infix to handle it.
-		-foreach
-X		-multi-dimensional list access (e.g. 'a@b@c = 42')
-X		-if needs to be properly subified.
 
 X	- pod
 X	- macros
 		-subify
 		-mprocs
 
-X	- die
 	- namespaces
 	- objects
 	- integers
-X	- byte arrays
-X	- strings should have at and atput
-
-X	- single-quoted strings
-X		-consider '''foo''''': should only the last 3 quotes be the delimiter with
-X		 the rest being part of the string?  YES!  If possible.
-
-		-"foo $a [b 1]" should be shorthand for: [string "foo " [a->printStr] [[b 1]->printStr] ]
-
 
 	- string interpolation
 X		-\[nrfat] now works
 
-X	- var and const should have consistent grammer
-X		-3 cases:
-X			a) <name> = <value>
-X			b) <name> <name> ...
-X			c) { <a) or b)> ; ...}
-X		-output: _::var :<name> <value> ...
-
 	- What to do about user-defined operators?
-
 	- handle unescaped operator in prefix LoL expression
-
-X	- 0xXX, 0bXX digits
 	- allow _ in numbers
 	- scientific notation
 
