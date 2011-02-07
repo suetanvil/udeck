@@ -1702,6 +1702,7 @@ sub initGlobals {
 				   ['_::map',		\&builtin_mapfn],
 				   ['_::foreach',	\&builtin_foreachfn],
 				   ['_::macro',		\&builtin_macro],
+				   ['_::mproc',		\&builtin_mproc],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -1754,6 +1755,7 @@ sub initGlobals {
   macro 'foreach',		\&macro_foreachfn;
   macro 'map',			\&macro_mapfn;
   macro 'macro',		\&macro_macro;
+  macro 'mproc',		\&macro_mproc;
 }
 
 sub builtin_println {
