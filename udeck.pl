@@ -1838,52 +1838,86 @@ sub builtin_proc {
 }
 
 
-# Return a macro (i.e. blessed Perl sub) which performs mproc argument
-# munging on its argument list.  $args is dismantled.
-sub mk_proc_macro {
-  my ($name, $args) = @_;
-
-  my $resultName = LL::Symbol->new("__::$name");
+# Given an mproc argument list ($args), produce a matching array of
+# arrays of functions (one per arg.) which performs the necessary
+# transformations on the matching argument.
+sub mk_mproc_macro_argfilter {
+  my ($args) = @_;
 
   my @filters = ();
   for my $arg (@{$args}) {
+	my @argFilter = ();
 
 	foreach my $elem (@{$arg}) {$elem->checkSym(" in mproc argument element.")}
 
 	my $argName = ${ pop @{$arg} };
+	die "Invalid mproc argument name '$argName'\n"
+	  if $argName =~ /^(sub|sym|list|strict)$/;
 
-	my $strict = (scalar @{$args} && ${$args->[0]} eq 'strict');
-	shift @{$args} if $strict;
+# 	my $strict = (scalar @{$args} && ${$args->[0]} eq 'strict');
+# 	shift @{$args} if $strict;
 
 	my $mod = '';
 	$mod = shift @{$args} if scalar @{$args};
 
-
 	given ($mod) {
-	  when (/^sub([0-9]*)$/) {
-# 		push @filters,
-# 		  (
-# 		   sub {
-# 			 my $a = shift;
-# 			 $a->checkLoL(" when calling mproc argument '$argName'");
-# 			 return $a;
-# 		   },
-# 		   sub {
-
-# XXXXX
+	  when ("sub") {
+		my $nargs = 0;
+		if (scalar @{$args} > 0 &&  looks_like_number($args->[0])) {
+		  $nargs = shift @{$args};
+		}
 		
-
+		push @argFilter, sub {my $a = shift;
+							  return $a unless $a->isList();
+							  return subify($a, $nargs);
+							};
 	  }
 
 	  default {
 		die "Invalid mproc argument '$mod'\n" if $mod ne '';
-		die "mproc argument contains 'strict' by itself.\n" if $strict;
+#		die "mproc argument contains 'strict' by itself.\n" if $strict;
 	  }
 	}
 
-
+	push @filters, \@argFilter;
   }
 
+  return \@filters;
+}
+
+
+# Return a macro (i.e. blessed Perl sub) which performs mproc argument
+# munging on its argument list.  $args is dismantled.
+sub mk_mproc_macro {
+  my ($name, $args) = @_;
+
+  my $resultName = LL::Symbol->new("__::$name");
+
+  my $filters = mk_mproc_macro_argfilter($args);
+
+  my $macro = sub {
+	my ($givenName, @args) = @_;
+	my @newArgs = ();
+
+	die "Arg count mismatch in call to mproc '$givenName'\n"
+	  unless scalar @args == scalar @{$filters};
+
+	push @newArgs, $resultName;
+
+	for my $filterList (@{$filters}) {
+	  my $arg = shift @args;
+
+	  for my $filter (@{$filterList}) {
+		$arg = $filter->($arg);
+	  }
+
+	  push @newArgs, $arg;
+	}
+
+	return LL::List->new(\@newArgs);
+  };
+
+  return LL::Macro->new($macro);
 }
 
 
