@@ -1470,7 +1470,7 @@ sub macro_mproc {
   my $qname = LL::Quote->new($name);
 
   return LL::List->new([LL::Symbol->new("_::mproc"),
-						$name,
+						$qname,
 						$args,
 						$body]);
 }
@@ -1844,29 +1844,33 @@ sub builtin_proc {
 # arrays of functions (one per arg.) which performs the necessary
 # transformations on the matching argument.
 sub mk_mproc_macro_argfilter {
-  my ($args) = @_;
+  my ($argList) = @_;
 
   my @filters = ();
-  for my $arg (@{$args}) {
+  for my $arg (@{$argList}) {
 	my @argFilter = ();
 
-	foreach my $elem (@{$arg}) {$elem->checkSym(" in mproc argument element.")}
+	$arg->checkList(" in mproc argument list.");
 
-	my $argName = ${ pop @{$arg} };
+	my $argName = pop @{$arg};
+	$argName->checkSymbol(" in mproc argument.");
+	$argName = ${$argName};
+
 	die "Invalid mproc argument name '$argName'\n"
 	  if $argName =~ /^(sub|sym|list|strict)$/;
 
-# 	my $strict = (scalar @{$args} && ${$args->[0]} eq 'strict');
-# 	shift @{$args} if $strict;
+# 	my $strict = (scalar @{$argList} && ${$argList->[0]} eq 'strict');
+# 	shift @{$argList} if $strict;
 
-	my $mod = '';
-	$mod = shift @{$args} if scalar @{$args};
+	my $mod = LL::Symbol->new('');
+	$mod = shift @{$arg} if scalar @{$arg};
+	$mod->checkSymbol() if $mod;
 
-	given ($mod) {
+	given (${$mod}) {
 	  when ("sub") {
 		my $nargs = 0;
-		if (scalar @{$args} > 0 &&  looks_like_number($args->[0])) {
-		  $nargs = shift @{$args};
+		if (scalar @{$arg} > 0 &&  looks_like_number($arg->[0])) {
+		  $nargs = shift @{$arg};
 		}
 		
 		push @argFilter, sub {my $a = shift;
@@ -1875,8 +1879,12 @@ sub mk_mproc_macro_argfilter {
 							};
 	  }
 
+	  when ('') {
+		# no modifiers.  Carry on.
+	  }
+
 	  default {
-		die "Invalid mproc argument '$mod'\n" if $mod ne '';
+		die "Invalid mproc argument '${$mod}'\n" if $mod ne '';
 #		die "mproc argument contains 'strict' by itself.\n" if $strict;
 	  }
 	}
@@ -1893,7 +1901,7 @@ sub mk_mproc_macro_argfilter {
 sub mk_mproc_macro {
   my ($name, $args) = @_;
 
-  my $resultName = LL::Symbol->new("__::$name");
+  my $resultName = LL::Symbol->new("__::${$name}");
 
   my $filters = mk_mproc_macro_argfilter($args);
 
@@ -1915,7 +1923,7 @@ sub mk_mproc_macro {
 
 	  push @newArgs, $arg;
 	}
-
+$DB::single = 1;
 	return LL::List->new(\@newArgs);
   };
 
@@ -1932,18 +1940,28 @@ sub builtin_mproc {
 	unless scalar @_ == 3;
 
   $name->checkSymbol();
-  $args->checkLoL(" for mproc argument list.");
+  $args->checkList(" for mproc argument list.");
   $body->checkList();
 
   # Ensure that this macro hasn't already been defined.
   die "Redefinition of macro '${$name}'.\n"
 	if ($Globals->present(${$name}) && $Globals->{${$name}}->isMacro());
 
+  # Gather the argument names from $args before mk_mproc_macro
+  # disassembles it.  (mk_mproc_macro does a lot of sanity checking so
+  # we don't need to do it here.)
+  my @pargs = ();
+  for my $elem (@{$args}) {
+	$elem->checkList(" in mproc argument.");
+	my $argName = $elem->[-1];
+	push @pargs, $argName;
+  }
+
   # Create the wrapper macro.
   my $macro = mk_mproc_macro($name, $args);
 
   # Create the function to call.
-  my $procArgs = map { $_->[-1] } @{$args};
+  my $procArgs = LL::List->new(\@pargs);
   my $proc = builtin_proc (LL::Symbol->new("__::${$name}"), $procArgs, $body);
 
   # Give the macro a name.

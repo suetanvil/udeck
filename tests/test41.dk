@@ -1,17 +1,19 @@
 
 mproc mmap {
 	sub 1 block
-	list
+	ls
 } {
 	var pos = 0
-	var result = [listSized [size list]]
-	foreach elem in list {
+	var result = [listSized [size ls]]
+	foreach elem in ls {
 		result@pos = [block elem]
 		pos = pos + 1
 	}
 
 	return result
 }
+
+puts "Boing!"
 
 var l1 = [list 1 2 3 4 5]
 var l2 = [mmap {puts a; val (a + 1)} list]
