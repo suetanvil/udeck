@@ -13,10 +13,8 @@ mproc mmap {
 	return result
 }
 
-puts "Boing!"
-
 var l1 = [list 1 2 3 4 5]
-var l2 = [mmap {puts a; val (a + 1)} list]
+var l2 = [mmap {puts a; val (a + 1)} l1]
 
 puts l2
 

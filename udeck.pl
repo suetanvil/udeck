@@ -1364,7 +1364,7 @@ sub alias {
 # quoted expression.  @args is the list of formal arguments.  If it
 # contains only a number, this is the number of single-letter
 # arguments automatically created.
-sub subify {
+sub subifyIfList {
   my ($expr, @args) = @_;
   my $body;
 
@@ -1374,8 +1374,7 @@ sub subify {
 	my $outer = LL::List->new([$expr]);
 	$body = LL::Quote->new($outer);
   } else {
-	my $bs = $expr->storeStr();
-	die "Expecting a single expression or quoted list of list. Got '$bs'\n";
+	return;
   }
 
   my $arglist;
@@ -1406,6 +1405,17 @@ sub subify {
 							$body
 						]);
 }
+
+sub subify {
+  my ($expr, @args) = @_;
+
+  my $result = subifyIfList($expr, @args);
+  return $result if $result;
+
+  my $bs = $expr->storeStr();
+  die "Expecting a single expression or quoted list of list. Got '$bs'\n";
+}
+
 
 sub macro ( $$ ) {
   my ($name, $transformation) = @_;
@@ -1869,14 +1879,11 @@ sub mk_mproc_macro_argfilter {
 	given (${$mod}) {
 	  when ("sub") {
 		my $nargs = 0;
-		if (scalar @{$arg} > 0 &&  looks_like_number($arg->[0])) {
-		  $nargs = shift @{$arg};
+		if (scalar @{$arg} > 0 && $arg->[0]->isNumber()) {
+		  $nargs = ${ shift @{$arg} };
 		}
 		
-		push @argFilter, sub {my $a = shift;
-							  return $a unless $a->isList();
-							  return subify($a, $nargs);
-							};
+		push @argFilter, sub {subify(shift, $nargs)};
 	  }
 
 	  when ('') {
@@ -1908,7 +1915,6 @@ sub mk_mproc_macro {
   my $macro = sub {
 	my ($givenName, @args) = @_;
 	my @newArgs = ();
-
 	die "Arg count mismatch in call to mproc '$givenName'\n"
 	  unless scalar @args == scalar @{$filters};
 
@@ -1923,7 +1929,7 @@ sub mk_mproc_macro {
 
 	  push @newArgs, $arg;
 	}
-$DB::single = 1;
+
 	return LL::List->new(\@newArgs);
   };
 
