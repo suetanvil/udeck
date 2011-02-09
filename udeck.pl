@@ -1882,7 +1882,10 @@ sub mk_mproc_macro_argfilter {
 		if (scalar @{$arg} > 0 && $arg->[0]->isNumber()) {
 		  $nargs = ${ shift @{$arg} };
 		}
-		
+
+		die "Invalid arg count in mproc: $nargs -- must be between 0 and 26\n"
+		  if ($nargs < 0 || $nargs > 26);
+
 		push @argFilter, sub {subify(shift, $nargs)};
 	  }
 
