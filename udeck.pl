@@ -1426,6 +1426,14 @@ sub quoteIfSym {
 }
 
 
+sub quoteIfList {
+  my ($ls) = @_;
+
+  return $ls unless $ls->isList();
+  return LL::Quote->new($ls);
+}
+
+
 sub macro ( $$ ) {
   my ($name, $transformation) = @_;
 
