@@ -1,8 +1,8 @@
 
-# Test symbol autoquote.
+# Test strict symbol autoquote.
 mproc foo {
 	sub 1 fn
-	symbol s
+	strict symbol s
 } {
 	puts "calling " fn " on " s
 	fn s
@@ -14,5 +14,5 @@ foo {puts a} bar
 
 var x = 42
 foo {puts a} x
-foo {puts a} [val x]
+
 
