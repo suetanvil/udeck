@@ -34,7 +34,7 @@ mprocs:
 
 	modifiers:
 		sub[number]		-- If a list, subify's with number arguments.
-		sym				-- If a symbol, quote
+		symbol			-- If a symbol, quote
 		list			-- If a list, quote
 		strict			-- Require that the other modifier activate.
 		
@@ -44,7 +44,7 @@ mprocs:
 =example
 
 mproc map {
-	strict sub1 block
+	strict sub 1 block
 	items
 } {
 	var result = [listSized [block size]]

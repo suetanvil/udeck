@@ -1406,6 +1406,7 @@ sub subifyIfList {
 						]);
 }
 
+
 sub subify {
   my ($expr, @args) = @_;
 
@@ -1414,6 +1415,14 @@ sub subify {
 
   my $bs = $expr->storeStr();
   die "Expecting a single expression or quoted list of list. Got '$bs'\n";
+}
+
+
+sub quoteIfSym {
+  my ($sym) = @_;
+
+  return $sym unless $sym->isSymbol();
+  return LL::Quote->new($sym);
 }
 
 
@@ -1887,6 +1896,10 @@ sub mk_mproc_macro_argfilter {
 		  if ($nargs < 0 || $nargs > 26);
 
 		push @argFilter, sub {subify(shift, $nargs)};
+	  }
+
+	  when ("symbol") {
+		push @argFilter, sub {quoteIfSym(shift)};
 	  }
 
 	  when ('') {
