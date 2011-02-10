@@ -1910,6 +1910,10 @@ sub mk_mproc_macro_argfilter {
 		push @argFilter, sub {quoteIfSym(shift)};
 	  }
 
+	  when ("list") {
+		push @argFilter, sub {quoteIfList(shift)};
+	  }
+
 	  when ('') {
 		# no modifiers.  Carry on.
 	  }
