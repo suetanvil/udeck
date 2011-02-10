@@ -1361,10 +1361,11 @@ sub alias {
 # ---------------------------------------------------------------------------
 
 # Produce a sub from a list.  List may be either a LoL or a single
-# quoted expression.  @args is the list of formal arguments.  If it
-# contains only a number, this is the number of single-letter
-# arguments automatically created.
-sub subifyIfList {
+# quoted expression.  If $expr is not a list, it is returned
+# unchanged.  @args is the list of formal arguments.  If it contains
+# only a number, this is the number of single-letter arguments
+# automatically created.
+sub subify {
   my ($expr, @args) = @_;
   my $body;
 
@@ -1374,7 +1375,7 @@ sub subifyIfList {
 	my $outer = LL::List->new([$expr]);
 	$body = LL::Quote->new($outer);
   } else {
-	return;
+	return $expr;
   }
 
   my $arglist;
@@ -1407,11 +1408,11 @@ sub subifyIfList {
 }
 
 
-sub subify {
+sub subifyStrict {
   my ($expr, @args) = @_;
 
-  my $result = subifyIfList($expr, @args);
-  return $result if $result;
+  my $result = subify($expr, @args);
+  return $result if $result != $expr;
 
   my $bs = $expr->storeStr();
   die "Expecting a single expression or quoted list of list. Got '$bs'\n";
@@ -1656,7 +1657,7 @@ sub macro_iffn {
   my $sub = LL::Symbol->new('sub');
 
   for my $i (1 .. $#args) {
-	$args[$i] = subify($args[$i]);
+	$args[$i] = subifyStrict($args[$i]);
   }
 
   # Add the empty else clause
@@ -1675,7 +1676,7 @@ sub macro_whilefn {
   die "Expecting 2 arguments to 'while'; got @{[scalar @_ - 1]}\n"
 	unless scalar @_ == 3;
 
-  my @result = (LL::Symbol->new('_::while'), subify($cond), subify($body));
+  my @result = (LL::Symbol->new('_::while'), subifyStrict($cond), subifyStrict($body));
   return LL::List->new(\@result);
 }
 
@@ -1694,7 +1695,7 @@ sub macro_foreachfn {
 
   my @result = (LL::Symbol->new('_::foreach'),
 				$list,
-				subify($body, $var)
+				subifyStrict($body, $var)
 			   );
   return LL::List->new(\@result);
 }
@@ -1703,7 +1704,7 @@ sub macro_mapfn {
   my ($map, $fn, $list) = @_;
 
   return LL::List->new( [LL::Symbol->new('_::map'),
-						 subify($fn, 1),
+						 subifyStrict($fn, 1),
 						 $list] );
 }
 
@@ -1886,8 +1887,8 @@ sub mk_mproc_macro_argfilter {
 	die "Invalid mproc argument name '$argName'\n"
 	  if $argName =~ /^(sub|sym|list|strict)$/;
 
-# 	my $strict = (scalar @{$argList} && ${$argList->[0]} eq 'strict');
-# 	shift @{$argList} if $strict;
+ 	my $strict = (scalar @{$arg} > 0 && ${$arg->[0]} eq 'strict');
+ 	shift @{$arg} if $strict;
 
 	my $mod = LL::Symbol->new('');
 	$mod = shift @{$arg} if scalar @{$arg};
@@ -1903,7 +1904,11 @@ sub mk_mproc_macro_argfilter {
 		die "Invalid arg count in mproc: $nargs -- must be between 0 and 26\n"
 		  if ($nargs < 0 || $nargs > 26);
 
-		push @argFilter, sub {subify(shift, $nargs)};
+		if ($strict) {
+		  push @argFilter, sub {subifyStrict(shift, $nargs)};
+		} else {
+		  push @argFilter, sub {subify(shift, $nargs)};
+		}
 	  }
 
 	  when ("symbol") {

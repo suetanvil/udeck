@@ -1,7 +1,7 @@
 # Test basic subification in mprocs
 
 mproc mmap {
-	sub 1 block
+	strict sub 1 block
 	ls
 } {
 	var pos = 0
