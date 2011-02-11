@@ -1,0 +1,18 @@
+
+# Test non-arg sub modifier.
+mproc foo {
+	sub 1 fn
+	strict list l
+} {
+	puts "calling " fn " on " l
+	fn l
+}
+
+
+foo {puts a} [a b 'hello' 41.9 [xxx]]
+foo {puts a} [1 2 3]
+foo {puts a} (total = sum*filter + total)
+
+var x = 42
+foo {puts a} [val x]
+
