@@ -1,0 +1,38 @@
+
+=pod
+
+=head1 Namespaces
+
+Namespaces are delimited by '::', e.g. 'Namespace::subname::var'.
+
+$Globals maintains a reference to the current namespace.  Unqualified
+globals are automatically put there.
+
+Should we be allowed to define names in other namespaces?
+	-mproc needs it.  But it could be magical.  Maybe add a special
+	 builtin for that?
+
+Namespace variables beginning with '_' are private -- the system
+refuses to look them up in qualified names and they are not imported.
+
+Namespaces can be imported.  This copies all public namespace entries
+to the current namespace (unless this is controlled somehow.)  Imports
+may not override an existing name; hence, the first one wins.
+
+The import statement allows selective importing and renaming:
+
+    use VectorMath
+    use VectorMath with {add subtract eigenValue}
+    use VectorMath without {multiply divide}
+	use VectorMath with {add -> plus; subtract -> minus; eigenValue}
+
+Predefined namespaces:
+
+	Main			-- Default namespace.
+	Lang			-- Language features; automatically imported.
+	Lang::*			-- Reserved.
+	_::*			-- Reserved. Implementation-defined system functions.
+	__::*			-- Reserved. mproc functions go here.
+
+
+=cut

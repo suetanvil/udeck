@@ -28,37 +28,50 @@ X	-listSized
 
 
 
-mprocs:
+X mprocs:
+X 
+X 	form: mproc <name> [ [strict? (sub[0..26]?|sym|list) <arg>]* ] <body>
+X 
+X 	modifiers:
+X 		sub[number]		-- If a list, subify's with number arguments.
+X 		symbol			-- If a symbol, quote
+X 		list			-- If a list, quote
+X 		strict			-- Require that the other modifier activate.
+X 		
+X 	so basically, mproc args must be LoLs.
+X 
+X 
+X =example
+X 
+X mproc map {
+X 	strict sub 1 block
+X 	items
+X } {
+X 	var result = [listSized [block size]]
+X 	var index = 0
+X 
+X 	foreach item in items {
+X 		result@index = [block item]
+X 		index = index + 1
+X 	}
+X 
+X 	return result
+X }
+X 
+X =done
 
-	form: mproc <name> [ [strict? (sub[0..26]?|sym|list) <arg>]* ] <body>
+Perl bindings:
+	
+Form 1:
 
-	modifiers:
-		sub[number]		-- If a list, subify's with number arguments.
-		symbol			-- If a symbol, quote
-		list			-- If a list, quote
-		strict			-- Require that the other modifier activate.
-		
-	so basically, mproc args must be LoLs.
+	perluse "File::Handle";
+	perlproc split "split";
+
+Form 2:
+
+	perldo '''print "Hello, world!\n", $_[0], "\n";''' "Dude!\n"
 
 
-=example
-
-mproc map {
-	strict sub 1 block
-	items
-} {
-	var result = [listSized [block size]]
-	var index = 0
-
-	foreach item in items {
-		result@index = [block item]
-		index = index + 1
-	}
-
-	return result
-}
-
-=done
 
 Todo:
 	-implement a "compiler" to produce perl subs
@@ -67,9 +80,12 @@ Todo:
 X	- pod
 X	- macros
 		-subify
-		-mprocs
+X		-mprocs
 
 	- namespaces
+		- namespace resolution
+		- packages
+	- static variables
 	- objects
 	- integers
 
