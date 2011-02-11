@@ -1422,7 +1422,7 @@ sub subifyStrict {
 sub quoteIfSym {
   my ($sym, $strict) = @_;
 
-  $sym->isSymbol(" in mproc argument.") if $strict;
+  $sym->checkSymbol(" in mproc argument.") if $strict;
   return $sym unless $sym->isSymbol();
   return LL::Quote->new($sym);
 }
@@ -1431,7 +1431,7 @@ sub quoteIfSym {
 sub quoteIfList {
   my ($ls, $strict) = @_;
 
-  $ls->isList(" in mproc argument.") if $strict;
+  $ls->checkList(" in mproc argument.") if $strict;
   return $ls unless $ls->isList();
   return LL::Quote->new($ls);
 }
@@ -1918,7 +1918,7 @@ sub mk_mproc_macro_argfilter {
 	  }
 
 	  when ("list") {
-		push @argFilter, sub {quoteIfList(shift)};
+		push @argFilter, sub {quoteIfList(shift, $strict)};
 	  }
 
 	  when ('') {
