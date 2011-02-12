@@ -976,8 +976,8 @@ sub readLoL {
 		$line =~ /^"/ and do {
 		  my $string;
 		  ($line, $string) = _readDoubleQuoteString($line);
-#		  push @tokens, LL::InterpString->new($string);
-		  push @tokens, LL::String->new($string);
+		  push @tokens, LL::InterpString->new($string);
+#		  push @tokens, LL::String->new($string);
 		  next;
 		};
 
@@ -1261,20 +1261,101 @@ sub evalFuncCall {
 }
 
 
+# Given a string, split it into plain string chunks and the
+# expressions to evaluate.  Expressions take the form of a list
+# ref. containing the sigil as a string followed by the symbol name.
 sub splitInterpString {
   my ($str) = @_;
 
   # First, divvy into vars and strings.
 
-#  my @parts = split (/([^\\])([$@])(
+  my @parts = ("");
 
+  while (1) {
+	last unless length($str) > 0;
+
+	$str =~ s/^( .*? ) ([$@])//x
+	  or last;
+	my ($leader, $sigil) = $1;
+
+	# If the @ or $ was escaped, stick it onto $leader and try again.
+	if ($leader =~ m{\\$} && $leader !~ m{\\\\$}) {
+	  $leader .= $sigil;
+	  push @parts, $leader;
+	  next;
+	}
+
+	push @parts, $leader;
+
+	my $brace = ($str =~ s/^\{//);
+
+	my ($nstr, $sym) = parseSymbol($str);
+	die "Error parsing interpolated string at \"...$str\"\n"
+	  unless defined($sym);
+	$str = $nstr;
+
+	if ($brace) {
+	  $str =~ s/^\}//
+		or die "Missing close brace in interpolated string by '$sym'\n";
+	}
+
+	push @parts, [$sigil, $sym];
+  }
+
+  # Merge adjacent boring strings
+  my @newParts = ();
+  my $current = "";
+  while (scalar @parts) {
+	my $part = shift @parts;
+
+	if (!ref($part)) {
+	  $current .= $part;
+	  next;
+	}
+
+	if ($current ne '') {
+	  push @newParts, $current;
+	  $current = "";
+	}
+
+	push @newParts, $part;
+  }
+
+  push @newParts, $current
+	if $current ne '';
+
+  return \@newParts;
 }
 
 
 sub expandInterpString {
   my ($expr, $context) = @_;
 
-  my @parts = splitInterpString (${$expr});
+  my $parts = splitInterpString (${$expr});
+
+  # If $expr turns out to be a single string with nothing to
+  # interpolate, just return that.
+  if (scalar @{$parts} == 1 && !ref($parts->[0])) {
+	return LL::String->new($parts->[0]);
+  }
+
+  # Otherwise...
+  my @result = (LL::Symbol->new('_::mkstr'));
+
+  for my $part (@{$parts)) {
+	!ref($part) and do {
+	  push @result, LL::String->new(\$part);
+	  next;
+	};
+
+	my ($sigil, $name) = @{$part};
+
+# XXXX
+
+
+  }
+
+
 
 }
 
