@@ -11,3 +11,23 @@ puts -42
 puts -42.0
 puts 42.0
 
+# Numbers are allowed to contain underscores in any position after the start
+puts 123_456
+puts 12_34___567
+puts 1_2_4_		# Yeah, blech!
+puts 1_000_000 " dollars!!!"
+
+puts 1_000_000.000_000_001
+puts 3.14_15_92
+puts 3.14_15_92_
+puts 3_.__14_15_92_
+
+puts 0b11_00_11_00
+puts 0b11_00_11_00_
+puts 0b_11_00_11__00
+
+puts 0xAB_CD_EF
+puts 0x_AB_CD_EF_
+puts 0x_AB_CD_E_______F
+
+

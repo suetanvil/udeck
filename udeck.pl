@@ -921,28 +921,29 @@ sub readLoL {
 		};
 
 		# Floating-point literal
-		$line =~ s/^(\-?\d+)\.(\d+)(\W?)/$3/ and do {
-		  $tok = "$1.$2" + 0;
+		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9_]*)(\W?)/$3/ and do {
+		  $tok = "$1.$2";
+		  $tok =~ s/_//g;
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
 
 		# Hex literal
-		$line =~ s/^(\-?)0x([0-9a-fA-F][0-9a-fA-F_]*)(\W?)/$3/ and do {
-		  my $num = $2;
+		$line =~ s/^(\-?)0x([0-9a-fA-F_]*)(\W?)/$3/ and do {
+		  my ($sign, $num) = ($1, $2);
 		  $num =~ s/_//g;
 		  $tok = oct("0x$num");
-		  $tok = -$tok if $1 eq '-';
+		  $tok = -$tok if $sign eq '-';
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
 
 		# Binary literal
-		$line =~ s/^(\-?)0b([01][01_]*)(\W?)/$3/ and do {
-		  my $num = $2;
+		$line =~ s/^(\-?)0b([01_]*)(\W?)/$3/ and do {
+		  my ($sign, $num) = ($1, $2);
 		  $num =~ s/_//g;
 		  $tok = oct("0b$num");
-		  $tok = -$tok if $1 eq '-';
+		  $tok = -$tok if $sign eq '-';
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
