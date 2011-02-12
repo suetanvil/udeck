@@ -928,16 +928,20 @@ sub readLoL {
 		};
 
 		# Hex literal
-		$line =~ s/^(\-?)0x([0-9a-fA-F]+)(\W?)/$3/ and do {
-		  $tok = oct("0x$2");
+		$line =~ s/^(\-?)0x([0-9a-fA-F][0-9a-fA-F_]*)(\W?)/$3/ and do {
+		  my $num = $2;
+		  $num =~ s/_//g;
+		  $tok = oct("0x$num");
 		  $tok = -$tok if $1 eq '-';
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
 
 		# Binary literal
-		$line =~ s/^(\-?)0b([01]+)(\W?)/$3/ and do {
-		  $tok = oct("0b$2");
+		$line =~ s/^(\-?)0b([01][01_]*)(\W?)/$3/ and do {
+		  my $num = $2;
+		  $num =~ s/_//g;
+		  $tok = oct("0b$num");
 		  $tok = -$tok if $1 eq '-';
 		  push @tokens, LL::Number->new($tok);
 		  next;
@@ -945,8 +949,10 @@ sub readLoL {
 
 		# Decimal literal.  Perl's conversion to number ignores
 		# leading zeroes
-		$line =~ s/^(\-?\d+)(\W?)/$2/ and do {
-		  $tok = $1 + 0;
+		$line =~ s/^(\-?\d[0-9_]*)(\W?)/$2/ and do {
+		  my $num = $1;
+		  $num =~ s/_//g;
+		  $tok = $num + 0;
 		  push @tokens, LL::Number->new($tok);
 		  next;
 		};
