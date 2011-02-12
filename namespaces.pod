@@ -34,5 +34,14 @@ Predefined namespaces:
 	_::*			-- Reserved. Implementation-defined system functions.
 	__::*			-- Reserved. mproc functions go here.
 
+=head2 Namespaces
+
+	-let symbols include '::'.
+
+	-create a subclass of LL::Context for the global context.
+	-add a default namespace.  This gets used for all unqualified sets
+	 and lookups.
+	-add builtins in '_' to access them.
+
 
 =cut

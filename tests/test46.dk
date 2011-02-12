@@ -1,0 +1,11 @@
+
+# Test extended symbols
+puts :foo::bar::qux
+
+var x = :a::b::c
+puts x
+
+var y = :[c::d::e f 13]
+puts y
+
+puts :foo::bar::-

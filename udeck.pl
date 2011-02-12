@@ -972,7 +972,9 @@ sub readLoL {
 		  next;
 		};
 
-		$line =~ s/^( [a-zA-Z_]\w* | ${OPER_REGEX} )//x and do {
+		my $wre = qr{(?: [a-zA-Z_] \w*)}x;
+		my $nsre = qr{ (?: $wre \:\:)+ }x;
+		$line =~ s/^($nsre? (?: $wre | ${OPER_REGEX}))//x and do {
 		  push @tokens, LL::Symbol->new($1);
 		  next;
 		};
