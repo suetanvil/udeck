@@ -52,6 +52,8 @@ sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isStringlike {0}
+sub isString {0}
+sub isInterpString {return 1}
 sub isOperator {return 0}
 sub isUnescapedOperator {return 0}
 sub isEscapedOperator {return 0}
@@ -160,7 +162,13 @@ sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
 sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {my ($self) = @_; return "\"${$self}\""};
+sub isString {return 1}
 
+
+# Interpolated string.
+package LL::InterpString;
+use base 'LL::String';
+sub isInterpString {return 1}
 
 
 package LL::ByteArray;
@@ -968,6 +976,7 @@ sub readLoL {
 		$line =~ /^"/ and do {
 		  my $string;
 		  ($line, $string) = _readDoubleQuoteString($line);
+#		  push @tokens, LL::InterpString->new($string);
 		  push @tokens, LL::String->new($string);
 		  next;
 		};
@@ -979,10 +988,10 @@ sub readLoL {
 		  next;
 		};
 
-		my $wre = qr{(?: [a-zA-Z_] \w*)}x;
-		my $nsre = qr{ (?: $wre \:\:)+ }x;
-		$line =~ s/^($nsre? (?: $wre | ${OPER_REGEX}))//x and do {
-		  push @tokens, LL::Symbol->new($1);
+		my ($nline, $sym) = parseSymbol($line);
+		defined($sym) and do {
+		  push @tokens, LL::Symbol->new($sym);
+		  $line = $nline;
 		  next;
 		};
 
@@ -1097,6 +1106,29 @@ sub readLoL {
 	}
   }
 
+}
+
+
+# Attempt to parse the start of $line as a symbol.  On success, return
+# the modified $line and the symbol text; on failure, return false.
+sub parseSymbol {
+  my ($line) = @_;
+
+  # Regexp to match operators: may begin with '\'; may not end with
+  # '-' (to keep from interfering with trailing negative int) except
+  # if it's the minus operator.
+  my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]+}x;
+
+  # Regexp to parse a name segment.
+  my $WRE = qr{(?: [a-zA-Z_] \w*)}x;
+
+  # Regex to parse a complete name, global or local
+  my $NSRE = qr{ (?: $WRE \:\:)+ }x;
+
+  $line =~ s/^($NSRE? (?: $WRE | ${OPER_REGEX}))//x
+	or return undef;
+
+  return ($line, $1);
 }
 
 
@@ -1228,6 +1260,42 @@ sub evalFuncCall {
   return $fn->(@args);
 }
 
+
+sub splitInterpString {
+  my ($str) = @_;
+
+  # First, divvy into vars and strings.
+
+#  my @parts = split (/([^\\])([$@])(
+
+}
+
+
+sub expandInterpString {
+  my ($expr, $context) = @_;
+
+  my @parts = splitInterpString (${$expr});
+
+}
+
+
+sub expandInterpStringsRecursively {
+  my ($expr, $context) = @_;
+
+  return expandInterpString($expr, $context)
+	if $expr->isInterpString();
+
+  return $expr unless $expr->isList();
+
+  my @result;
+  for my $elem (@{$expr}) {
+	push @result, expandInterpStringsRecursively($elem, $context);
+  }
+
+  return LL::List->new(\@result);
+}
+
+
 # ---------------------------------------------------------------------------
 
 # Return a blessed func. ref which executes a sub with $args and $body
@@ -1257,7 +1325,8 @@ sub compile {
   {
 	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
-	  my $newExpr =  applyMacrosRecursively ($expr, $macroContext);
+	  my $newExpr;# = expandInterpStringsRecursively ($expr, $macroContext);
+	  $newExpr = applyMacrosRecursively ($expr, $macroContext);
 	  push @fixedBody, $newExpr;
 	}
   }
@@ -1742,6 +1811,7 @@ sub initGlobals {
 				   ['_::foreach',	\&builtin_foreachfn],
 				   ['_::macro',		\&builtin_macro],
 				   ['_::mproc',		\&builtin_mproc],
+				   ['_::mkstr',		\&builtin_mkstr],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2108,3 +2178,12 @@ sub builtin_foreachfn {
   return NIL;
 }
 
+
+# Given a list of arguments, call each of their printStr() methods,
+# append the result and return it.  This gets created from
+# double-string literals.
+sub builtin_mkstr {
+  my @strings = map { ${$_} } @_;
+  my $result = join("", @strings);
+  return LL::String->new(\$result);
+}

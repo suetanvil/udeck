@@ -69,7 +69,10 @@ Form 1:
 
 Form 2:
 
-	perldo '''print "Hello, world!\n", $_[0], "\n";''' "Dude!\n"
+	perlsub hello '''print "Hello, world!\n", $_[0], "\n";'''
+
+	perlsub hello {nm} '''print "Hello, $nm\n";''' 
+
 
 
 
@@ -91,9 +94,12 @@ X		-mprocs
 
 	- string interpolation
 X		-\[nrfat] now works
+		-$interpolation
+		-[interpolation]
+		-@interpolation
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
-	- allow _ in numbers
+X	- allow _ in numbers
 	- scientific notation
 	- the empty symbol should be false

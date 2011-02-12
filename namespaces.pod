@@ -9,8 +9,10 @@ $Globals maintains a reference to the current namespace.  Unqualified
 globals are automatically put there.
 
 Should we be allowed to define names in other namespaces?
-	-mproc needs it.  But it could be magical.  Maybe add a special
-	 builtin for that?
+	-yes! Macros need it.
+	-but! you can't switch namespaces inside a file.
+		-the 'use' statement sets it--the 'package' declaration just
+	     asserts it.  but it's mandatory(?).
 
 Namespace variables beginning with '_' are private -- the system
 refuses to look them up in qualified names and they are not imported.
