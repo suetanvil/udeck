@@ -1342,21 +1342,21 @@ sub expandInterpString {
   # Otherwise...
   my @result = (LL::Symbol->new('_::mkstr'));
 
-  for my $part (@{$parts)) {
+  for my $part (@{$parts}) {
 	!ref($part) and do {
 	  push @result, LL::String->new(\$part);
 	  next;
 	};
 
 	my ($sigil, $name) = @{$part};
+	my $nameSym = LL::Symbol->new($name);
 
-# XXXX
-
-
+	if ($sigil eq "\@") {
+	  push @result, LL::List->new([LL::Symbol->new('_::mkstr_all'), $nameSym]);
+	} else {
+	  push @result, $nameSym;
+	}
   }
-
-
-
 }
 
 
@@ -1893,6 +1893,7 @@ sub initGlobals {
 				   ['_::macro',		\&builtin_macro],
 				   ['_::mproc',		\&builtin_mproc],
 				   ['_::mkstr',		\&builtin_mkstr],
+				   ['_::mkstr_all',	\&builtin_mkstr_all],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2264,7 +2265,18 @@ sub builtin_foreachfn {
 # append the result and return it.  This gets created from
 # double-string literals.
 sub builtin_mkstr {
-  my @strings = map { ${$_} } @_;
+  my @strings = map { $_->printStr() } @_;
   my $result = join("", @strings);
+  return LL::String->new(\$result);
+}
+
+# Given a single list of objects, call their printStr methods and
+# return the results concatenated together and separated by a single
+# space.
+sub builtin_mkstr_all {
+  my ($args) = @_;
+
+  my @strings = map { $_->printStr() } @{$args};
+  my $result = join(" ", @strings);
   return LL::String->new(\$result);
 }
