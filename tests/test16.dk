@@ -1,6 +1,6 @@
 puts [typeof 42]
 puts [typeof :foo]
-puts [typeof "foo"]
+puts [typeof 'foo']
 puts [typeof :[1 2 3 4 5]]
 puts [typeof nil]
 puts [typeof ::42]

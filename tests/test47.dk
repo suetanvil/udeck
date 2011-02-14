@@ -1,0 +1,10 @@
+# Test built-in string interpolation routines.
+
+var x = "xxx"
+
+puts [_::mkstr 1 2 "Hello, world" x]
+puts [_::mkstr_all [list x 1 2 3 "Hello, world" :[4 5 6]]]
+puts ([_::mkstr] == "")
+puts ([_::mkstr_all :[] ] == "")
+
+
