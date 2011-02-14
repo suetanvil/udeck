@@ -53,7 +53,7 @@ sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isStringlike {0}
 sub isString {0}
-sub isInterpString {return 1}
+sub isInterpString {return 0}
 sub isOperator {return 0}
 sub isUnescapedOperator {return 0}
 sub isEscapedOperator {return 0}
@@ -1223,7 +1223,7 @@ sub applyMacros {
 # Call applyMacros on every sublist of $expr
 sub applyMacrosRecursively {
   my ($expr, $context) = @_;
-
+$DB::single = 1 unless ref($expr);
   return $expr unless $expr->isList();
 
   $expr = applyMacros($expr, $context);
@@ -1274,9 +1274,9 @@ sub splitInterpString {
   while (1) {
 	last unless length($str) > 0;
 
-	$str =~ s/^( .*? ) ([$@])//x
+	$str =~ s/^( .*? ) ([\$\@])//x
 	  or last;
-	my ($leader, $sigil) = $1;
+	my ($leader, $sigil) = ($1, $2);
 
 	# If the @ or $ was escaped, stick it onto $leader and try again.
 	if ($leader =~ m{\\$} && $leader !~ m{\\\\$}) {
@@ -1406,8 +1406,8 @@ sub compile {
   {
 	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
-	  my $newExpr;# = expandInterpStringsRecursively ($expr, $macroContext);
-	  $newExpr = applyMacrosRecursively ($expr, $macroContext);
+	  my $newExpr = expandInterpStringsRecursively ($expr, $macroContext);
+	  $newExpr = applyMacrosRecursively ($newExpr, $macroContext);
 	  push @fixedBody, $newExpr;
 	}
   }
