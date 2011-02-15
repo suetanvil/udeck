@@ -1266,7 +1266,7 @@ sub evalFuncCall {
 # ref. containing the sigil as a string followed by the symbol name.
 sub splitInterpString {
   my ($str) = @_;
-
+$DB::single = 1;
   # First, divvy into vars and strings.
 
   my @parts = ("");
@@ -1357,6 +1357,8 @@ sub expandInterpString {
 	  push @result, $nameSym;
 	}
   }
+
+  return LL::List->new(\@result);
 }
 
 
@@ -1879,6 +1881,7 @@ sub initGlobals {
   for my $special (
 				   ['println',		\&builtin_println],
 				   ['puts',			\&builtin_println],
+				   ['storestr',		\&builtin_storestr],
 				   ['_::proc',		\&builtin_proc],
 				   ['_::sub',		\&builtin_subfn],
 				   ['_::if',		\&builtin_iffn],
@@ -1958,6 +1961,18 @@ sub builtin_println {
   print "\n";
 
   return NIL;
+}
+
+sub builtin_storestr {
+  my $result = "";
+
+  for my $obj (@_) {
+	die "Not an object: '$obj'\n"
+	  unless (ref($obj) && isa($obj, 'LL::Object'));
+	$result .= $obj->storeStr();
+  }
+
+  return LL::String->new($result);
 }
 
 sub builtin_set {

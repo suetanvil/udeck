@@ -97,6 +97,8 @@ X		-\[nrfat] now works
 		-$interpolation
 		-[interpolation]
 		-@interpolation
+		-hmmm.  What about ':"foo $bar"'
+
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
