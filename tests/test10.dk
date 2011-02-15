@@ -5,13 +5,13 @@ foo 42
 
 
 proc bar [a b c args] {
-	puts a " " b " " c
+	puts a ' ' b ' ' c
 	puts args
-	puts "---------"
+	puts '---------'
 }
 
 bar 1 2 3 4 5 6
-bar "foo" :bar 42
+bar 'foo' :bar 42
 
 proc quux {args} {
 	puts args

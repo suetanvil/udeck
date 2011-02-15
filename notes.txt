@@ -98,10 +98,12 @@ X		-\[nrfat] now works
 		-[interpolation]
 		-@interpolation
 		-hmmm.  What about ':"foo $bar"'
-
+			-" expressions are syntact shorthand the same way infix
+			 expressions are.
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
 X	- allow _ in numbers
 	- scientific notation
 	- the empty symbol should be false
+	- fail49 -- recursive macro

@@ -776,6 +776,10 @@ sub readExpr {
 	return $tok;
   };
 
+  $tok->isInterpString() and do {
+	return expandInterpString($tok);
+  };
+
   ($tok->isLiteral() || $tok->isSymbol() || $tok->isEol() || $tok->isEof())
 	and do {
 	  return $tok
@@ -1212,7 +1216,7 @@ sub applyMacros {
 	push @backtrace, $expr;
 	if (scalar @backtrace > 20) {
 	  die "Probable recursive macro:\n" .
-		join("\n", map { $_->storeString()."\n" } @backtrace) . "\n";
+		join("\n", map { $_->storeStr()."\n" } @backtrace) . "\n";
 	}
   }
 
@@ -1223,7 +1227,7 @@ sub applyMacros {
 # Call applyMacros on every sublist of $expr
 sub applyMacrosRecursively {
   my ($expr, $context) = @_;
-$DB::single = 1 unless ref($expr);
+
   return $expr unless $expr->isList();
 
   $expr = applyMacros($expr, $context);
@@ -1266,9 +1270,8 @@ sub evalFuncCall {
 # ref. containing the sigil as a string followed by the symbol name.
 sub splitInterpString {
   my ($str) = @_;
-$DB::single = 1;
-  # First, divvy into vars and strings.
 
+  # First, divvy into vars and strings.
   my @parts = ("");
 
   while (1) {
@@ -1302,6 +1305,9 @@ $DB::single = 1;
 	push @parts, [$sigil, $sym];
   }
 
+  push @parts, $str
+	unless $str eq "";
+
   # Merge adjacent boring strings
   my @newParts = ();
   my $current = "";
@@ -1329,7 +1335,7 @@ $DB::single = 1;
 
 
 sub expandInterpString {
-  my ($expr, $context) = @_;
+  my ($expr) = @_;
 
   my $parts = splitInterpString (${$expr});
 
@@ -1356,23 +1362,6 @@ sub expandInterpString {
 	} else {
 	  push @result, $nameSym;
 	}
-  }
-
-  return LL::List->new(\@result);
-}
-
-
-sub expandInterpStringsRecursively {
-  my ($expr, $context) = @_;
-
-  return expandInterpString($expr, $context)
-	if $expr->isInterpString();
-
-  return $expr unless $expr->isList();
-
-  my @result;
-  for my $elem (@{$expr}) {
-	push @result, expandInterpStringsRecursively($elem, $context);
   }
 
   return LL::List->new(\@result);
@@ -1408,8 +1397,7 @@ sub compile {
   {
 	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
-	  my $newExpr = expandInterpStringsRecursively ($expr, $macroContext);
-	  $newExpr = applyMacrosRecursively ($newExpr, $macroContext);
+	  my $newExpr = applyMacrosRecursively ($expr, $macroContext);
 	  push @fixedBody, $newExpr;
 	}
   }
@@ -1882,6 +1870,7 @@ sub initGlobals {
 				   ['println',		\&builtin_println],
 				   ['puts',			\&builtin_println],
 				   ['storestr',		\&builtin_storestr],
+				   ['show',			\&builtin_show],
 				   ['_::proc',		\&builtin_proc],
 				   ['_::sub',		\&builtin_subfn],
 				   ['_::if',		\&builtin_iffn],
@@ -1973,6 +1962,11 @@ sub builtin_storestr {
   }
 
   return LL::String->new($result);
+}
+
+sub builtin_show {
+  my $result = builtin_storestr(@_);
+  print ${$result}, "\n";
 }
 
 sub builtin_set {
