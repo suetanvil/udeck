@@ -1,0 +1,10 @@
+Starting test...
+a = 42
+a = 42a
+a = 4242424242a
+$a = ${a}x = 42
+42 = $a
+42x = ${a}x
+@b = this is 1 list, a=42
+this is 1 list = @{b}
+[_::mkstr "this is " a " and " b]

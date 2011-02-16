@@ -1013,31 +1013,36 @@ sub readLoL {
 
 
   my $escapes;
-  sub _readDoubleQuoteString {
-	my ($line) = @_;
-	
+  BEGIN {
 	$escapes = {n => "\n",
 				r => "\r",
 				f => "\f",
 				a => "\a",
-				t => "\t"}
-	  unless $escapes;
+				t => "\t",
+			   '$'=> "\\\$",
+			   '@'=> "\\\@"};
+  };
 
+  sub _readDoubleQuoteString {
+	my ($line) = @_;
+
+	my $eol = "Reached end-of-file inside a string constant.\n";
 	die "WTF????" unless $line =~ /^\"/;
+
 	$line = substr($line, 1);
 
 	my $result = "";
-
 	while (1) {
 
 	  if ($line eq '') {
 		$result .= "\n";
 
 		$line = getLine();
-		die "Reached end-of-file inside a string constant.\n"
-		  unless defined($line);
+		die $eol unless defined($line);
 
 		chomp $line;
+
+		next if $line eq '';
 	  }
 
 	  my $char = substr($line, 0, 1);
@@ -1283,6 +1288,7 @@ sub splitInterpString {
 
 	# If the @ or $ was escaped, stick it onto $leader and try again.
 	if ($leader =~ m{\\$} && $leader !~ m{\\\\$}) {
+	  $leader =~ s{\\$}{};
 	  $leader .= $sigil;
 	  push @parts, $leader;
 	  next;

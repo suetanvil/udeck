@@ -1,0 +1,21 @@
+# Test string interpolation.
+
+puts "Starting test..."
+
+
+var a = 42
+puts "a = $a"
+puts "a = ${a}a"
+puts "a = ${a}$a${a}$a${a}a"
+puts "\$a = \${a}x = $a"
+puts "$a = \$a"
+puts "${a}x = \${a}x"
+
+var b = [list 'this' 'is' 1 'list']
+puts "\@b = @b, a=$a"
+puts "@{b} = \@{b}"
+
+
+show :"this is $a and $b"
+
+
