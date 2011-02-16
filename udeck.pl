@@ -981,7 +981,6 @@ sub readLoL {
 		  my $string;
 		  ($line, $string) = _readDoubleQuoteString($line);
 		  push @tokens, LL::InterpString->new($string);
-#		  push @tokens, LL::String->new($string);
 		  next;
 		};
 
@@ -1263,8 +1262,17 @@ sub evalFuncCall {
 	unshift @args, $context;
   }
 
-  die "Attempted to call non-function '@{[$fn->storeStr()]}' as a function.\n"
-	unless $fn->isCallable();
+  if (!$fn->isCallable()) {
+	my $nm = $fname ? $fname : $fn->storeStr();
+
+	# Give a more useful error message.
+	die "Attempted to call macro '$nm' as a function.  (The macro was\n" .
+	  "not defined when the expression was compiled).\n"
+		if $fn->isMacro();
+
+	die "Attempted to call non-function '$nm' as a function.\n";
+  }
+	
 
   return $fn->(@args);
 }

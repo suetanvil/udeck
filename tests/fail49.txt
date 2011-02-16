@@ -1,0 +1,3 @@
+Attempted to call macro 'foo' as a function.  (The macro was
+not defined when the expression was compiled).
+Macro 'foo' called with [foo 1 2 3 4 5]
