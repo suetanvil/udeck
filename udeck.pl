@@ -572,65 +572,118 @@ sub new {
 			   }, $class;
 }
 
+sub isQualified {
+  my ($self, $name) = @_;
+
+  return $name =~ /\:\:/;
+}
+
+sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
+sub normalizeName {my ($self, $name) = @_; return $name}
+
+sub checkLocal {
+  my ($self, $name) = @_;
+
+  die "Qualified name defined in local context."
+	if $self->isQualified($name);
+}
+
 sub def {
-  my ($self, $symbol) = @_;
+  my ($self, $name) = @_;
 
-  die "Expecting string, not reference!\n" unless ref($symbol) eq '';
-  die "Name contains whitespace.\n" if $symbol =~ /\s/;
+  $name = $self->normalizeName($name);
+  die "Expecting string, not reference!\n" unless ref($name) eq '';
+  die "Name contains whitespace.\n" if $name =~ /\s/;
+  $self->checkLocal($name);
 
-  $self->{$symbol} = LL::Nil::NIL;
+  $self->{$name} = LL::Nil::NIL;
 }
 
 sub set {
-  my ($self, $symbol, $value) = @_;
+  my ($self, $name, $value) = @_;
 
-  die "Expecting string, not reference!\n" unless ref($symbol) eq '';
-  die "Attempted to modify a const: $symbol.\n"
-	if defined($self->{' consts'}->{$symbol});
+  $name = $self->normalizeName($name);
+  die "Expecting string, not reference!\n" unless ref($name) eq '';
+  die "Attempted to modify a const: $name.\n"
+	if defined($self->{' consts'}->{$name});
 
-  exists($self->{$symbol}) and do {
-	$self->{$symbol} = $value;
+  exists($self->{$name}) and do {
+	$self->{$name} = $value;
 	return;
   };
 
-  defined($self->{' parent'}) and return $self->{' parent'}->set($symbol, $value);
+  defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
 
-  die "Unknown variable: '$symbol'\n";
+  die "Unknown variable: '$name'\n";
 }
 
 sub defset {
-  my ($self, $symbol, $value) = @_;
+  my ($self, $name, $value) = @_;
 
-  $self->def($symbol);
-  $self->set($symbol, $value);
+  $name = $self->normalizeName($name);
+  $self->checkLocal($name);
+
+  $self->def($name);
+  $self->set($name, $value);
 }
 
 sub defsetconst {
-  my ($self, $symbol, $value) = @_;
+  my ($self, $name, $value) = @_;
 
-  $self->defset($symbol, $value);
-  $self->{' consts'}->{$symbol} = 1;
+  $name = $self->normalizeName($name);
+  $self->checkLocal($name);
+
+  $self->defset($name, $value);
+  $self->{' consts'}->{$name} = 1;
 }
 
 
 sub lookup {
-  my ($self, $symbol) = @_;
+  my ($self, $name) = @_;
 
-  exists($self->{$symbol})	and return $self->{$symbol};
-  defined($self->{' parent'})		and return $self->{' parent'}->lookup($symbol);
+  $name = $self->normalizeName($name);
 
-  die "Unknown variable: '$symbol'\n";
+  exists($self->{$name})      and return $self->{$name};
+  defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
+
+  die "Unknown variable: '$name'\n";
 }
 
 sub present {
-  my ($self, $symbol) = @_;
+  my ($self, $name) = @_;
 
-  exists($self->{$symbol}) and return 1;
-  defined($self->{' parent'}) and return $self->{' parent'}->present($symbol);
+  $name = $self->normalizeName($name);
+
+  exists($self->{$name}) and return 1;
+  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
 
   return 0;
 }
 
+
+
+package LL::GlobalContext;
+use base 'LL::Context';
+
+sub new {
+  my $self = LL::Context::new(@_);
+  $self->{' namespace'} = 'Main';
+
+  return $self;
+}
+
+sub setNamespace {my ($self, $ns) = @_; $self->{' namespace'} = $ns}
+sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
+
+sub normalizeName {
+  my ($self, $name) = @_;
+
+  return $name if $self->isQualified($name);
+  return $self->getNamespace() . '::' . $name;
+}
+
+sub deferToGlobal {return 0}
+sub checkLocal {}
 
 
 # ---------------------------------------------------------------------------
@@ -645,7 +698,7 @@ use constant NIL => LL::Nil::NIL;
 
 my $Input = undef;
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
-my $Globals = LL::Context->new();
+my $Globals = LL::GlobalContext->new();
 
 # Flags:
 my $dumpExpr = 0;
