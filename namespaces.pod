@@ -36,7 +36,7 @@ Predefined namespaces:
 	_::*			-- Reserved. Implementation-defined system functions.
 	__::*			-- Reserved. mproc functions go here.
 
-=head2 Namespaces
+=head2 To-do
 
 	-let symbols include '::'.
 
@@ -44,6 +44,11 @@ Predefined namespaces:
 	-add a default namespace.  This gets used for all unqualified sets
 	 and lookups.
 	-add builtins in '_' to access them.
+
+=head2 Questions
+
+	-Should namespaces be declared before use?
+		-yes
 
 
 =cut

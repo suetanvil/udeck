@@ -668,12 +668,26 @@ use base 'LL::Context';
 sub new {
   my $self = LL::Context::new(@_);
   $self->{' namespace'} = 'Main';
+  $self->{' namespaces'} = {Main => 1};
 
   return $self;
 }
 
-sub setNamespace {my ($self, $ns) = @_; $self->{' namespace'} = $ns}
+sub _chkns {
+  my ($self, $ns) = @_;
+  die "Undefined namespace '$ns'\n"
+	unless defined($self->{' namespaces'}->{$ns});
+}
+
+# Set default namespace
+sub setNamespace {
+  my ($self, $ns) = @_;
+  $self->_chkns($ns);
+  $self->{' namespace'} = $ns
+}
+
 sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
+sub defNamespace {my ($self, $ns) = @_; $self->{' namespaces'}->{$ns} = 1}
 
 sub normalizeName {
   my ($self, $name) = @_;
