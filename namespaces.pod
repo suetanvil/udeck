@@ -9,10 +9,10 @@ $Globals maintains a reference to the current namespace.  Unqualified
 globals are automatically put there.
 
 Should we be allowed to define names in other namespaces?
-	-yes! Macros need it.
-	-but! you can't switch namespaces inside a file.
-		-the 'use' statement sets it--the 'package' declaration just
-	     asserts it.  but it's mandatory(?).
+X	-yes! Macros need it.
+X	-but! you can't switch namespaces inside a file.
+X		-the 'use' statement sets it--the 'package' declaration just
+X	     asserts it.  but it's mandatory(?).
 
 Namespace variables beginning with '_' are private -- the system
 refuses to look them up in qualified names and they are not imported.
@@ -36,6 +36,16 @@ Predefined namespaces:
 	_::*			-- Reserved. Implementation-defined system functions.
 	__::*			-- Reserved. mproc functions go here.
 
+
+=head2 Importing
+
+	-the 'use' statement plus package path determines the filename to load.
+		-but the package loaded MUST, as its first statement, contain a 'package'
+		 declaration with a matching name.
+	-the load path is a simple global list in Main called LoadPath.
+
+
+
 =head2 To-do
 
 	-let symbols include '::'.
@@ -47,8 +57,9 @@ Predefined namespaces:
 
 =head2 Questions
 
-	-Should namespaces be declared before use?
-		-yes
+X	-Should namespaces be declared before use?
+X		-yes
 
 
 =cut
+
