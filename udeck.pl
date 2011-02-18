@@ -581,7 +581,7 @@ sub isQualified {
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
 sub normalizeName {my ($self, $name) = @_; return $name}
 
-sub checkLocal {
+sub checkName {
   my ($self, $name) = @_;
 
   die "Qualified name defined in local context."
@@ -594,7 +594,7 @@ sub def {
   $name = $self->normalizeName($name);
   die "Expecting string, not reference!\n" unless ref($name) eq '';
   die "Name contains whitespace.\n" if $name =~ /\s/;
-  $self->checkLocal($name);
+  $self->checkName($name);
 
   $self->{$name} = LL::Nil::NIL;
 }
@@ -621,7 +621,7 @@ sub defset {
   my ($self, $name, $value) = @_;
 
   $name = $self->normalizeName($name);
-  $self->checkLocal($name);
+  $self->checkName($name);
 
   $self->def($name);
   $self->set($name, $value);
@@ -631,7 +631,7 @@ sub defsetconst {
   my ($self, $name, $value) = @_;
 
   $name = $self->normalizeName($name);
-  $self->checkLocal($name);
+  $self->checkName($name);
 
   $self->defset($name, $value);
   $self->{' consts'}->{$name} = 1;
@@ -696,8 +696,27 @@ sub normalizeName {
   return $self->getNamespace() . '::' . $name;
 }
 
+# Split a name into ($namespace, $name) pairs
+sub _splitName {
+  my ($self, $name) = @_;
+
+  my @np = split (/::/, $name);
+  my $namePart = pop @np;
+  my $namespacePart = join ("::", @np);
+
+  return ($namespacePart, $namePart);
+}
+
 sub deferToGlobal {return 0}
-sub checkLocal {}
+
+# Ensure $name is valid for this context
+sub checkName {
+  my ($self, $name) = @_;
+
+  # We allow qualified names here but the namespace must be declared.
+  my ($namespace, $baseName) = $self->_splitName($name);
+  $self->_chkns($namespace);
+}
 
 
 # ---------------------------------------------------------------------------
@@ -1945,6 +1964,8 @@ sub macro_mapfn {
 sub initGlobals {
 
   $Globals->def('nil');
+  $Globals->defNamespace('_');
+  $Globals->defNamespace('__');
 
   # Externally-defined primitive functions
   for my $special (
