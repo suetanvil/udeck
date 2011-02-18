@@ -1,0 +1,7 @@
+# Test undefined namespaces.
+
+var foo::bar;
+foo::bar = 1;
+
+puts foo::bar;
+

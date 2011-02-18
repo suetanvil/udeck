@@ -1,0 +1,12 @@
+# Test global names in namespaces.
+
+_::defns :foo
+
+var foo::bar;
+foo::bar = 1;
+
+puts foo::bar;
+
+var baz = 42
+puts Main::baz;
+
