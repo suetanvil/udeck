@@ -2026,6 +2026,10 @@ sub initGlobals {
 								unless ${$size} > 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
+  prim2 '_::defns',		sub { my ($ns) = @_;
+							  $ns->checkSymbol();
+							  $Globals->defNamespace(${$ns});
+							};
 
   # Macros
   macro 'var',			\&macro_varconst;
