@@ -49,9 +49,10 @@ Predefined namespaces:
 
 =head3 To do:
 
-	-define system in Lang; auto-import them into Main.
+X	-define system names in Lang; auto-import them into Main.
 	
-
+	-Import modules
+		-turn interp() into load.
 
 
 =head2 Misc. To-do

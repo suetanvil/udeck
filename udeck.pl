@@ -798,8 +798,8 @@ exit(0);
 
 
 sub interp {
-  my ($print) = @_;
-
+  my ($file, $module, $print) = @_;
+# XXXXXX
   while (1) {
 	$NeedPrompt = 1;
 
