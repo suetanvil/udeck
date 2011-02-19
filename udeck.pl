@@ -756,7 +756,7 @@ use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Objects
 
 use constant NIL => LL::Nil::NIL;
 
-my $Input = undef;
+our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
 my $Globals = LL::GlobalContext->new();
 
@@ -771,18 +771,27 @@ GetOptions ('dump-expr'			=> \$dumpExpr)
   or die "Invalid argument.\n";
 
 initGlobals();
+run();
+exit(0);
 
-if (@ARGV) {
-  for my $ifile (@ARGV) {
-	open $Input, "< $ifile"
-	  or die "Unable to open '$ifile'.";
 
-	interp(0);
+# ---------------------------------------------------------------------------
+
+# Run the command-line program or the REPL, depending.
+sub run {
+
+  # Case 1: file on command-line.
+  if (@ARGV && $ARGV[0] !~ /^-/) {
+	readfile($ARGV[0], 'Main', 0, 0);
+	return;
   }
-} else {
 
+  # Otherwise, drop into the REPL
   while (1) {
-	eval {interp(1)};
+	eval {
+	  readfile('', 'Main', 0, 1);
+	};
+	
 	last unless $@;
 	print "Error: $@\n";
   }
@@ -790,18 +799,18 @@ if (@ARGV) {
   print "\n";
 }
 
-exit(0);
 
+sub readfile {
+  my ($file, $module, $checkName, $print) = @_;
 
+  local $Input;		# Push for the life of this function
+  if ($file) {
+	open $Input, "<$file"
+	  or die "Unable to open '$file'.";
+  }
 
-# ---------------------------------------------------------------------------
-
-
-sub interp {
-  my ($file, $module, $print) = @_;
-# XXXXXX
   while (1) {
-	$NeedPrompt = 1;
+	$NeedPrompt = 1;		# We are at the start of a logical LoL line
 
 	my $expr = readLoLLine(0);
 	next if ($expr->isEmptyList());
@@ -829,6 +838,8 @@ sub interp {
 	print $result->storeStr(), "\n"
 	  if $print;
   }
+
+  close $Input if $Input;
 }
 
 
