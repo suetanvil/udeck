@@ -13,6 +13,8 @@ X	-yes! Macros need it.
 X	-but! you can't switch namespaces inside a file.
 X		-the 'use' statement sets it--the 'package' declaration just
 X	     asserts it.  but it's mandatory(?).
+	-also, what about private names in external namespaces?
+		-we can get away without them.
 
 Namespace variables beginning with '_' are private -- the system
 refuses to look them up in qualified names and they are not imported.
@@ -32,6 +34,7 @@ Predefined namespaces:
 
 	Main			-- Default namespace.
 	Lang			-- Language features; automatically imported.
+	Sys				-- Implementation features
 	Lang::*			-- Reserved.
 	_::*			-- Reserved. Implementation-defined system functions.
 	__::*			-- Reserved. mproc functions go here.
@@ -42,18 +45,25 @@ Predefined namespaces:
 	-the 'use' statement plus package path determines the filename to load.
 		-but the package loaded MUST, as its first statement, contain a 'package'
 		 declaration with a matching name.
-	-the load path is a simple global list in Main called LoadPath.
+	-the load path is a simple global list in Sys called LoadPath.
+
+=head3 To do:
+
+	-define system in Lang; auto-import them into Main.
+	
 
 
 
-=head2 To-do
+=head2 Misc. To-do
 
-	-let symbols include '::'.
+X	-let symbols include '::'.
 
-	-create a subclass of LL::Context for the global context.
-	-add a default namespace.  This gets used for all unqualified sets
-	 and lookups.
-	-add builtins in '_' to access them.
+X	-create a subclass of LL::Context for the global context.
+X	-add a default namespace.  This gets used for all unqualified sets
+X	 and lookups.
+X	-add builtins in '_' to access them.
+
+
 
 =head2 Questions
 

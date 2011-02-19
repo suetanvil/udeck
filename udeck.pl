@@ -665,6 +665,8 @@ sub present {
 package LL::GlobalContext;
 use base 'LL::Context';
 
+=pod xxx
+
 sub new {
   my $self = LL::Context::new(@_);
   $self->{' namespace'} = 'Main';
@@ -672,6 +674,8 @@ sub new {
 
   return $self;
 }
+
+=cut
 
 sub _chkns {
   my ($self, $ns) = @_;
@@ -716,6 +720,29 @@ sub checkName {
   # We allow qualified names here but the namespace must be declared.
   my ($namespace, $baseName) = $self->_splitName($name);
   $self->_chkns($namespace);
+}
+
+
+# Copy all public names in namespace $src to namespace $dest
+sub importPublic {
+  my ($self, $src, $dest) = @_;
+
+  $self->_chkns($src);
+  $self->_chkns($dest);
+
+  my @srcNames = ();
+  foreach my $key (keys %{$self}) {
+	next if $key =~ /^\s/;	# Skip internal variables
+
+	my ($namespace, $name) = $self->_splitName($key);
+	next unless $namespace eq $src;
+	next if $name =~ /^_/;
+
+	die "Importing name '$key' into '$dest' overwrites existing name.\n"
+	  if exists($self->{"${dest}::${name}"});
+
+	$self->{"${dest}::${name}"} = $self->{"${src}::${name}"};
+  }
 }
 
 
@@ -1963,9 +1990,15 @@ sub macro_mapfn {
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
-  $Globals->def('nil');
-  $Globals->defNamespace('_');
-  $Globals->defNamespace('__');
+  # Create default namespaces
+  for my $ns (qw{_ __ Main Lang Sys}) {
+	$Globals->defNamespace($ns);
+  }
+
+  # All unqualified names defined here go to Lang.
+  $Globals->setNamespace('Lang');
+
+  $Globals->defsetconst ('nil', NIL);
 
   # Externally-defined primitive functions
   for my $special (
@@ -2045,6 +2078,11 @@ sub initGlobals {
   macro 'map',			\&macro_mapfn;
   macro 'macro',		\&macro_macro;
   macro 'mproc',		\&macro_mproc;
+
+
+  # Finally, switch to Main and import all public system names.
+  $Globals->importPublic('Lang', 'Main');
+  $Globals->setNamespace('Main');
 }
 
 sub builtin_println {

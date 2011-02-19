@@ -106,4 +106,6 @@ X		-\[nrfat] now works
 X	- allow _ in numbers
 	- scientific notation
 	- the empty symbol should be false
-	- fail49 -- recursive macro
+X	- fail49 -- recursive macro
+	- separate interp args from program args
+	
