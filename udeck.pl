@@ -1998,6 +1998,12 @@ sub macro_mapfn {
 }
 
 
+# 'package' always gets consumed by 'readfile'.
+sub macro_packagefn {
+  die "Attempted to declare a package inside an existing package.\n";
+}
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
@@ -2089,7 +2095,7 @@ sub initGlobals {
   macro 'map',			\&macro_mapfn;
   macro 'macro',		\&macro_macro;
   macro 'mproc',		\&macro_mproc;
-
+  macro 'package',		\&macro_packagefn;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
