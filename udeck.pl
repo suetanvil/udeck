@@ -2004,6 +2004,19 @@ sub macro_packagefn {
 }
 
 
+# The 'use' macro.
+sub macro_usefn {
+  my ($use, $pkg, $with, $moduleList) = @_;
+
+  die "with/without clauses unsupported in 'use' (or requires pkg)\n"
+	unless scalar @_ == 2;
+
+  $pkg->checkSymbol();
+
+  return LL::List->new([LL::Symbol->new('_::use'), LL::Quote->new($pkg)]);
+}
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
@@ -2038,6 +2051,7 @@ sub initGlobals {
 				   ['_::mproc',		\&builtin_mproc],
 				   ['_::mkstr',		\&builtin_mkstr],
 				   ['_::mkstr_all',	\&builtin_mkstr_all],
+				   ['_::use',		\&builtin_usefn],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2096,6 +2110,7 @@ sub initGlobals {
   macro 'macro',		\&macro_macro;
   macro 'mproc',		\&macro_mproc;
   macro 'package',		\&macro_packagefn;
+  macro 'use',			\&macro_usefn;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
@@ -2449,4 +2464,11 @@ sub builtin_mkstr_all {
   my @strings = map { $_->printStr() } @{$args};
   my $result = join(" ", @strings);
   return LL::String->new(\$result);
+}
+
+
+sub builtin_usefn {
+
+
+
 }
