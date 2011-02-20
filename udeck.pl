@@ -819,6 +819,16 @@ sub readfile {
 	my $expr = readLoLLine(0);
 	next if ($expr->isEmptyList());
 
+	# If $file was loaded via a 'use' directive (setting $checkName to
+	# 1), the first line MUST be a 'package' declaration and the
+	# package's module must match '$module'.
+	if ($checkName) {
+	  checkPkgDecl($file, $module, $expr);
+
+	  $checkName = 0;
+	  next;
+	}
+
 	# Exit if the first (and only) element of $expr is EOF.  Ignore it
 	# if EOF is at the end, since we'll see it again next iteration.
 	last if ($expr->[0]->isEof());
@@ -844,6 +854,32 @@ sub readfile {
   }
 
   close $Input if $Input;
+}
+
+
+sub checkPkgDecl {
+  my ($file, $module, $expr) = @_;
+
+  # Die unless the 'package' statement is here.
+  die "First line of module file '$file' does not begin with a matching " .
+	"package declaration.\n"
+	  unless ($expr->isList() &&
+			  $expr->[0]->isSymbol() &&
+			  ${$expr->[0]} eq 'package');
+
+  # Die unless the package declaration has one argument, a symbol.
+  die "Malformed package declaration.\n"
+	unless ($expr->size() == 2 && $expr->[1]->isSymbol());
+
+  my $pkgName = ${$expr->[1]};
+
+  # Die unless the package argument matches $module.
+  die "Attempted to use '$module'; got '$pkgName' in file $file\n"
+	unless $module eq $pkgName;
+
+  # Actually create the namespace
+  $Globals->defNamespace($pkgName);
+  $Globals->setNamespace($pkgName);
 }
 
 
@@ -2029,9 +2065,9 @@ sub initGlobals {
   # Set the initial load path
   $Globals->defset('Sys::ModPath', mkModPath());
 
-
   # All unqualified names defined here go to Lang.
   $Globals->setNamespace('Lang');
+
 
   $Globals->defsetconst ('nil', NIL);
 
