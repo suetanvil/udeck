@@ -45,7 +45,7 @@ Predefined namespaces:
 	-the 'use' statement plus package path determines the filename to load.
 		-but the package loaded MUST, as its first statement, contain a 'package'
 		 declaration with a matching name.
-	-the load path is a simple global list in Sys called LoadPath.
+	-the load path is a simple global list in Sys called ModPath
 
 =head3 To do:
 

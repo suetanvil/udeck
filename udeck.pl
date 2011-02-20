@@ -753,6 +753,8 @@ package LL::Main;
 use Term::ReadLine;
 use Scalar::Util qw(looks_like_number);
 use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Objects
+use Cwd qw{abs_path getcwd};
+use File::Basename;
 
 use constant NIL => LL::Nil::NIL;
 
@@ -921,9 +923,6 @@ sub readExpr {
 	($tok->isBrace() && $tok->isOpen()) and do {
 	  return readLoL();
 	};
-
-#	$tok->isRoundParen()
-#	  and die "Round parens currently unsupported.\n";
   };
 
   die "Unexpected token type: @{[ref($tok)]} (@{[$tok->storeStr()]}).\n";
@@ -2025,6 +2024,10 @@ sub initGlobals {
 	$Globals->defNamespace($ns);
   }
 
+  # Set the initial load path
+  $Globals->defset('Sys::ModPath', mkModPath());
+
+
   # All unqualified names defined here go to Lang.
   $Globals->setNamespace('Lang');
 
@@ -2116,6 +2119,22 @@ sub initGlobals {
   $Globals->importPublic('Lang', 'Main');
   $Globals->setNamespace('Main');
 }
+
+
+# Create the module path.  To do: make this reasonable.
+sub mkModPath {
+  my @path = ();
+
+  push @path, '.';
+  push @path, getcwd();
+
+  my $binpath = dirname(abs_path($0)) . "/lib/";
+  push @path, $binpath if -d $binpath;
+
+  @path = map { LL::String->new($_) } @path;
+  return LL::List->new(\@path);
+}
+
 
 sub builtin_println {
   for my $obj (@_) {
@@ -2467,8 +2486,45 @@ sub builtin_mkstr_all {
 }
 
 
+sub findModuleFor {
+  my ($moduleName) = @_;
+
+  my $modPath = $Globals->lookup('Sys::ModPath');
+  die "Unable to find a usable Sys::ModPath\n"
+	unless ($modPath && $modPath->isSymbol());
+
+  $moduleName->checkSymbol();
+  my @fileParts = split (/\:\:/, ${$moduleName});
+
+  my $filename = pop @fileParts;
+  $filename .= '.dk';
+
+  my @searchDir = map { ${$_} } @{$modPath};
+
+  for my $baseDir (@searchDir) {
+
+	my $path = $baseDir;
+	for my $dirPart (@fileParts) {
+	  $path .= "/$dirPart";
+	}
+
+	$path .= "/$filename";
+	return $path if -f $path;
+  }
+
+  return;
+}
+
+
 sub builtin_usefn {
+  my ($use, $moduleName) = @_;
 
+  $moduleName->checkSymbol();
 
+  my $mn = ${$moduleName};
+  my $path = findFileFor($mn);
+  die "Unable to find module '$mn'\n"
+	unless $path;
 
+  readfile($path, $mn, 1, 0);
 }
