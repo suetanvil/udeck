@@ -48,9 +48,16 @@ Predefined namespaces:
 	-the load path is a simple global list in Sys called ModPath
 	-readfile enforces the presence of a matching package declaration,
 	 creates the namespace and makes it default.
+
+	-need to prevent reimportation of external modules from imported
+	 modules.
+		-what if the user overwrites an imported symbol?
+
 	-loading a package needs to store the absolute filename and
 		a) skip reloading (but not importing)
 		b) die with an error if the new load is a different file.
+
+
 
 
 =head3 To do:

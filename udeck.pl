@@ -665,20 +665,17 @@ sub present {
 package LL::GlobalContext;
 use base 'LL::Context';
 
-=pod xxx
-
 sub new {
   my $self = LL::Context::new(@_);
-  $self->{' namespace'} = 'Main';
-  $self->{' namespaces'} = {Main => 1};
+  $self->{' namespace'} = '';
+  $self->{' namespaces'} = {};
 
   return $self;
 }
 
-=cut
-
 sub _chkns {
   my ($self, $ns) = @_;
+$DB::single = 1  	unless defined($self->{' namespaces'}->{$ns});
   die "Undefined namespace '$ns'\n"
 	unless defined($self->{' namespaces'}->{$ns});
 }
@@ -727,7 +724,7 @@ sub checkName {
 sub importPublic {
   my ($self, $src, $dest) = @_;
 
-  $dest = $self->{' namespaces'} unless $dest;
+  $dest = $self->{' namespace'} unless $dest;
 
   $self->_chkns($src);
   $self->_chkns($dest);
@@ -813,6 +810,8 @@ sub readfile {
 	  or die "Unable to open '$file'.";
   }
 
+  my $oldNamespace;
+
   while (1) {
 	$NeedPrompt = 1;		# We are at the start of a logical LoL line
 
@@ -824,6 +823,9 @@ sub readfile {
 	# package's module must match '$module'.
 	if ($checkName) {
 	  checkPkgDecl($file, $module, $expr);
+
+	  $oldNamespace = $Globals->getNamespace();
+	  $Globals->importPublic('Lang', $module);
 
 	  $checkName = 0;
 	  next;
@@ -854,6 +856,7 @@ sub readfile {
   }
 
   close $Input if $Input;
+  $Globals->setNamespace($oldNamespace) if $oldNamespace;
 }
 
 
@@ -877,7 +880,7 @@ sub checkPkgDecl {
   die "Attempted to use '$module'; got '$pkgName' in file $file\n"
 	unless $module eq $pkgName;
 
-  # Actually create the namespace
+  # Actually create the namespace and import 'Lang' into it.
   $Globals->defNamespace($pkgName);
   $Globals->setNamespace($pkgName);
 }
@@ -2563,7 +2566,10 @@ sub builtin_usefn {
   die "Unable to find module '$mn'\n"
 	unless $path;
 
+  my $currModule = $Globals->getNamespace();
+
   readfile($path, $mn, 1, 0);
 
-  $Globals->importPublic($moduleName);
+  $Globals->setNamespace($currModule);
+  $Globals->importPublic($mn);
 }
