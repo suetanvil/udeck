@@ -1,0 +1,16 @@
+=pod
+
+Basic Deck module used for testing.
+
+=cut
+
+package Test::Util
+
+proc foo {} {
+	puts "Test::Util::foo"
+}
+
+
+
+
+

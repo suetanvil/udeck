@@ -727,6 +727,8 @@ sub checkName {
 sub importPublic {
   my ($self, $src, $dest) = @_;
 
+  $dest = $self->{' namespaces'} unless $dest;
+
   $self->_chkns($src);
   $self->_chkns($dest);
 
@@ -2486,20 +2488,19 @@ sub builtin_mkstr_all {
 }
 
 
-sub findModuleFor {
+sub _findFileFor {
   my ($moduleName) = @_;
 
   my $modPath = $Globals->lookup('Sys::ModPath');
   die "Unable to find a usable Sys::ModPath\n"
-	unless ($modPath && $modPath->isSymbol());
+	unless ($modPath && $modPath->isList());
 
-  $moduleName->checkSymbol();
-  my @fileParts = split (/\:\:/, ${$moduleName});
+  my @fileParts = split (/\:\:/, $moduleName);
 
   my $filename = pop @fileParts;
   $filename .= '.dk';
 
-  my @searchDir = map { ${$_} } @{$modPath};
+  my @searchDir=map { $_->checkString(" in Sys::ModPath"); ${$_} } @{$modPath};
 
   for my $baseDir (@searchDir) {
 
@@ -2517,14 +2518,16 @@ sub findModuleFor {
 
 
 sub builtin_usefn {
-  my ($use, $moduleName) = @_;
+  my ($moduleName) = @_;
 
   $moduleName->checkSymbol();
 
   my $mn = ${$moduleName};
-  my $path = findFileFor($mn);
+  my $path = _findFileFor($mn);
   die "Unable to find module '$mn'\n"
 	unless $path;
 
   readfile($path, $mn, 1, 0);
+
+  $Globals->importPublic($moduleName);
 }
