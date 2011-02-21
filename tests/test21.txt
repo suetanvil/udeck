@@ -1,3 +1,5 @@
+WARNING: Found a ';' inside a list.  Probably not what you want.
+WARNING: Found a ';' inside a list.  Probably not what you want.
 Hello, World
 Yo!
 1

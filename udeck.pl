@@ -676,7 +676,6 @@ sub new {
 
 sub _chkns {
   my ($self, $ns) = @_;
-#$DB::single = 1  	unless defined($self->{' namespaces'}->{$ns});
   die "Undefined namespace '$ns'\n"
 	unless defined($self->{' namespaces'}->{$ns});
 }

@@ -13,9 +13,27 @@ function fail() {
 }
 
 
-for i in test*.dk; do
+for i in test*.dk fail*.dk; do
 	echo "$i"
-	../udeck.pl $i > $tmp
+
+	if [[ ! -f ${i%.dk}.txt ]]; then
+		echo "Skipping $i: No results file."
+		continue
+	fi
+
+	failed=succeeded
+	../udeck.pl $i > $tmp 2>&1 || failed=failed
+
+	expectedFail=succeeded
+	if [[ ${i:0:4} = "fail" ]]; then
+		expectedFail=failed
+	fi
+
+	if [[ $failed != $expectedFail ]]; then
+		echo "$i $failed unexpectedly."
+		fail
+	fi
+
 	if diff $tmp ${i%.dk}.txt; then
 		true
 	else
@@ -24,21 +42,6 @@ for i in test*.dk; do
 done
 
 
-for i in fail*.dk; do
-	echo $i
-	if ../udeck.pl $i > $tmp 2>&1 ; then
-		echo "$i succeeded.  Should have died."
-		echo "Output:"
-		cat $tmp
-		fail
-	fi
-
-	if diff $tmp ${i%.dk}.txt; then
-		true
-	else
-		fail
-	fi
-done
 
 
 
