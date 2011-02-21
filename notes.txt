@@ -85,21 +85,23 @@ X	- macros
 		-subify
 X		-mprocs
 
-	- namespaces
-		- namespace resolution
-		- packages
+X	- namespaces
+X		- namespace resolution
+X		- packages
 	- static variables
 	- objects
 	- integers
 
+	-_lreturn should have a better name: 'subReturn'?
+
 	- string interpolation
 X		-\[nrfat] now works
-		-$interpolation
+X		-$interpolation
 		-[interpolation]
-		-@interpolation
-		-hmmm.  What about ':"foo $bar"'
-			-" expressions are syntact shorthand the same way infix
-			 expressions are.
+X		-@interpolation
+X		-hmmm.  What about ':"foo $bar"'
+X			-" expressions are syntact shorthand the same way infix
+X			 expressions are.
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression

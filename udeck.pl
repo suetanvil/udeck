@@ -51,6 +51,7 @@ sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
+sub isQualifiedPrivate {return 0}
 sub isStringlike {0}
 sub isString {0}
 sub isInterpString {return 0}
@@ -267,6 +268,13 @@ sub asUnescapedOperator {
   return LL::Symbol->new($op);
 }
 sub atPut {die "Attempted to alter a symbol.\n"}
+
+# Test if $self is the qualified name of a private variable
+sub isQualifiedPrivate {
+  my ($self) = @_;
+  return ${$self} =~ /[^:]\:\:_[^:]*$/;
+}
+
 
 
 package LL::List;
@@ -1558,6 +1566,24 @@ sub expandInterpString {
 
 # ---------------------------------------------------------------------------
 
+
+# Check for accesses to private variables in other modules.
+sub checkForScopeViolations {
+  my ($expr, $name) = @_;
+
+  my $ns = $Globals->getNamespace();
+  die "Use of a qualified private name ('${$expr}') in function '$name'\n"
+	if ($expr->isQualifiedPrivate() && ${$expr} !~ m{^${ns}});
+
+  return unless $expr->isList();
+
+  for my $elem (@{$expr}) {
+	checkForScopeViolations($elem, $name);
+  }
+}
+
+
+
 # Return a blessed func. ref which executes a sub with $args and $body
 # in the given context.  If $context is undef, the $Global context is
 # used, allowing the function to define and set global variables.
@@ -1586,6 +1612,9 @@ sub compile {
 	my $macroContext = $outerContext ? $outerContext : $Globals;
 	for my $expr (@{$body}) {
 	  my $newExpr = applyMacrosRecursively ($expr, $macroContext);
+
+	  checkForScopeViolations($newExpr, $name);
+
 	  push @fixedBody, $newExpr;
 	}
   }

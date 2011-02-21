@@ -1,0 +1,14 @@
+# Test attempt to access private variables in Test::Util
+
+use Test::Util
+
+proc xxx {} {
+	puts Test::Util::_foo
+}
+
+
+
+
+
+
+

@@ -66,6 +66,7 @@ X		a) skip reloading (but not importing)
 X		b) die with an error if the new load is a different file.
 X	 NO! Just don't import if the namespace already exists.
 
+	-direct access to private names in other scopes needs to be blocked.
 
 
 =head3 To do:
