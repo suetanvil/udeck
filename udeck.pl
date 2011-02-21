@@ -1146,7 +1146,7 @@ sub readLoL {
 
 		# Empty single-quoted string is a special case, since there
 		# needs to be an even number of quotes.
-		$line =~ s/^(\'\')+([^'])/$2/ and do {
+		$line =~ s/^(\'\')+([^\'])/$2/ and do {
 		  push @tokens, LL::String->new("");
 		  next;
 		};
