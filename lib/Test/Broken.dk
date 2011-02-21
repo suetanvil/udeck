@@ -1,0 +1,6 @@
+# Broken package for testing.
+
+package Test::BrokenStuff	# Doesn't match the name
+
+var xxx = 42
+
