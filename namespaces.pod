@@ -45,7 +45,14 @@ Predefined namespaces:
 	-the 'use' statement plus package path determines the filename to load.
 		-but the package loaded MUST, as its first statement, contain a 'package'
 		 declaration with a matching name.
+
+	-imported symbols are const.  (Otherwise, writing to them affects
+	 the local name only.  This is unexpected behaviour.  Fixing that
+	 would require making the bindings "soft links", which is tricky.
+	 Maybe this will get done later.)
+
 	-the load path is a simple global list in Sys called ModPath
+
 	-readfile enforces the presence of a matching package declaration,
 	 creates the namespace and makes it default.
 

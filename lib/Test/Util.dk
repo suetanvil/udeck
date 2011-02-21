@@ -6,8 +6,8 @@ Basic Deck module used for testing.
 
 package Test::Util
 
-proc foo {} {
-	puts "Test::Util::foo"
+proc foo {n} {
+	puts "Test::Util::foo " n
 }
 
 

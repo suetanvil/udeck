@@ -667,15 +667,16 @@ use base 'LL::Context';
 
 sub new {
   my $self = LL::Context::new(@_);
-  $self->{' namespace'} = '';
-  $self->{' namespaces'} = {};
+  $self->{' namespace'} = '';			# The current namespace
+  $self->{' namespaces'} = {};			# The set of declared namespaces
+  $self->{' imported symbols'} = {};	# The set of names that are imports
 
   return $self;
 }
 
 sub _chkns {
   my ($self, $ns) = @_;
-$DB::single = 1  	unless defined($self->{' namespaces'}->{$ns});
+#$DB::single = 1  	unless defined($self->{' namespaces'}->{$ns});
   die "Undefined namespace '$ns'\n"
 	unless defined($self->{' namespaces'}->{$ns});
 }
@@ -733,6 +734,9 @@ sub importPublic {
   foreach my $key (keys %{$self}) {
 	next if $key =~ /^\s/;	# Skip internal variables
 
+	# Skip existing imports
+	next if defined($self->{' imported symbols'}->{$key});
+
 	my ($namespace, $name) = $self->_splitName($key);
 	next unless $namespace eq $src;
 	next if $name =~ /^_/;
@@ -740,7 +744,10 @@ sub importPublic {
 	die "Importing name '$key' into '$dest' overwrites existing name.\n"
 	  if exists($self->{"${dest}::${name}"});
 
-	$self->{"${dest}::${name}"} = $self->{"${src}::${name}"};
+	my $newVar = "${dest}::${name}";
+	$self->defsetconst($newVar, $self->{"${src}::${name}"});
+
+	$self->{' imported symbols'}->{$newVar} = 1;
   }
 }
 
