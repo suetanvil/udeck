@@ -676,6 +676,7 @@ sub new {
 
 sub _chkns {
   my ($self, $ns) = @_;
+#$DB::single = 1 	unless defined($self->{' namespaces'}->{$ns});
   die "Undefined namespace '$ns'\n"
 	unless defined($self->{' namespaces'}->{$ns});
 }
@@ -688,16 +689,10 @@ sub setNamespace {
 }
 
 sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
+sub defNamespace {my ($self, $ns) = @_; $self->{' namespaces'}->{$ns} = 1}
+sub hasNamespace {my ($self, $ns) = @_;
+				  return exists($self->{' namespaces'}->{$ns})}
 
-sub defNamespace {
-  my ($self, $ns, $file) = @_;
-  $self->{' namespaces'}->{$ns} = $file;
-}
-
-sub fileForNamespace {
-  my ($self, $ns) = @_;
-  return $self->{' namespaces'}->{$ns};
-}
 
 sub normalizeName {
   my ($self, $name) = @_;
@@ -896,7 +891,7 @@ sub checkPkgDecl {
 	unless $module eq $pkgName;
 
   # Actually create the namespace and import 'Lang' into it.
-  $Globals->defNamespace($pkgName, $file);
+  $Globals->defNamespace($pkgName);
   $Globals->setNamespace($pkgName);
 }
 
@@ -2077,7 +2072,7 @@ sub initGlobals {
 
   # Create default namespaces
   for my $ns (qw{_ __ Main Lang Sys}) {
-	$Globals->defNamespace($ns, "///$ns///");
+	$Globals->defNamespace($ns);
   }
 
   # Set the initial load path
@@ -2149,12 +2144,9 @@ sub initGlobals {
 								unless ${$size} > 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
-
-
-  # Testing primitives
   prim2 '_::defns',		sub { my ($ns) = @_;
 							  $ns->checkSymbol();
-							  $Globals->defNamespace(${$ns}, "///$ns///");
+							  $Globals->defNamespace(${$ns});
 							};
 
   # Macros
@@ -2184,7 +2176,6 @@ sub initGlobals {
 sub mkModPath {
   my @path = ();
 
-  push @path, '.';
   push @path, getcwd();
 
   my $binpath = dirname(abs_path($0)) . "/lib/";
@@ -2584,10 +2575,13 @@ sub builtin_usefn {
   die "Unable to find module '$mn'\n"
 	unless $path;
 
-  my $currModule = $Globals->getNamespace();
+  if (!$Globals->hasNamespace($mn)) {
+	my $currModule = $Globals->getNamespace();
 
-  readfile($path, $mn, 1, 0);
+	readfile($path, $mn, 1, 0);
 
-  $Globals->setNamespace($currModule);
+	$Globals->setNamespace($currModule);
+  }
+
   $Globals->importPublic($mn);
 }

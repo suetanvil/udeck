@@ -1,0 +1,4 @@
+Test::Util::foo local
+Test::Util::foo qualified
+42
+Foo2
