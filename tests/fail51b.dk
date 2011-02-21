@@ -1,0 +1,6 @@
+# Test basic packages
+
+use Test::Util;
+
+num = 50		# wrong! num is const.
+puts num

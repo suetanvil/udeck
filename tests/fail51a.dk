@@ -1,0 +1,5 @@
+# Test basic packages
+
+use Test::Util;
+
+puts _foo	# private variable.
