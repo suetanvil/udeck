@@ -1,0 +1,12 @@
+# Test basic packages
+
+use Test::Util;
+use Test::Util2;
+
+foo "local"
+Test::Util::foo "qualified"
+
+puts num
+
+foo2
+

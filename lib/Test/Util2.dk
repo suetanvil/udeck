@@ -1,0 +1,9 @@
+# Module that imports another module so we can test double imports.
+
+package Test::Util2
+
+use Test::Util
+
+proc foo2 {} {
+	puts "Foo2"
+}

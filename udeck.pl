@@ -688,7 +688,16 @@ sub setNamespace {
 }
 
 sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
-sub defNamespace {my ($self, $ns) = @_; $self->{' namespaces'}->{$ns} = 1}
+
+sub defNamespace {
+  my ($self, $ns, $file) = @_;
+  $self->{' namespaces'}->{$ns} = $file;
+}
+
+sub fileForNamespace {
+  my ($self, $ns) = @_;
+  return $self->{' namespaces'}->{$ns};
+}
 
 sub normalizeName {
   my ($self, $name) = @_;
@@ -887,7 +896,7 @@ sub checkPkgDecl {
 	unless $module eq $pkgName;
 
   # Actually create the namespace and import 'Lang' into it.
-  $Globals->defNamespace($pkgName);
+  $Globals->defNamespace($pkgName, $file);
   $Globals->setNamespace($pkgName);
 }
 
@@ -2068,7 +2077,7 @@ sub initGlobals {
 
   # Create default namespaces
   for my $ns (qw{_ __ Main Lang Sys}) {
-	$Globals->defNamespace($ns);
+	$Globals->defNamespace($ns, "///$ns///");
   }
 
   # Set the initial load path
@@ -2140,9 +2149,12 @@ sub initGlobals {
 								unless ${$size} > 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
+
+
+  # Testing primitives
   prim2 '_::defns',		sub { my ($ns) = @_;
 							  $ns->checkSymbol();
-							  $Globals->defNamespace(${$ns});
+							  $Globals->defNamespace(${$ns}, "///$ns///");
 							};
 
   # Macros
