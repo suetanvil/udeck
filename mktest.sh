@@ -23,3 +23,4 @@ function failed() {
 }
 
 ./udeck.pl $test > $result 2>&1 || failed
+

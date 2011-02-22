@@ -1,0 +1,13 @@
+# Test attempt to access private variables in Test::Util
+
+use Test::Util
+
+Test::Util::_foo = 42
+
+
+
+
+
+
+
+

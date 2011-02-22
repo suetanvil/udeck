@@ -1577,6 +1577,13 @@ sub checkForScopeViolations {
 
   return unless $expr->isList();
 
+  # Assignments are a special case
+  checkForScopeViolations($expr->[1]->value(), $name)
+	if ($expr->[0]->isSymbol() &&
+		${$expr->[0]} eq '_::set' &&
+		$expr->[1]->isQuote);
+
+
   for my $elem (@{$expr}) {
 	checkForScopeViolations($elem, $name);
   }
