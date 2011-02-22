@@ -895,7 +895,7 @@ sub checkPkgDecl {
   my $pkgName = ${$expr->[1]};
 
   # Die unless the package argument matches $module.
-  die "Attempted to use '$module'; got '$pkgName' in file $file\n"
+  die "Needed module '$module'; got '$pkgName' in file '@{[basename $file]}'\n"
 	unless $module eq $pkgName;
 
   # Actually create the namespace and import 'Lang' into it.
