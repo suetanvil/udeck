@@ -2103,6 +2103,17 @@ sub macro_usefn {
 }
 
 
+sub macro_perlproc {
+  my ($perlproc, $name, $args, $body) = @_;
+
+  $name->checkSymbol(" in 'perlproc'");
+  $args->checkLoL(" in 'perlproc'");
+  return LL::List->new([LL::Symbol->new('_::perlproc'),
+						LL::Quote->($name),
+						$args,
+						$body]);
+}
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
 
