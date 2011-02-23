@@ -1374,6 +1374,22 @@ sub dkwarn {
 }
 
 
+# Given a perl object or list of objects, convert it to the equivalent
+# Deck types.
+sub decktype {
+  if (scalar @_ > 1) {
+	my @result = map { decktype($_) } @_;
+	return LL::List->new(\@result);
+  }
+
+  my ($arg) = @_;
+
+# XXXX
+
+
+}
+
+
 # ---------------------------------------------------------------------------
 
 
@@ -2688,6 +2704,8 @@ sub builtin_perlproc {
   my $sub = str_compile($fn);
   die "Error: $@\nCompiling perlsub:\n'''\n$fn\n'''\n"
 	if ($@ || ref($sub) ne 'CODE');
+
+  my $proc = sub {return decktype($sub->(@_))};
 
   return $Globals->defset(${$name}, LL::Function->new($sub));
 }
