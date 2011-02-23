@@ -615,7 +615,7 @@ sub def {
   die "Name contains whitespace.\n" if $name =~ /\s/;
   $self->checkName($name);
 
-  $self->{$name} = LL::Nil::NIL;
+  return $self->{$name} = LL::Nil::NIL;
 }
 
 sub set {
@@ -628,7 +628,7 @@ sub set {
 
   exists($self->{$name}) and do {
 	$self->{$name} = $value;
-	return;
+	return $value;
   };
 
   defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
@@ -644,6 +644,8 @@ sub defset {
 
   $self->def($name);
   $self->set($name, $value);
+
+  return $value;
 }
 
 sub defsetconst {
@@ -654,6 +656,8 @@ sub defsetconst {
 
   $self->defset($name, $value);
   $self->{' consts'}->{$name} = 1;
+
+  return $value;
 }
 
 
@@ -704,7 +708,8 @@ sub _chkns {
 sub setNamespace {
   my ($self, $ns) = @_;
   $self->_chkns($ns);
-  $self->{' namespace'} = $ns
+  $self->{' namespace'} = $ns;
+  return;
 }
 
 sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
@@ -740,6 +745,8 @@ sub checkName {
   # We allow qualified names here but the namespace must be declared.
   my ($namespace, $baseName) = $self->_splitName($name);
   $self->_chkns($namespace);
+
+  return 1;
 }
 
 
@@ -771,6 +778,8 @@ sub importPublic {
 
 	$self->{' imported symbols'}->{$newVar} = 1;
   }
+
+  return;
 }
 
 
@@ -2118,7 +2127,7 @@ sub macro_perlproc {
   my ($perlproc, $name, $args, $body) = @_;
 
   $name->checkSymbol(" in 'perlproc'");
-  $args->checkLoL(" in 'perlproc'");
+  $args = fixFormalArgs($args);
   return LL::List->new([LL::Symbol->new('_::perlproc'),
 						LL::Quote->($name),
 						$args,
@@ -2164,6 +2173,7 @@ sub initGlobals {
 				   ['_::mkstr',		\&builtin_mkstr],
 				   ['_::mkstr_all',	\&builtin_mkstr_all],
 				   ['_::use',		\&builtin_usefn],
+				   ['_::perlproc',	\&builtin_perlproc],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2223,6 +2233,7 @@ sub initGlobals {
   macro 'mproc',		\&macro_mproc;
   macro 'package',		\&macro_packagefn;
   macro 'use',			\&macro_usefn;
+  macro 'perlproc',		\&macro_perlproc;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
@@ -2642,4 +2653,41 @@ sub builtin_usefn {
   }
 
   $Globals->importPublic($mn);
+}
+
+
+# Eval the first argument and return the result.  Used to compile Perl
+# code while minimizing the chance that it will interfere with this
+# program.
+sub strEval {
+  return eval "package LL::USER; $_[0]";
+}
+
+sub builtin_perlproc {
+  my ($name, $args, $bodyStr) = @_;
+
+  $args->checkQuote();
+  $args->value()->checkList();
+  $name->checkSymbol();
+  $bodyStr->checkString();
+
+  my $perlArgs = "";
+
+  if ($args->size() > 0) {
+	$perlArgs .= 'my (';
+	for my $a (@{$args}) {
+	  $a->checkSymbol(" in perlproc argument.");
+	  $perlArgs .= '$' . ${$a} . ',';
+	}
+
+	$perlArgs .= ') = map { $_ && $_->perlForm() } @_;' . "\n";
+  }
+
+  my $fn = 'sub{' . $perlArgs . ${$bodyStr} . '}';
+
+  my $sub = str_compile($fn);
+  die "Error: $@\nCompiling perlsub:\n'''\n$fn\n'''\n"
+	if ($@ || ref($sub) ne 'CODE');
+
+  return $Globals->defset(${$name}, LL::Function->new($sub));
 }
