@@ -80,6 +80,7 @@ sub isLoL {return 0}	# Is a quoted list containing only lists
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
+sub perlForm {my ($self) = @_; die "No perl form for @{[$self->printStr]}\n"}
 
 sub equals {
   my ($self, $other) = @_;
@@ -114,7 +115,7 @@ sub isTrue {my ($self) = @_; !! ${$self} }
 sub isLiteral {return 1}
 sub isNumber {return 1}
 sub inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
-
+sub perlForm {my ($self) = @_; return ${$self}}
 
 
 package LL::Stringlike;
@@ -124,6 +125,7 @@ sub equals {my ($self, $other) = @_;
 sub printStr {my ($self) = @_; return $ {$self} }
 sub isStringlike {1}
 sub isIndexable {return 1}
+sub perlForm {my ($self) = @_; return ${$self}}
 
 sub _sanitizeIndex {
   my ($self, $index) = @_;
@@ -305,6 +307,14 @@ sub inTypeEq {
   return 1;
 }
 
+sub perlForm {
+  my ($self) = @_;
+
+  my @result = map { $_->perlForm() } @{$self};
+  return \@result;
+}
+
+
 # Recursively replace all escaped operators in $self or its sublists
 # with their unescaped equivalents.
 sub unescapeAllOperators {
@@ -473,6 +483,7 @@ sub isNil {return 1}
 sub isTrue {return 0}
 sub storeStr {"nil"}
 sub inTypeEq {my ($self, $other) = @_; $other->isNil}
+sub perlForm {my ($self) = @_; return undef}
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
 
