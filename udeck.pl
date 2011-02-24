@@ -699,7 +699,6 @@ sub new {
 
 sub _chkns {
   my ($self, $ns) = @_;
-#$DB::single = 1 	unless defined($self->{' namespaces'}->{$ns});
   die "Undefined namespace '$ns'\n"
 	unless defined($self->{' namespaces'}->{$ns});
 }
@@ -1377,6 +1376,7 @@ sub dkwarn {
 # Given a perl object or list of objects, convert it to the equivalent
 # Deck types.
 sub decktype {
+
   if (scalar @_ > 1) {
 	my @result = map { decktype($_) } @_;
 	return LL::List->new(\@result);
@@ -1386,21 +1386,21 @@ sub decktype {
 
   # Handle non-reference scalars.
   return NIL unless defined($arg);
-  return LL::Number->new($_) if looks_like_number($arg);
-  return LL::String->new($_) unless ref($arg);
+  return LL::Number->new($arg) if looks_like_number($arg);
+  return LL::String->new($arg) unless ref($arg);
 
   given (ref($arg)) {
-	given ('SCALAR') {
+	when ('SCALAR') {
 	  return decktype(${$arg});
 	}
 
-	given ('ARRAY') {
-	  return decktypes(@{$arg});
+	when ('ARRAY') {
+	  return decktype(@{$arg});
 	}
 
-	given ('HASH') {
+	when ('HASH') {
 	  my @contents = %{$arg};
-	  return decktypes(\@contents);
+	  return decktype(\@contents);
 	}
 
 	default {
@@ -2162,10 +2162,13 @@ sub macro_usefn {
 sub macro_perlproc {
   my ($perlproc, $name, $args, $body) = @_;
 
+  die "Expecting 4 arguments to 'perlproc', got @{[scalar @_]}\n"
+	unless scalar @_ == 4;
+
   $name->checkSymbol(" in 'perlproc'");
   $args = fixFormalArgs($args);
   return LL::List->new([LL::Symbol->new('_::perlproc'),
-						LL::Quote->($name),
+						LL::Quote->new($name),
 						$args,
 						$body]);
 }
@@ -2702,8 +2705,7 @@ sub strEval {
 sub builtin_perlproc {
   my ($name, $args, $bodyStr) = @_;
 
-  $args->checkQuote();
-  $args->value()->checkList();
+  $args->checkList();
   $name->checkSymbol();
   $bodyStr->checkString();
 
@@ -2721,11 +2723,11 @@ sub builtin_perlproc {
 
   my $fn = 'sub{' . $perlArgs . ${$bodyStr} . '}';
 
-  my $sub = str_compile($fn);
+  my $sub = strEval($fn);
   die "Error: $@\nCompiling perlsub:\n'''\n$fn\n'''\n"
 	if ($@ || ref($sub) ne 'CODE');
 
   my $proc = sub {return decktype($sub->(@_))};
 
-  return $Globals->defset(${$name}, LL::Function->new($sub));
+  return $Globals->defset(${$name}, LL::Function->new($proc));
 }

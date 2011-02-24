@@ -1,0 +1,20 @@
+[Hello, world]
+42
+[42]
+[41.9999]
+[some_symbol]
+----------
+[1:2:3:4:5]
+nil
+[1:two:three]
+---------
+nil
+42.9
+Hello, world!
+
+[42 Hello, world nil 11]
+[42 Hello, world nil 11]
+42
+Foo bar
+[c stuff a 1 b 2]
+a floobert

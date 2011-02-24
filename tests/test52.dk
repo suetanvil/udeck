@@ -1,0 +1,49 @@
+# Test the 'perlproc' macro/proc
+# Basic perlproc
+perlproc test1 {a} '''
+    print "[$a]\n";
+	return 42;
+'''
+
+puts [test1 "Hello, world"]
+test1 42
+test1 41.9999
+test1 :some_symbol
+puts "----------"
+
+perlproc test2 {all} '''
+    print "[@{[join(':', @{$all})]}]\n";
+    return undef;
+'''
+
+puts [test2 :[1 2 3 4 5]]
+test2 [list 1 "two" :three]
+puts "---------"
+
+
+perlproc retnil {} '''return undef;'''
+puts [retnil]
+
+perlproc retnum {} '''return 42.9;'''
+puts [retnum]
+
+perlproc retstr {} '''return "Hello, world!\n";'''
+puts [retstr]
+
+perlproc retlist {} '''return (42, "Hello, world", undef, 11);'''
+puts [retlist]
+
+perlproc retlistref {} '''return [42, "Hello, world", undef, 11];'''
+puts [retlistref]
+
+perlproc retintref {} '''my $x = 42; return \$x;'''
+puts [retintref]
+
+perlproc retstrref {} '''my $x = "Foo bar"; return \$x;'''
+puts [retstrref]
+
+perlproc rethashref {} '''return {a => 1, b => 2, c => "stuff"};'''
+puts [rethashref]
+
+perlproc retobjref {} '''return bless [1,2], "floobert";'''
+puts [retobjref]
