@@ -47,3 +47,13 @@ puts [rethashref]
 
 perlproc retobjref {} '''return bless [1,2], "floobert";'''
 puts [retobjref]
+
+puts "------------"
+
+# Test moving perl objects between perlprocs.
+perlproc make {} '''return bless [42, 11], "blartblatt"; '''
+perlproc consume {m} '''print $m->[0], " ", $m->[1], "\n"; '''
+
+var bb = [make]
+puts bb
+consume bb

@@ -16,5 +16,8 @@ Hello, world!
 [42 Hello, world nil 11]
 42
 Foo bar
-[c stuff a 1 b 2]
-a floobert
+<perlobj HASH>
+<perlobj floobert>
+------------
+<perlobj blartblatt>
+42 11

@@ -77,6 +77,7 @@ sub isCallable {return 0}
 sub isTrue {return 1}
 sub isNumber {return 0}
 sub isLoL {return 0}	# Is a quoted list containing only lists
+sub isPerlObj {return 0}
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
@@ -565,7 +566,7 @@ package LL::Macro;
 use base 'LL::Object';
 sub isMacro {return 1}
 sub storeStr {return "<macro>"}
-# isCallable?
+
 
 package LL::Function;
 use base 'LL::Object';
@@ -574,6 +575,20 @@ sub isFunction {return 1}
 sub checkFun {}
 sub isCallable {return 1}
 sub storeStr {return "<function>"}
+
+
+package LL::PerlObj;
+use base 'LL::Object';
+sub new {
+  my ($class, $obj) = @_;
+  die "Expecting a ref.\n" unless ref($obj);
+  return bless [$obj], $class;
+}
+sub isPerlObj {return 1}
+sub storeStr {my ($self) = @_; return "<perlobj @{[ref($self->[0])]}>"}
+sub perlForm {my ($self) = @_; return $self->[0];}
+
+
 
 
 
@@ -1398,13 +1413,8 @@ sub decktype {
 	  return decktype(@{$arg});
 	}
 
-	when ('HASH') {
-	  my @contents = %{$arg};
-	  return decktype(\@contents);
-	}
-
 	default {
-	  return LL::String->new("a $_");
+	  return LL::PerlObj->new($arg);
 	}
   }
 }
