@@ -1384,9 +1384,29 @@ sub decktype {
 
   my ($arg) = @_;
 
-# XXXX
+  # Handle non-reference scalars.
+  return NIL unless defined($arg);
+  return LL::Number->new($_) if looks_like_number($arg);
+  return LL::String->new($_) unless ref($arg);
 
+  given (ref($arg)) {
+	given ('SCALAR') {
+	  return decktype(${$arg});
+	}
 
+	given ('ARRAY') {
+	  return decktypes(@{$arg});
+	}
+
+	given ('HASH') {
+	  my @contents = %{$arg};
+	  return decktypes(\@contents);
+	}
+
+	default {
+	  return LL::String->new("a $_");
+	}
+  }
 }
 
 
