@@ -2172,7 +2172,7 @@ sub macro_usefn {
 sub macro_perlproc {
   my ($perlproc, $name, $args, $body) = @_;
 
-  die "Expecting 4 arguments to 'perlproc', got @{[scalar @_]}\n"
+  die "Expecting 3 arguments to 'perlproc', got @{[scalar @_ - 1]}\n"
 	unless scalar @_ == 4;
 
   $name->checkSymbol(" in 'perlproc'");
@@ -2181,6 +2181,19 @@ sub macro_perlproc {
 						LL::Quote->new($name),
 						$args,
 						$body]);
+}
+
+
+sub macro_perluse {
+  my ($perluse, $name) = @_;
+
+  die "Expecting 1 arguments to perluse; got @{[scalar @_]}\n"
+	unless scalar @_ == 2;
+
+  $name->checkSymbol(" in 'perluse'");
+  return LL::List->new([LL::Symbol->new('_::perluse'),
+						LL::Quote->new($name)]);
+
 }
 
 # ---------------------------------------------------------------------------
@@ -2223,6 +2236,7 @@ sub initGlobals {
 				   ['_::mkstr_all',	\&builtin_mkstr_all],
 				   ['_::use',		\&builtin_usefn],
 				   ['_::perlproc',	\&builtin_perlproc],
+				   ['_::perluse',	\&builtin_perluse],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2283,6 +2297,7 @@ sub initGlobals {
   macro 'package',		\&macro_packagefn;
   macro 'use',			\&macro_usefn;
   macro 'perlproc',		\&macro_perlproc;
+  macro 'perluse',		\&macro_perluse;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
@@ -2740,4 +2755,24 @@ sub builtin_perlproc {
   my $proc = sub {return decktype($sub->(@_))};
 
   return $Globals->defset(${$name}, LL::Function->new($proc));
+}
+
+
+
+sub builtin_perluse {
+  my ($moduleSym) = @_;
+
+  $moduleSym->checkSymbol();
+
+  my $mod = ${$moduleSym};
+
+  # Prevent Bobby Tables-type errors.
+  die "Invalid module name '$mod'\n"
+	if ($mod =~ /[^a-zA-Z0-9_:]/);
+
+  eval "require $mod;";
+  die "Error loading module $mod: $@\n"
+	if $@;
+
+  return NIL;
 }

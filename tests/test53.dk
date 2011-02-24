@@ -1,0 +1,8 @@
+# Test perluse.
+
+perluse Math::Trig
+
+perlproc tan {n} '''return Math::Trig::tan($n);'''
+
+puts "tan 1.0 = " [tan 1.0]
+
