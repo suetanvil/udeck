@@ -1,0 +1,3 @@
+
+puts Sys::Argv0
+puts Sys::Argv

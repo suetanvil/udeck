@@ -65,13 +65,11 @@ Perl bindings:
 Form 1:
 
 	perluse "File::Handle";
-	perlproc split "split";
+	perlsub split "split";
 
 Form 2:
 
-	perlsub hello '''print "Hello, world!\n", $_[0], "\n";'''
-
-	perlsub hello {nm} '''print "Hello, $nm\n";''' 
+	perlproc hello {nm} '''print "Hello, $nm\n";''' 
 
 
 
@@ -93,6 +91,9 @@ X		- packages
 	- integers
 
 	-_lreturn should have a better name: 'subReturn'?
+	- ARGS needs to be split into interp args and program args.
+		-and need to replace '-' with ''.
+		-and update runtests to work with argtest.
 
 	- string interpolation
 X		-\[nrfat] now works

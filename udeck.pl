@@ -813,19 +813,43 @@ our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
 my $Globals = LL::GlobalContext->new();
 
+# ---------------------------------------------------------------------------
+
 # Flags:
 my $dumpExpr = 0;
 
-# ---------------------------------------------------------------------------
-
-
 use Getopt::Long;
-GetOptions ('dump-expr'			=> \$dumpExpr)
-  or die "Invalid argument.\n";
 
-initGlobals();
-run();
-exit(0);
+{
+  my $args = pullOutArgs();
+
+  GetOptions ('dump-expr'			=> \$dumpExpr)
+	or die "Invalid argument.\n";
+
+  initGlobals($args);
+  run();
+  exit(0);
+}
+
+
+sub pullOutArgs {
+  my $first = 0;
+  for my $arg (@ARGV) {
+	# This will break if any udeck.pl command-line options take
+	# arguments.
+	if ($arg eq '-' || $arg !~ /^\-\-/) {
+	  last;
+	}
+	$first++;
+  }
+
+  my @result = @ARGV[$first .. $#ARGV];
+  @ARGV = @ARGV[0..$first-1];
+
+  unshift @result, '-' unless scalar @result > 0;
+
+  return \@result;
+}
 
 
 # ---------------------------------------------------------------------------
@@ -834,8 +858,9 @@ exit(0);
 sub run {
 
   # Case 1: file on command-line.
-  if (@ARGV && $ARGV[0] !~ /^-/) {
-	readfile($ARGV[0], 'Main', 0, 0);
+  my $argv0 = ${ $Globals->lookup('Sys::Argv0') };
+  if ($argv0 ne '-') {
+	readfile($argv0, 'Main', 0, 0);
 	return;
   }
 
@@ -2198,6 +2223,7 @@ sub macro_perluse {
 
 # ---------------------------------------------------------------------------
 sub initGlobals {
+  my ($args) = @_;
 
   # Create default namespaces
   for my $ns (qw{_ __ Main Lang Sys}) {
@@ -2206,6 +2232,14 @@ sub initGlobals {
 
   # Set the initial load path
   $Globals->defset('Sys::ModPath', mkModPath());
+
+  # Set the script path and arguments
+  {
+	my @deckArgs = map { LL::String->new($_) } @{$args};
+
+	$Globals->defset('Sys::Argv0', shift @deckArgs);
+	$Globals->defset('Sys::Argv', LL::List->new(\@deckArgs));
+  }
 
   # All unqualified names defined here go to Lang.
   $Globals->setNamespace('Lang');
