@@ -1,0 +1,24 @@
+# Tests for the 'apply' function
+
+puts [apply + :[1 2]]
+
+proc f1 {a b c} {
+	puts "a = " a " b = " b " c = " c
+}
+
+apply f1 [list (2+3) "Hello" :xxx]
+
+proc f2 {args} {
+	puts "args = " args
+}
+
+apply f2 [list 1 2 3 4 "World" :yyy "this is more stuff" 52]
+apply f2 [list 1]
+apply f2 :[]
+
+proc f3 {} {
+	puts "f3 called"
+}
+
+apply f3 :[]
+

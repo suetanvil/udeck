@@ -2219,6 +2219,7 @@ sub macro_perluse {
 
 }
 
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
   my ($args) = @_;
@@ -2269,6 +2270,7 @@ sub initGlobals {
 				   ['_::use',		\&builtin_usefn],
 				   ['_::perlproc',	\&builtin_perlproc],
 				   ['_::perluse',	\&builtin_perluse],
+				   ['apply',		\&builtin_apply],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2807,4 +2809,17 @@ sub builtin_perluse {
 	if $@;
 
   return NIL;
+}
+
+
+sub builtin_apply {
+  my ($fun, $args) = @_;
+
+  die "Expecting 2 args, got @{[scalar @_]}\n"
+	unless scalar @_ == 2;
+
+  $fun->checkFun(" in 'apply'");
+  $args->checkList(" in 'apply'");
+
+  return $fun->(@{$args});
 }

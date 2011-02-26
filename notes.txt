@@ -112,5 +112,6 @@ X	- allow _ in numbers
 X	- fail49 -- recursive macro
 X	- separate interp args from program args
 	- apply
+	- bug: need to unescape all operators
 
 	
