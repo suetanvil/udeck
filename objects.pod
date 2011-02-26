@@ -1,3 +1,20 @@
 
 =head1 The Object System
 
+=head2 Thoughts
+
+I'm not going to try to implement the object system in pure Deck.
+You're welcome.
+
+For now, builtin types (list, string, etc.) are not OOPS.  That will
+change.
+
+Objects are a special type.
+
+Classes are also a special type.  They are also callable and create
+instances.  Specifically, they call 'INIT' with their arguments.
+
+
+
+
+

@@ -86,6 +86,7 @@ X		-mprocs
 X	- namespaces
 X		- namespace resolution
 X		- packages
+X		- with/without claus
 	- static variables
 	- objects
 	- integers
@@ -109,5 +110,7 @@ X	- allow _ in numbers
 	- scientific notation
 	- the empty symbol should be false
 X	- fail49 -- recursive macro
-	- separate interp args from program args
+X	- separate interp args from program args
+	- apply
+
 	
