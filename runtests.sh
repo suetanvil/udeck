@@ -13,16 +13,24 @@ function fail() {
 }
 
 
-for i in test*.dk fail*.dk; do
+for i in  argtest.sh test*.dk fail*.dk; do
 	echo "$i"
 
-	if [[ ! -f ${i%.dk}.txt ]]; then
+	if [ $i = ${i%.sh}.sh ]; then
+		cmp=${i%.sh}.txt
+		cmd=bash
+	else
+		cmp=${i%.dk}.txt
+		cmd=../udeck.pl
+	fi
+
+	if [[ ! -f $cmp ]]; then
 		echo "Skipping $i: No results file."
 		continue
 	fi
 
 	failed=succeeded
-	../udeck.pl $i > $tmp 2>&1 || failed=failed
+	$cmd $i > $tmp 2>&1 || failed=failed
 
 	expectedFail=succeeded
 	if [[ ${i:0:4} = "fail" ]]; then
@@ -34,7 +42,7 @@ for i in test*.dk fail*.dk; do
 		fail
 	fi
 
-	if diff $tmp ${i%.dk}.txt; then
+	if diff $tmp $cmp; then
 		true
 	else
 		fail

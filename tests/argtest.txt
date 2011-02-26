@@ -1,0 +1,11 @@
+*top*: [[puts Sys::Argv0]]
+argtest.dk
+*top*: [[puts Sys::Argv]]
+[]
+----------
+argtest.dk
+[--dump]
+----------
+argtest.dk
+[foo.dk asdf blort --dumpxxx --yyy -x]
+----------
