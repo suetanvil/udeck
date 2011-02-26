@@ -91,9 +91,8 @@ X		- packages
 	- integers
 
 	-_lreturn should have a better name: 'subReturn'?
-	- ARGS needs to be split into interp args and program args.
-		-and need to replace '-' with ''.
-		-and update runtests to work with argtest.
+X	- ARGS needs to be split into interp args and program args.
+X		-and update runtests to work with argtest.
 
 	- string interpolation
 X		-\[nrfat] now works

@@ -835,8 +835,6 @@ use Getopt::Long;
 sub pullOutArgs {
   my $first = 0;
   for my $arg (@ARGV) {
-	# This will break if any udeck.pl command-line options take
-	# arguments.
 	if ($arg eq '-' || $arg !~ /^\-\-/) {
 	  last;
 	}
