@@ -327,6 +327,12 @@ sub unescapeAllOperators {
 
 	$entry->unescapeAllOperators()
 	  if $entry->isList();
+
+	# Quoted objects are a special case.
+	if ($entry->isQuote() && $entry->value()->isEscapedOperator()) {
+	  $entry->[0] = $entry->[0]->asUnescapedOperator();
+	}
+
   }
 
   return undef;
@@ -469,8 +475,6 @@ sub isInfixList {return 1}
 	my $result = LL::List->new([$self->[$middle],
 								$left->asPrefixList(),
 								$right->asPrefixList()]);
-
-	$result->unescapeAllOperators();
 
 	return $result;
   }
@@ -994,6 +998,9 @@ sub readLoLLine {
   if ($rlist->couldBeImpliedInfix()) {
 	$rlist = LL::InfixList->new(\@result)->asPrefixList();
   }
+
+  # Strip out any operator escapes.  We no longer need them.
+  $rlist->unescapeAllOperators();
 
   # Warn of the case where an explicit list is the only element of a
   # line because the programmer may have accidentally bracketted the

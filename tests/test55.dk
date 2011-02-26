@@ -1,0 +1,13 @@
+# Test proper handling of escaped operators.
+
+puts \+
+puts +
+puts (\+ == \-)
+
+var n
+
+n = \+ == \-
+puts n
+
+n = \+ == \+
+puts n
