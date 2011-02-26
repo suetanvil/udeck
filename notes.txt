@@ -111,7 +111,7 @@ X	- allow _ in numbers
 	- the empty symbol should be false
 X	- fail49 -- recursive macro
 X	- separate interp args from program args
-	- apply
-	- bug: need to unescape all operators
+X	- apply
+X	- bug: need to unescape all operators
 
 	

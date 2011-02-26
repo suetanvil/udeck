@@ -1,0 +1,30 @@
+# Test the 'defined' and 'lookup' builtins.
+
+use Test::Util;
+
+var bobo = 42
+
+puts [defined :bobo]
+puts [defined :bloop]
+puts [lookup :bobo]
+
+# Imported from Test::Util
+puts [defined :foo]
+puts [lookup :foo]
+
+# Private entry in Test::Util.  ERROR: this should not work.
+puts [defined :_foo]
+puts [defined :Test::Util::_foo]
+puts [lookup :Test::Util::_foo]
+
+
+
+
+
+
+
+
+
+
+
+

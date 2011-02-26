@@ -812,6 +812,7 @@ use Cwd qw{abs_path getcwd};
 use File::Basename;
 
 use constant NIL => LL::Nil::NIL;
+use constant TRUE => LL::Number->new(1);
 
 our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
@@ -2319,6 +2320,14 @@ sub initGlobals {
   prim2 '_::defns',		sub { my ($ns) = @_;
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
+							};
+  prim2 'defined',		sub { my ($name) = @_;
+							  $name->checkSymbol(" in 'defined'");
+							  return $Globals->present(${$name}) ? TRUE:NIL;
+							};
+  prim2 'lookup',		sub { my ($name) = @_;
+							  $name->checkSymbol(" in 'lookup'");
+							  return $Globals->lookup(${$name});
 							};
 
   # Macros
