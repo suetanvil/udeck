@@ -51,7 +51,6 @@ sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
-sub isQualifiedPrivate {return 0}
 sub isStringlike {0}
 sub isString {0}
 sub isInterpString {return 0}
@@ -271,13 +270,6 @@ sub asUnescapedOperator {
   return LL::Symbol->new($op);
 }
 sub atPut {die "Attempted to alter a symbol.\n"}
-
-# Test if $self is the qualified name of a private variable
-sub isQualifiedPrivate {
-  my ($self) = @_;
-  return ${$self} =~ /[^:]\:\:_[^:]*$/;
-}
-
 
 
 package LL::List;
@@ -799,6 +791,23 @@ sub importPublic {
 
   return;
 }
+
+# Test if $name is a qualified private symbol in any scope.
+sub nameIsQualifiedPrivate {
+  my ($self, $name) = @_;
+
+  return $name =~ /[^:]\:\:_[^:]*$/;
+}
+
+# Test if $name is legally accessible from the current namespace.
+sub isLegallyAccessible {
+  my ($self, $name) = @_;
+
+  my $ns = $self->getNamespace();
+  return 1 unless $self->nameIsQualifiedPrivate($name);
+  return $name =~ m{^${ns}};
+}
+
 
 
 # ---------------------------------------------------------------------------
@@ -1668,9 +1677,13 @@ sub expandInterpString {
 sub checkForScopeViolations {
   my ($expr, $name) = @_;
 
-  my $ns = $Globals->getNamespace();
-  die "Use of a qualified private name ('${$expr}') in function '$name'\n"
-	if ($expr->isQualifiedPrivate() && ${$expr} !~ m{^${ns}});
+  if ($expr->isSymbol()) {
+	my $ns = $Globals->getNamespace();
+	die "Use of a qualified private name ('${$expr}') in function '$name'\n"
+	  unless $Globals->isLegallyAccessible(${$expr});
+
+	return;
+  }
 
   return unless $expr->isList();
 
@@ -1679,7 +1692,6 @@ sub checkForScopeViolations {
 	if ($expr->[0]->isSymbol() &&
 		${$expr->[0]} eq '_::set' &&
 		$expr->[1]->isQuote);
-
 
   for my $elem (@{$expr}) {
 	checkForScopeViolations($elem, $name);
@@ -2323,10 +2335,14 @@ sub initGlobals {
 							};
   prim2 'defined',		sub { my ($name) = @_;
 							  $name->checkSymbol(" in 'defined'");
+							  return NIL
+								unless $Globals->isLegallyAccessible(${$name});
 							  return $Globals->present(${$name}) ? TRUE:NIL;
 							};
   prim2 'lookup',		sub { my ($name) = @_;
 							  $name->checkSymbol(" in 'lookup'");
+							  die "Unknown or inaccessable symbol: ${$name}\n"
+								unless $Globals->isLegallyAccessible(${$name});
 							  return $Globals->lookup(${$name});
 							};
 

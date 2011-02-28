@@ -1,0 +1,19 @@
+# Test the 'defined' and 'lookup' builtins.
+
+use Test::Util;
+
+# Private entry in Test::Util.
+puts [lookup :Test::Util::_foo]
+
+
+
+
+
+
+
+
+
+
+
+
+

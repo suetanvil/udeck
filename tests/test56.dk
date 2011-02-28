@@ -12,10 +12,10 @@ puts [lookup :bobo]
 puts [defined :foo]
 puts [lookup :foo]
 
-# Private entry in Test::Util.  ERROR: this should not work.
+# Private entry in Test::Util.
 puts [defined :_foo]
 puts [defined :Test::Util::_foo]
-puts [lookup :Test::Util::_foo]
+
 
 
 

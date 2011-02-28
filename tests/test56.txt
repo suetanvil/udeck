@@ -1,0 +1,7 @@
+1
+nil
+42
+1
+<function>
+nil
+nil
