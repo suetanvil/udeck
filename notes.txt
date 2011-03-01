@@ -64,12 +64,12 @@ Perl bindings:
 	
 Form 1:
 
-	perluse "File::Handle";
+X	perluse "File::Handle";
 	perlsub split "split";
 
 Form 2:
 
-	perlproc hello {nm} '''print "Hello, $nm\n";''' 
+X	perlproc hello {nm} '''print "Hello, $nm\n";''' 
 
 
 
@@ -115,3 +115,4 @@ X	- apply
 X	- bug: need to unescape all operators
 
 	
+	- needs a better name.

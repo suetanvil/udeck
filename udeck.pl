@@ -762,7 +762,7 @@ sub checkName {
 
 # Copy all public names in namespace $src to namespace $dest
 sub importPublic {
-  my ($self, $src, $dest) = @_;
+  my ($self, $src, $dest, $withNames) = @_;
 
   $dest = $self->{' namespace'} unless $dest;
 
@@ -780,10 +780,16 @@ sub importPublic {
 	next unless $namespace eq $src;
 	next if $name =~ /^_/;
 
-	die "Importing name '$key' into '$dest' overwrites existing name.\n"
-	  if exists($self->{"${dest}::${name}"});
-
 	my $newVar = "${dest}::${name}";
+	if ($withNames) {
+	  next unless exists($withNames->{$name});
+	  $newVar = "${dest}::" . $withNames->{$name};
+	}
+
+	die "Importing name '$key' into '$dest' as '$newVar' overwrites existing " .
+	  "name.\n"
+	  if exists($self->{$newVar});
+
 	$self->defsetconst($newVar, $self->{"${src}::${name}"});
 
 	$self->{' imported symbols'}->{$newVar} = 1;
@@ -2203,12 +2209,22 @@ sub macro_packagefn {
 sub macro_usefn {
   my ($use, $pkg, $with, $moduleList) = @_;
 
-  die "with/without clauses unsupported in 'use' (or requires pkg)\n"
-	unless scalar @_ == 2;
+  die "Mangled 'use' statement.\n"
+	if (scalar @_ < 2 || scalar @_ == 3 || scalar @_ > 4);
 
   $pkg->checkSymbol();
 
-  return LL::List->new([LL::Symbol->new('_::use'), LL::Quote->new($pkg)]);
+  my ($modifier, $symbols) = (NIL, NIL);
+
+  if (scalar @_ == 4) {
+	$modifier = $with;
+	$symbols = $moduleList;
+  }
+
+  return LL::List->new([LL::Symbol->new('_::use'),
+						LL::Quote->new($pkg),
+						$modifier,
+						$symbols])
 }
 
 
@@ -2764,11 +2780,35 @@ sub _findFileFor {
 }
 
 
+
+sub _getImportNameList {
+  my ($list, $with) = @_;
+  my %result = ();
+
+  die "Unknown modifier '${$with}'\n" unless ${$with} eq 'with';
+
+  for my $sublist (@{$list}) {
+	$sublist->checkList(" in '$with' clause element.");
+	$sublist->length() > 0 or die "Empty list as '$with' clause element.\n";
+
+	my $sym = $sublist->[0];
+	$sym->checkSymbol();
+
+	die "renames not yet supported\n" if ${$sym} eq '=>';
+
+	$result{${$sym}} = ${$sym};
+  }
+
+  return \%result;
+}
+
+
 sub builtin_usefn {
-  my ($moduleName) = @_;
+  my ($moduleName, $with, $list) = @_;
 
   $moduleName->checkSymbol();
 
+  # Import the file
   my $mn = ${$moduleName};
   my $path = _findFileFor($mn);
   die "Unable to find module '$mn'\n"
@@ -2782,7 +2822,16 @@ sub builtin_usefn {
 	$Globals->setNamespace($currModule);
   }
 
-  $Globals->importPublic($mn);
+  # If requested, construct the hash of names to copy over.
+  my $names;
+  if (!$with->isNil()) {
+	$with->checkSymbol();
+	$list->checkLoL();
+
+	$names = _getImportNameList($list, $with);
+  }
+
+  $Globals->importPublic($mn, $Globals->getNamespace(), $names);
 }
 
 

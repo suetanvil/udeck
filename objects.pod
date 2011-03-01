@@ -12,7 +12,7 @@ change.
 Objects are a special type.
 
 Classes are also a special type.  They are also callable and create
-instances.  Specifically, they call 'INIT' with their arguments.
+instances, then call 'INIT' with their arguments.
 
 
 
