@@ -14,6 +14,10 @@ var num = 42
 
 var _foo = "bar"
 
+proc blort {n} {
+	puts "Blort! " n
+}
+
 
 
 

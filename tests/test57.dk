@@ -1,0 +1,20 @@
+# Test basic packages
+
+use Test::Util with {foo}
+
+
+foo "local"
+puts Test::Util::num
+
+puts [defined :num]
+puts [defined :blort]
+
+proc blort {} {
+	puts "local blort!"
+}
+
+puts [defined :blort]
+blort
+
+		   
+

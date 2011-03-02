@@ -2223,7 +2223,7 @@ sub macro_usefn {
 
   return LL::List->new([LL::Symbol->new('_::use'),
 						LL::Quote->new($pkg),
-						$modifier,
+						LL::Quote->new($modifier),
 						$symbols])
 }
 
@@ -2789,7 +2789,7 @@ sub _getImportNameList {
 
   for my $sublist (@{$list}) {
 	$sublist->checkList(" in '$with' clause element.");
-	$sublist->length() > 0 or die "Empty list as '$with' clause element.\n";
+	$sublist->size() > 0 or die "Empty list as '$with' clause element.\n";
 
 	my $sym = $sublist->[0];
 	$sym->checkSymbol();
@@ -2805,6 +2805,9 @@ sub _getImportNameList {
 
 sub builtin_usefn {
   my ($moduleName, $with, $list) = @_;
+
+  die "Argument count mismatch!\n" unless scalar @_ == 3;
+
 
   $moduleName->checkSymbol();
 
@@ -2826,7 +2829,7 @@ sub builtin_usefn {
   my $names;
   if (!$with->isNil()) {
 	$with->checkSymbol();
-	$list->checkLoL();
+	$list->checkList(" in '_::use'.");
 
 	$names = _getImportNameList($list, $with);
   }

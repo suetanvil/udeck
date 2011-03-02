@@ -1,0 +1,6 @@
+Test::Util::foo local
+42
+nil
+nil
+1
+local blort!
