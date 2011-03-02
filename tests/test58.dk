@@ -1,0 +1,14 @@
+# Test basic packages
+
+use Test::Util without {foo}
+
+puts [defined :foo]
+puts [defined :num]
+puts [defined :blort]
+
+blort 42
+
+
+
+		   
+

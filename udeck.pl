@@ -762,7 +762,7 @@ sub checkName {
 
 # Copy all public names in namespace $src to namespace $dest
 sub importPublic {
-  my ($self, $src, $dest, $withNames) = @_;
+  my ($self, $src, $dest, $withNames, $withoutNames) = @_;
 
   $dest = $self->{' namespace'} unless $dest;
 
@@ -784,6 +784,8 @@ sub importPublic {
 	if ($withNames) {
 	  next unless exists($withNames->{$name});
 	  $newVar = "${dest}::" . $withNames->{$name};
+	} elsif ($withoutNames) {
+	  next if exists($withoutNames->{$name});
 	}
 
 	die "Importing name '$key' into '$dest' as '$newVar' overwrites existing " .
@@ -2785,7 +2787,8 @@ sub _getImportNameList {
   my ($list, $with) = @_;
   my %result = ();
 
-  die "Unknown modifier '${$with}'\n" unless ${$with} eq 'with';
+  die "Unknown modifier '${$with}'\n"
+	unless (${$with} =~ 'with' || ${$with} eq 'without');
 
   for my $sublist (@{$list}) {
 	$sublist->checkList(" in '$with' clause element.");
@@ -2834,7 +2837,10 @@ sub builtin_usefn {
 	$names = _getImportNameList($list, $with);
   }
 
-  $Globals->importPublic($mn, $Globals->getNamespace(), $names);
+  my ($withSet, $withoutSet) =
+	(${$with} eq 'with') ? ($names, undef) : (undef, $names);
+
+  $Globals->importPublic($mn, $Globals->getNamespace(), $withSet, $withoutSet);
 }
 
 
