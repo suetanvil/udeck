@@ -2808,23 +2808,26 @@ sub _getImportNameList {
 
   for my $sublist (@{$list}) {
 	$sublist->checkList(" in '$with' clause element.");
-	$sublist->size() > 0 or die "Empty list as '$with' clause element.\n";
+	($sublist->size() == 1 || $sublist->size() == 3)
+	  or die "Empty list as '$with' clause element.\n";
 
 	my $sym = $sublist->[0];
-	my $newName = $sym;
-	if (${$sym} eq '=>') {
-	  die "Malformed rename expression for '${$sym}'.\n"
-		unless (scalar @{$sublist} == 3);
+	$sym->checkLocalName(" as imported symbol.");
 
-	  $sym = $sublist->[1];
+	my $newName = $sym;
+	if ($sublist->size() == 3) {
+	  my $asn = ${ $sublist->[1] };
+	  die "Malformed rename expression for '${$sym}': expecting '=>', "
+		. "got '$asn'.\n"
+		unless ($asn eq '=>');
+
 	  $newName = $sublist->[2];
 	  $newName->checkLocalName("as rename target for '${$sym}'.");
 	}
 
-	$sym->checkLocalName(" as imported symbol.");
 	$result{${$sym}} = ${$newName};
   }
-
+$DB::single = 1;
   return \%result;
 }
 
