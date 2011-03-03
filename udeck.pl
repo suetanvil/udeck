@@ -49,8 +49,10 @@ sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
 sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
+sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
+sub isLocalName {return 0}
 sub isStringlike {0}
 sub isString {0}
 sub isInterpString {return 0}
@@ -269,6 +271,18 @@ sub asUnescapedOperator {
   $op =~ s/^\\//;
   return LL::Symbol->new($op);
 }
+
+sub isLocalName {
+  my ($self) = @_;
+
+  return ${$self} !~ /\:\:/;
+}
+
+sub checkLocalName {
+  my ($self, @args) = @_;
+  $self->SUPER::checkLocalName(@args) unless $self->isLocalName();
+}
+
 sub atPut {die "Attempted to alter a symbol.\n"}
 
 
@@ -2782,7 +2796,9 @@ sub _findFileFor {
 }
 
 
-
+# Given the body of a use 'with/without/rename' clause, produce a hash
+# mapping the given names to their new names if specified or the
+# original name.
 sub _getImportNameList {
   my ($list, $with) = @_;
   my %result = ();
@@ -2795,11 +2811,18 @@ sub _getImportNameList {
 	$sublist->size() > 0 or die "Empty list as '$with' clause element.\n";
 
 	my $sym = $sublist->[0];
-	$sym->checkSymbol();
+	my $newName = $sym;
+	if (${$sym} eq '=>') {
+	  die "Malformed rename expression for '${$sym}'.\n"
+		unless (scalar @{$sublist} == 3);
 
-	die "renames not yet supported\n" if ${$sym} eq '=>';
+	  $sym = $sublist->[1];
+	  $newName = $sublist->[2];
+	  $newName->checkLocalName("as rename target for '${$sym}'.");
+	}
 
-	$result{${$sym}} = ${$sym};
+	$sym->checkLocalName(" as imported symbol.");
+	$result{${$sym}} = ${$newName};
   }
 
   return \%result;

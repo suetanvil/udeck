@@ -86,7 +86,9 @@ X		-mprocs
 X	- namespaces
 X		- namespace resolution
 X		- packages
-X		- with/without claus
+X		- with/without clauses
+		- with renames
+		- 'rename' 
 	- static variables
 	- objects
 	- integers
@@ -114,5 +116,6 @@ X	- separate interp args from program args
 X	- apply
 X	- bug: need to unescape all operators
 	- need to check the argument counts of all built-in functions.
-	
+	- merge symbol class-level qualified checks with namespace-level checks.
+
 	- needs a better name.
