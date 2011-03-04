@@ -776,7 +776,7 @@ sub checkName {
 
 # Copy all public names in namespace $src to namespace $dest
 sub importPublic {
-  my ($self, $src, $dest, $withNames, $withoutNames) = @_;
+  my ($self, $src, $dest, $withNames, $withoutNames, $renameNames) = @_;
 
   $dest = $self->{' namespace'} unless $dest;
 
@@ -800,6 +800,8 @@ sub importPublic {
 	  $newVar = "${dest}::" . $withNames->{$name};
 	} elsif ($withoutNames) {
 	  next if exists($withoutNames->{$name});
+	} elsif ($renameNames && defined($renameNames->{$name})) {
+	  $newVar = "${dest}::" . $renameNames->{$name};
 	}
 
 	die "Importing name '$key' into '$dest' as '$newVar' overwrites existing " .
@@ -2803,9 +2805,6 @@ sub _getImportNameList {
   my ($list, $with) = @_;
   my %result = ();
 
-  die "Unknown modifier '${$with}'\n"
-	unless (${$with} =~ 'with' || ${$with} eq 'without');
-
   for my $sublist (@{$list}) {
 	$sublist->checkList(" in '$with' clause element.");
 	($sublist->size() == 1 || $sublist->size() == 3)
@@ -2837,7 +2836,6 @@ sub builtin_usefn {
 
   die "Argument count mismatch!\n" unless scalar @_ == 3;
 
-
   $moduleName->checkSymbol();
 
   # Import the file
@@ -2863,10 +2861,17 @@ sub builtin_usefn {
 	$names = _getImportNameList($list, $with);
   }
 
-  my ($withSet, $withoutSet) =
-	(${$with} eq 'with') ? ($names, undef) : (undef, $names);
+  my ($withSet, $withoutSet, $renameSet);
 
-  $Globals->importPublic($mn, $Globals->getNamespace(), $withSet, $withoutSet);
+  given(${$with}) {
+	when ('with')	{$withSet = $names}
+	when ('without'){$withoutSet = $names}
+	when ('rename') {$renameSet = $names}
+	default {die "Invalid 'use' modifier clause: '${$with}'\n"}
+  }
+
+  $Globals->importPublic($mn, $Globals->getNamespace(), $withSet,
+						 $withoutSet, $renameSet);
 }
 
 

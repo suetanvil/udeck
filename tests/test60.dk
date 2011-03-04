@@ -1,0 +1,12 @@
+# Test basic packages
+
+use Test::Util rename {foo => localFoo}
+
+puts [defined :foo]
+puts [defined :localFoo]
+puts [defined :num]
+puts [defined :blort]
+puts [defined :_foo]
+
+		   
+
