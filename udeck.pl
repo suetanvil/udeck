@@ -1835,7 +1835,7 @@ sub prim ( $$$$ ) {
   $Globals->defset($name, LL::Function->new($prim));
 }
 
-
+# Ensure that argument types of $args matches $types.
 sub validateArgs {
   my ($name, $types, $args) = @_;
 
@@ -1848,6 +1848,18 @@ sub validateArgs {
   for my $type (@typeList) {
 	$args->[$count++]->checkType($type, $name);	
   }
+}
+
+# Ensure that the number of elements in $args is one of the numbers
+# give in @counts.
+sub checkNargs {
+  my ($args, @counts) = @_;
+
+  for my $count (@counts) {
+	return if scalar @{$args} == $count;
+  }
+
+  die "Expecting $counts[0] arguments; got @{[scalar @counts]}.\n"; 
 }
 
 
@@ -2683,6 +2695,8 @@ sub builtin_macro {
 sub builtin_subfn {
   my ($context, $args, $body) = @_;
 
+  checkNargs(\@_, 3);
+
   $args->checkList();
   $body->checkList();
 
@@ -2708,6 +2722,8 @@ sub builtin_iffn {
 sub builtin_whilefn {
   my ($test, $body) = @_;
 
+  checkNargs(\@_, 2);
+
   my $result = NIL;
   while ($test->()->isTrue()) {
 	$result = $body->();
@@ -2719,6 +2735,8 @@ sub builtin_whilefn {
 
 sub builtin_mapfn {
   my ($fn, $list) = @_;
+
+  checkNargs(\@_, 2);
 
   $list->checkIndexable();
   $fn->checkFun();
@@ -2735,6 +2753,8 @@ sub builtin_mapfn {
 
 sub builtin_foreachfn {
   my ($list, $fn) = @_;
+
+  checkNargs(\@_, 2);
 
   $list->checkIndexable();
   $fn->checkFun();
@@ -2762,6 +2782,8 @@ sub builtin_mkstr {
 # space.
 sub builtin_mkstr_all {
   my ($args) = @_;
+
+  checkNargs(\@_, 1);
 
   my @strings = map { $_->printStr() } @{$args};
   my $result = join(" ", @strings);
@@ -2834,7 +2856,7 @@ sub _getImportNameList {
 sub builtin_usefn {
   my ($moduleName, $with, $list) = @_;
 
-  die "Argument count mismatch!\n" unless scalar @_ == 3;
+  checkNargs(\@_, 3);
 
   $moduleName->checkSymbol();
 
@@ -2886,6 +2908,8 @@ sub strEval {
 sub builtin_perlproc {
   my ($name, $args, $bodyStr) = @_;
 
+  checkNargs(\@_, 3);
+
   $args->checkList();
   $name->checkSymbol();
   $bodyStr->checkString();
@@ -2918,6 +2942,8 @@ sub builtin_perlproc {
 sub builtin_perluse {
   my ($moduleSym) = @_;
 
+  checkNargs(\@_, 1);
+
   $moduleSym->checkSymbol();
 
   my $mod = ${$moduleSym};
@@ -2936,6 +2962,8 @@ sub builtin_perluse {
 
 sub builtin_apply {
   my ($fun, $args) = @_;
+
+  checkNargs(\@_, 2);
 
   die "Expecting 2 args, got @{[scalar @_]}\n"
 	unless scalar @_ == 2;
