@@ -87,8 +87,8 @@ X	- namespaces
 X		- namespace resolution
 X		- packages
 X		- with/without clauses
-		- with renames
-		- 'rename' 
+X		- with renames
+X		- 'rename' 
 	- static variables
 	- objects
 	- integers

@@ -2867,6 +2867,7 @@ sub builtin_usefn {
 	when ('with')	{$withSet = $names}
 	when ('without'){$withoutSet = $names}
 	when ('rename') {$renameSet = $names}
+	when ('') {}
 	default {die "Invalid 'use' modifier clause: '${$with}'\n"}
   }
 
