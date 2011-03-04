@@ -2827,7 +2827,7 @@ sub _getImportNameList {
 
 	$result{${$sym}} = ${$newName};
   }
-$DB::single = 1;
+
   return \%result;
 }
 
