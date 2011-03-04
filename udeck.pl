@@ -2337,6 +2337,7 @@ sub initGlobals {
 				   ['_::perlproc',	\&builtin_perlproc],
 				   ['_::perluse',	\&builtin_perluse],
 				   ['apply',		\&builtin_apply],
+				   ['intern',		\&builtin_intern],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2972,4 +2973,13 @@ sub builtin_apply {
   $args->checkList(" in 'apply'");
 
   return $fun->(@{$args});
+}
+
+sub builtin_intern {
+  my ($string) = @_;
+
+  checkNargs(\@_, 1);
+  $string->checkString(" in 'intern'");
+
+  return LL::Symbol->new(${$string});
 }

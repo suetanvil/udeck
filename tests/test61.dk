@@ -1,0 +1,8 @@
+# Test 'intern'
+
+var s = "Hello, world!"
+
+puts [typeof s]
+puts [intern s]
+puts [typeof [intern s]]
+
