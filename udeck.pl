@@ -126,6 +126,7 @@ sub equals {my ($self, $other) = @_;
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
 sub isStringlike {1}
+sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub isIndexable {return 1}
 sub perlForm {my ($self) = @_; return ${$self}}
 
@@ -165,7 +166,6 @@ use base 'LL::Stringlike';
 sub checkString {}
 sub isAtom {return 1}
 sub isLiteral {return 1}		# ???
-sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {my ($self) = @_; return "\"${$self}\""};
 sub isString {return 1}
 
@@ -202,7 +202,6 @@ sub newSized {
 }
 
 sub isAtom {return 1}
-sub isTrue {my ($self) = @_; return ${$self} ne ''}
 sub storeStr {
   my ($self) = @_;
   my $body = join (" ", map {sprintf '0x%02x', ord($_)} split(//, ${$self}) );

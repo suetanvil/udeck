@@ -1,0 +1,16 @@
+# Test boolean state of symbols
+
+var i = [intern ""]
+if {val i} {
+	puts "true"
+} else {
+	puts "false!"
+}
+
+
+i = [intern "foo"]
+if {val i} {
+	puts "true"
+} else {
+	puts "false!"
+}

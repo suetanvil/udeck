@@ -110,7 +110,7 @@ X			 expressions are.
 	- handle unescaped operator in prefix LoL expression
 X	- allow _ in numbers
 	- scientific notation
-	- the empty symbol should be false
+X	- the empty symbol should be false
 X	- fail49 -- recursive macro
 X	- separate interp args from program args
 X	- apply
@@ -120,6 +120,7 @@ X	- need to check the argument counts of all built-in functions.
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
 	- intern.
+X		-added
 		-need to protect the namespace from badly-formed variables.
 	- boolean not
 	
