@@ -79,6 +79,8 @@ sub isTrue {return 1}
 sub isNumber {return 0}
 sub isLoL {return 0}	# Is a quoted list containing only lists
 sub isPerlObj {return 0}
+sub isClass {return 0}
+sub isObject {return 0}
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
@@ -585,6 +587,9 @@ sub checkFun {}
 sub isCallable {return 1}
 sub storeStr {return "<function>"}
 
+package LL::Method;
+use base 'LL::Function';
+sub storeStr {return "<method>"}
 
 package LL::PerlObj;
 use base 'LL::Datum';
@@ -598,6 +603,79 @@ sub storeStr {my ($self) = @_; return "<perlobj @{[ref($self->[0])]}>"}
 sub perlForm {my ($self) = @_; return $self->[0];}
 
 
+package LL::Object;
+use base 'LL::Datum';
+sub isObject {return 1}
+
+sub new {
+  my ($class, $deckClass) = @_;
+  my $self = {' class'		=> $deckClass};
+
+  for my $field (@{$deckClass->{fields}}) {
+	$self->{$field} = LL::Nil::NIL;
+  }
+
+  return bless $self, $class;
+}
+
+
+
+package LL::Class;
+use base 'LL::Datum';
+sub isClass {return 1}
+
+sub new {
+  my ($class, $fields, $methods, $superclass) = @_;
+
+  my $self = {fields		=> $fields,
+			  methods		=> $methods,
+			  methodCache	=> {},
+			  superclass	=> $superclass};
+
+  bless $self, $class;
+  $self->refreshCache();
+
+  return $self;
+}
+
+sub refreshCache {
+  my ($self) = @_;
+
+  $self->{cache} = {};
+  if ($self->{superclass}) {
+	$self->{cache} = { %{ $self->{superclass}->methodCache } };
+  }
+
+  for my $name (keys %{$self->{methods}}) {
+	$self->{cache}->{$name} = $self->{methods}->{$name};
+  }
+}
+
+
+# Lookup and return a reference to the method in this (Deck) class
+# associated with '$name'.
+sub lookup {
+  my ($self, $name) = @_;
+
+  # If the method is defined, just return it.
+  return $self->{cache}->{$name}
+	if defined($self->{cache}->{$name});
+
+  # If this class implements 'doesNotUnderstand', call it with the
+  # name and arguments.
+  if (defined($self->{cache}->{doesNotUnderstand})) {
+	my $dnu = $self->{cache}->{doesNotUnderstand};
+	my $method = sub {
+	  my ($dkSelf, @args) = @_;
+
+	  return $dnu->($dkSelf, LL::Symbol->new($name), LL::List->new(\@args));
+	};
+	return LL::Method->new($method);	
+  }
+
+  # Otherwise, it's an error.
+  die "Unknown method: '$name'\n";
+}
 
 
 

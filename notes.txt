@@ -116,7 +116,7 @@ X	- separate interp args from program args
 X	- apply
 X	- bug: need to unescape all operators
 X	- need to check the argument counts of all built-in functions.
-
+3
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
 	- intern.
@@ -126,3 +126,10 @@ X		-added
 	
 	- needs a better name.
 		-I'm thinking turtle-themed.
+		-How about 'Mydas', from c. mydas, the green sea turtle?
+			-no, taken.  Not a language but a DAS implementation.
+				-but it's spelled MyDas, so maybe I can get away
+				 without the capitalization.
+
+
+		

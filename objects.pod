@@ -14,6 +14,25 @@ Objects are a special type.
 Classes are also a special type.  They are also callable and create
 instances, then call 'INIT' with their arguments.
 
+Let's use 'new' to create instances.  There's no real advantage to
+making classes callable.
+
+I'm not going to use the Perl object system until I have a better
+grasp of everything.
+
+
+=head2 Semantics
+
+
+=head2 To Do
+
+	-basic class and objecgt
+	-doesNotUnderstand
+	-private methods
+	-attributes
+
+
+
 
 
 
