@@ -49,6 +49,7 @@ sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
 sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
+sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
 sub checkValidName {die "Expected valid name, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
@@ -643,6 +644,7 @@ sub new {
 package LL::Class;
 use base 'LL::Datum';
 sub isClass {return 1}
+sub checkClass {}
 
 sub new {
   my ($class, $fields, $methods, $superclass) = @_;
@@ -2405,7 +2407,7 @@ sub macro_class {
   my ($class, $name, $superclass, $body) = @_;
   checkNargs(\@_, 3, 4);
 
-  if ($superclass->isLol()) {
+  if ($superclass->isLoL()) {
 	$body = $superclass;
 	$superclass = LL::Symbol->new('Object');
   }
@@ -2415,8 +2417,8 @@ sub macro_class {
   $body->checkLoL(" in class definition.");
 
   return LL::List->new([LL::Symbol->new('_::class'),
-						LL::Quote->name($name),
-						LL::Quote->new($superclass),
+						LL::Quote->new($name),
+						$superclass,
 						$body]);
 }
 
@@ -2444,8 +2446,10 @@ sub initGlobals {
   # All unqualified names defined here go to Lang.
   $Globals->setNamespace('Lang');
 
-
   $Globals->defsetconst ('nil', NIL);
+
+  # Temp. definition of Object.  Fix later.  XXX
+  $Globals->defset('Object', NIL);
 
   # Externally-defined primitive functions
   for my $special (
@@ -2473,6 +2477,7 @@ sub initGlobals {
 				   ['_::perluse',	\&builtin_perluse],
 				   ['apply',		\&builtin_apply],
 				   ['intern',		\&builtin_intern],
+				   ['_::class',		\&builtin_class],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2546,6 +2551,7 @@ sub initGlobals {
   macro 'use',			\&macro_usefn;
   macro 'perlproc',		\&macro_perlproc;
   macro 'perluse',		\&macro_perluse;
+  macro 'class',		\&macro_class;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
@@ -3117,4 +3123,16 @@ sub builtin_intern {
   $string->checkString(" in 'intern'");
 
   return LL::Symbol->new(${$string});
+}
+
+
+sub builtin_class {
+  my ($name, $superclass, $body) = @_;
+
+  $name->checkSymbol();
+  $superclass->checkClass()
+	unless $superclass->isNil();		# tolerated for now.  XXX
+
+  die "'class' doesn't work yet.\n";
+
 }
