@@ -123,13 +123,14 @@ X	- need to check the argument counts of all built-in functions.
 X		-added
 		-need to protect the namespace from badly-formed variables.
 	- boolean not
-	
+	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
+		-also add unquoted versions	
 	- needs a better name.
 		-I'm thinking turtle-themed.
 		-How about 'Mydas', from c. mydas, the green sea turtle?
 			-no, taken.  Not a language but a DAS implementation.
 				-but it's spelled MyDas, so maybe I can get away
-				 without the capitalization.
+				 without the capitalization.  Contact the author.
 
 
 		

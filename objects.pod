@@ -20,16 +20,45 @@ making classes callable.
 I'm not going to use the Perl object system until I have a better
 grasp of everything.
 
+=head2 Syntax
+
+	class Foo (Object) {
+		var xxx = 42
+		var yyy = 53
+
+		method INIT {x} {puts x}
+
+		method bar {a} {puts a}
+		method quux {b} {puts b}
+	}
+
 
 =head2 Semantics
 
 
 =head2 To Do
 
-	-basic class and objecgt
-	-doesNotUnderstand
-	-private methods
-	-attributes
+	-basic class and object
+		-'class' type.
+		-'object' type.
+X			-doesNotUnderstand
+		-lookup function.
+			-special syntax for lookup.
+		-class definition
+			-class macro
+			-_::class function
+				-inheritance
+				-methods
+					-private methods
+				-instance variables
+				-attributes
+		-class 'Object'
+
+		-object instantiation
+		
+
+
+
 
 
 

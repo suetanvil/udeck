@@ -50,6 +50,7 @@ sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
+sub checkValidName {die "Expected valid name, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isLocalName {return 0}
@@ -282,6 +283,25 @@ sub isLocalName {
 sub checkLocalName {
   my ($self, @args) = @_;
   $self->SUPER::checkLocalName(@args) unless $self->isLocalName();
+}
+
+# Test if $self follows the lexical rules required for variable names.
+sub isValidName {
+  my ($self) = @_;
+
+  # We test this by running the text of $line through the parser to
+  # see if it parses.
+  my $line = ${$self};
+  my ($newLine, $tok) = LL::Main::parseSymbol($line);
+
+  return 1 if ($tok eq $line && $newLine eq '');
+  return 0;
+}
+
+sub checkValidName {
+  my ($self) = @_;
+  die "Symbol '${$self}' is not a valid variable name.\n"
+	unless $self->isValidName();
 }
 
 sub atPut {die "Attempted to alter a symbol.\n"}
@@ -702,11 +722,19 @@ sub isQualified {
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
 sub normalizeName {my ($self, $name) = @_; return $name}
 
-sub checkName {
+sub checkScopeFor {
   my ($self, $name) = @_;
 
   die "Qualified name defined in local context."
 	if $self->isQualified($name);
+
+}
+
+# Ensure $name is a valid Deck variable
+sub checkName {
+  my ($self, $name) = @_;
+
+  (LL::Symbol->new($name))->checkValidName(" as variable name.");
 }
 
 sub def {
@@ -714,8 +742,8 @@ sub def {
 
   $name = $self->normalizeName($name);
   die "Expecting string, not reference!\n" unless ref($name) eq '';
-  die "Name contains whitespace.\n" if $name =~ /\s/;
   $self->checkName($name);
+  $self->checkScopeFor($name);
 
   return $self->{$name} = LL::Nil::NIL;
 }
@@ -743,6 +771,7 @@ sub defset {
 
   $name = $self->normalizeName($name);
   $self->checkName($name);
+  $self->checkScopeFor($name);
 
   $self->def($name);
   $self->set($name, $value);
@@ -755,6 +784,7 @@ sub defsetconst {
 
   $name = $self->normalizeName($name);
   $self->checkName($name);
+  $self->checkScopeFor($name);
 
   $self->defset($name, $value);
   $self->{' consts'}->{$name} = 1;
@@ -814,9 +844,17 @@ sub setNamespace {
 }
 
 sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
-sub defNamespace {my ($self, $ns) = @_; $self->{' namespaces'}->{$ns} = 1}
-sub hasNamespace {my ($self, $ns) = @_;
-				  return exists($self->{' namespaces'}->{$ns})}
+
+sub defNamespace {
+  my ($self, $ns) = @_;
+  $self->checkName($ns);
+  $self->{' namespaces'}->{$ns} = 1;
+}
+
+sub hasNamespace {
+  my ($self, $ns) = @_;
+  return exists($self->{' namespaces'}->{$ns});
+}
 
 
 sub normalizeName {
@@ -840,7 +878,7 @@ sub _splitName {
 sub deferToGlobal {return 0}
 
 # Ensure $name is valid for this context
-sub checkName {
+sub checkScopeFor {
   my ($self, $name) = @_;
 
   # We allow qualified names here but the namespace must be declared.
@@ -2360,6 +2398,26 @@ sub macro_perluse {
   return LL::List->new([LL::Symbol->new('_::perluse'),
 						LL::Quote->new($name)]);
 
+}
+
+
+sub macro_class {
+  my ($class, $name, $superclass, $body) = @_;
+  checkNargs(\@_, 3, 4);
+
+  if ($superclass->isLol()) {
+	$body = $superclass;
+	$superclass = LL::Symbol->new('Object');
+  }
+
+  $name->checkSymbol(" in class definition.");
+  $superclass->checkSymbol(" in class definition");
+  $body->checkLoL(" in class definition.");
+
+  return LL::List->new([LL::Symbol->new('_::class'),
+						LL::Quote->name($name),
+						LL::Quote->new($superclass),
+						$body]);
 }
 
 

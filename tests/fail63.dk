@@ -1,0 +1,4 @@
+# Attempt to define an invalid variable name.
+
+_::var [intern " variable with spaces in it"] 42
+
