@@ -2258,53 +2258,21 @@ sub macro_subfn {
 
 
 sub macro_iffn {
+  my ($if, $cond, $trueBlock, $else, $falseBlock) = @_;
+  checkNargs(\@_, 5, 4, 3);
 
-#   my ($if, $cond, $trueBlock, $else, $falseBlock) = @_;
-
-#   if (defined($else)) {
-# 	if ($else->isList()) {
-# 	  die "Malformed 'if' statement.\n"
-# 		unless !defined($falseBlock);
-# 	  $falseBlock = $else;
-# 	} else {
-# 	  die "Malformed 'if': expecting 'else', got @{[$else->printStr()]}\n"
-# 		unless ($else->isSymbol() && ${$else} eq 'else');
-# 	}
-#   }
-
-#   my $result = [LL::Symbol->new('_::if')
-#			   ];
-	
-  my @args = @_;
-
-  $args[0] = LL::Symbol->new('_::if');
-
-  # Remove the 'else' word if present
-  if (defined($args[3]) && $args[3]->isSymbol()) {
-	die "Expecting 'else', got '@{[$args[3]->storeStr()]}'\n"
-	  unless ${$args[3]} eq 'else';
-
-	my $elseClause = pop @args;
-	pop @args;
-	push @args, $elseClause;
+  # If there's a 'falseBlock' but $else was omitted, we need to fix
+  # that.
+  if (defined($else) && $else->isLoL()) {
+	die "Malformed 'if' statement.\n" if $falseBlock;
+	$falseBlock = $else;
   }
 
-  die "Too many arguments to 'if'\n"
-	unless scalar @args <= 5;
-
-  my $sub = LL::Symbol->new('sub');
-
-  for my $i (1 .. $#args) {
-	$args[$i] = subifyStrict($args[$i]);
-  }
-
-  # Add the empty else clause
-  push @args, NIL
-	if scalar @args == 3;
-
-  return LL::List->new(\@args);
-
-
+  my $falsePart = $falseBlock ? subifyStrict($falseBlock) : NIL;
+  return LL::List->new([LL::Symbol->new('_::if'),
+						subifyStrict($cond),
+						subifyStrict($trueBlock),
+						$falsePart]);
 }
 
 
