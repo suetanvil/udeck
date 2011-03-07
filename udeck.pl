@@ -2535,7 +2535,9 @@ sub initGlobals {
 								unless $Globals->isLegallyAccessible(${$name});
 							  return $Globals->lookup(${$name});
 							};
-#  prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
+  prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
+							  return boolObj(!$arg->isTrue());
+							};
 
   # Macros
   macro 'var',			\&macro_varconst;

@@ -1,2 +1,6 @@
 false!
 true
+foo
+nil
+nil
+1

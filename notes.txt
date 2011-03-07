@@ -121,8 +121,8 @@ X	- need to check the argument counts of all built-in functions.
 	  checks.
 	- intern.
 X		-added
-		-need to protect the namespace from badly-formed variables.
-	- boolean not
+X		-need to protect the namespace from badly-formed variables.
+X	- boolean not
 	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 		-also add unquoted versions	
 	- needs a better name.

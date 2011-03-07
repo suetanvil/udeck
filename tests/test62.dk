@@ -1,4 +1,4 @@
-# Test boolean state of symbols
+# Test boolean state of symbols plus boolean not
 
 var i = [intern ""]
 if {val i} {
@@ -14,3 +14,10 @@ if {val i} {
 } else {
 	puts "false!"
 }
+
+puts i
+puts [not i]
+
+i = nil
+puts i
+puts [not i]
