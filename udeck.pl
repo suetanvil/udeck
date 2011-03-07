@@ -1976,7 +1976,8 @@ sub checkNargs {
 	return if scalar @{$args} == $count;
   }
 
-  die "Expecting $counts[0] arguments; got @{[scalar @counts]}.\n"; 
+  die "Expecting @{[join (' or ', @counts)]} arguments; "
+	. "got @{[scalar @_]}.\n";
 }
 
 
@@ -2496,42 +2497,45 @@ sub initGlobals {
   prim 'Symbol', 'typeof', "Datum", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',			sub { return boolObj($_[0] == $_[1])};
-  prim2 '==',			sub { return $_[0]->equals($_[1]) };
+  prim2 '===',			sub { checkNargs(\@_, 2); return boolObj($_[0] == $_[1])};
+  prim2 '==',			sub { checkNargs(\@_, 2); return $_[0]->equals($_[1]) };
   prim2 'list',			sub { return LL::List->new(\@_) };
   prim2 'val',			sub { return NIL unless scalar @_; return $_[-1] };
-  prim2 '@',			sub { my ($l, $ndx) = @_; return $l->at($ndx) };
-  prim2 'size',			sub { my ($l) = @_; return LL::Number->new($l->size())};
+  prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs(\@_, 2);
+							  return $l->at($ndx) };
+  prim2 'size',			sub { my ($l) = @_;  checkNargs(\@_, 1);
+							  return LL::Number->new($l->size())};
   prim2 'byteArray',	sub { return LL::ByteArray->new(@_) };
-  prim2 'bytesSized',	sub { my ($size) = @_;
+  prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs(\@_, 1);
 							  $size->checkNumber();
 							  die "Invalid byteArray size: ${$size}\n"
 								unless ${$size} > 0;
 							  return LL::ByteArray->newSized(${$size})
 							};
   prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
-  prim2 'listSized',	sub { my ($size) = @_;
+  prim2 'listSized',	sub { my ($size) = @_;  checkNargs(\@_, 1);
 							  $size->checkNumber();
 							  die "Invalid list size: ${$size}\n"
 								unless ${$size} > 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
-  prim2 '_::defns',		sub { my ($ns) = @_;
+  prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs(\@_, 1);
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
 							};
-  prim2 'defined',		sub { my ($name) = @_;
+  prim2 'defined',		sub { my ($name) = @_;  checkNargs(\@_, 1);
 							  $name->checkSymbol(" in 'defined'");
 							  return NIL
 								unless $Globals->isLegallyAccessible(${$name});
 							  return $Globals->present(${$name}) ? TRUE:NIL;
 							};
-  prim2 'lookup',		sub { my ($name) = @_;
+  prim2 'lookup',		sub { my ($name) = @_;  checkNargs(\@_, 1);
 							  $name->checkSymbol(" in 'lookup'");
 							  die "Unknown or inaccessable symbol: ${$name}\n"
 								unless $Globals->isLegallyAccessible(${$name});
 							  return $Globals->lookup(${$name});
 							};
+#  prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
 
   # Macros
   macro 'var',			\&macro_varconst;
@@ -3132,6 +3136,10 @@ sub builtin_class {
   $name->checkSymbol();
   $superclass->checkClass()
 	unless $superclass->isNil();		# tolerated for now.  XXX
+
+  for my $entry (@{$body}) {
+	# XXX
+  }
 
   die "'class' doesn't work yet.\n";
 
