@@ -2113,19 +2113,19 @@ sub fixFormalArgs {
 
 
 sub macro_proc {
-  my @result = @_;
+  my ($proc, $name, $args, $body) = @_;
+  checkNargs(\@_, 4);
 
-  $result[0] = LL::Symbol->new('_::proc');
+  $name->checkSymbol(" in '${$proc}' arg 1");
+  $args = fixFormalArgs($args);
+  $body->checkLoL(" in function body of '${$proc}'.");
 
-  my $sym = $result[1];
-  $sym->checkSymbol(" in 'proc' arg 1");
-  $result[1] = LL::Quote->new($sym);
+  my $procOrMethod = ${$proc} eq 'method' ? '_::method' : '_::proc';
 
-  $result[2] = fixFormalArgs($result[2]);
-
-  $result[3]->checkLoL(" in function body of 'proc'.");
-
-  return LL::List->new(\@result);
+  return LL::List->new([LL::Symbol->new($procOrMethod),
+						LL::Quote->new($name),
+						$args,
+						$body]);
 }
 
 
@@ -3140,7 +3140,24 @@ sub builtin_class {
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
   for my $entry (@{$body}) {
-	# XXX
+	next if scalar @{$entry} == 0;		# Maybe too tolerant
+
+	my $start = $entry->[0];
+	$start->checkSymbol();
+
+	my $line;
+	given (${$start}) {
+	  when (['var', 'const']) {
+		$line = macro_varconst(@{$line});
+	  }
+
+	  when ('method') {
+
+	  }
+
+	}
+
+
   }
 
   die "'class' doesn't work yet.\n";
