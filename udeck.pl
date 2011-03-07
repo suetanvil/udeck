@@ -2282,8 +2282,9 @@ sub macro_whilefn {
   die "Expecting 2 arguments to 'while'; got @{[scalar @_ - 1]}\n"
 	unless scalar @_ == 3;
 
-  my @result = (LL::Symbol->new('_::while'), subifyStrict($cond), subifyStrict($body));
-  return LL::List->new(\@result);
+  return LL::List->new([LL::Symbol->new('_::while'),
+						subifyStrict($cond),
+						subifyStrict($body)]);
 }
 
 sub macro_foreachfn {
