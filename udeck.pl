@@ -1920,7 +1920,7 @@ sub compile {
 
 	my $retname =
 	  ($mode eq 'proc') ? 'return' :
-	  ($mode eq 'sub') ? '_lreturn' : '';
+	  ($mode eq 'sub') ? 'subreturn' : '';
 	my $ret = sub {
 	  my ($retval) = @_;
 	  $retval ||= NIL;

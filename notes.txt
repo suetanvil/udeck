@@ -93,7 +93,7 @@ X		- 'rename'
 	- objects
 	- integers
 
-	-_lreturn should have a better name: 'subReturn'?
+X	-_lreturn should have a better name: 'subreturn'?
 X	- ARGS needs to be split into interp args and program args.
 X		-and update runtests to work with argtest.
 
@@ -125,6 +125,8 @@ X		-need to protect the namespace from badly-formed variables.
 X	- boolean not
 X	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 X		-also add unquoted versions	
+
+
 	- needs a better name.
 		-I'm thinking turtle-themed.
 		-How about 'Mydas', from c. mydas, the green sea turtle?

@@ -22,7 +22,7 @@ puts [f1]
 var s1 s2
 
 set s1 [sub {} {
-	s2 _lreturn
+	s2 subreturn
 	puts "not reached"
 }]
 
