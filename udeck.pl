@@ -3125,6 +3125,9 @@ sub builtin_class {
   $superclass->checkClass()
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
+  my $fields = {};
+  my $method = {};
+
   for my $entry (@{$body}) {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
 
@@ -3134,11 +3137,29 @@ sub builtin_class {
 	my $line;
 	given (${$start}) {
 	  when (['var', 'const']) {
-		$line = macro_varconst(@{$line});
+		$line = macro_varconst(@{$entry});
+		die "Const fields not supported in classes.\n"
+		  if ${ $line->[0] } eq '_::const';
+
+		shift @{$line};
+		while (@{$line}) {
+		  my $name = shift @{$line};
+		  my $value = shift @{$line};
+
+		  $name->value()->checkSymbol();
+		  $fields->{${$name->value()}} = NIL;
+
+		  die "No support for field initializers yet.\n"
+			unless $value->isNil();
+		}
 	  }
 
 	  when ('method') {
+		# to do
+	  }
 
+	  default {
+		die "Illegal class entry: @{[$line->printStr()]}\n";
 	  }
 
 	}
@@ -3146,6 +3167,6 @@ sub builtin_class {
 
   }
 
-  die "'class' doesn't work yet.\n";
+#  die "'class' doesn't work yet.\n";
 
 }

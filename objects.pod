@@ -22,7 +22,7 @@ grasp of everything.
 
 =head2 Syntax
 
-	class Foo (Object) {
+	class Foo Object {
 		var xxx = 42
 		var yyy = 53
 
@@ -56,6 +56,12 @@ X			-doesNotUnderstand
 
 		-object instantiation
 		
+
+=head2 Issues
+
+	-does a field decl. like "var x = [foo 4 2]" work?
+		-what field order should I use?
+
 
 
 
