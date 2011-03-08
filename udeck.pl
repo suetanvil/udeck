@@ -47,7 +47,8 @@ sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
 sub checkList   {die "Expected list, got @{[ref(shift)]}@_\n"}
 sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
 sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
-sub checkLoL    {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
+sub checkQtLoL  {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
+sub checkLoL    {die "Expected LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
@@ -79,7 +80,8 @@ sub isFunction {return 0}
 sub isCallable {return 0}
 sub isTrue {return 1}
 sub isNumber {return 0}
-sub isLoL {return 0}	# Is a quoted list containing only lists
+sub isQtLoL {return 0}	# Is a quoted list containing only lists
+sub isLoL {return 0}	# Is an list containing only lists
 sub isPerlObj {return 0}
 sub isClass {return 0}
 sub isObject {return 0}
@@ -336,6 +338,24 @@ sub inTypeEq {
   return 1;
 }
 
+sub isLoL {	# Is this a list containing only lists?
+  my ($self) = @_;
+
+  for my $elem ( @{$self} ) {
+	return 0 unless $elem->isList();
+  }
+	
+  return 1;
+}
+
+sub checkLoL {
+  my ($self, @args) = @_;
+
+  $self->SUPER::checkLoL(@args)
+	unless $self->isLoL();
+}
+
+
 sub perlForm {
   my ($self) = @_;
 
@@ -570,21 +590,18 @@ sub isQuote {return 1}
 sub checkQuote {}
 sub value {my ($self) = @_; return $self->[0]}
 sub storeStr {my ($self) = @_; return ':' . $self->value()->storeStr()}
-sub isLoL {	# Is this a quoted list of lists?
-  my ($self) = @_;
 
-  return 0 unless $self->value()->isList();
-  for my $elem ( @{$self->value()} ) {
-	return 0 unless $elem->isList();
-  }
-	
-  return 1;
+sub isQtLoL {	# Is this a quoted list of lists?
+  my ($self) = @_;
+  return $self->value()->isLoL();
 }
-sub checkLoL {
+
+sub checkQtLoL {
   my ($self, @args) = @_;
   die "Expecting a quoted LoL, got @{[$self->storeStr()]}@_\n"
-	unless $self->isLoL();
+	unless $self->isQtLoL();
 }
+
 sub equals {
   my ($self, $other) = @_;
 
@@ -2005,7 +2022,7 @@ sub subify {
   my ($expr, @args) = @_;
   my $body;
 
-  if ($expr->isLoL()) {
+  if ($expr->isQtLoL()) {
 	$body = $expr;
   } elsif ($expr->isList()) {
 	my $outer = LL::List->new([$expr]);
@@ -2118,7 +2135,7 @@ sub macro_proc {
 
   $name->checkSymbol(" in '${$proc}' arg 1");
   $args = fixFormalArgs($args);
-  $body->checkLoL(" in function body of '${$proc}'.");
+  $body->checkQtLoL(" in function body of '${$proc}'.");
 
   my $procOrMethod = ${$proc} eq 'method' ? '_::method' : '_::proc';
 
@@ -2147,7 +2164,7 @@ sub macro_macro {
 
   $name->checkSymbol();
   $args = fixFormalArgs($args);
-  $body->checkLoL();
+  $body->checkQtLoL();
 
   return LL::List->new([LL::Symbol->new('_::macro'),
 						LL::Quote->new($name),
@@ -2160,7 +2177,7 @@ sub launder_varconst {
   my ($isConst, @macroArgs) = @_;
 
   my @args;
-  if (scalar @macroArgs == 1 && $macroArgs[0]->isLoL()) {
+  if (scalar @macroArgs == 1 && $macroArgs[0]->isQtLoL()) {
 	my $argList = shift @macroArgs;
 	@args = @{ $argList->value() };
   } else {
@@ -2263,7 +2280,7 @@ sub macro_iffn {
 
   # If there's a 'falseBlock' but $else was omitted, we need to fix
   # that.
-  if (defined($else) && $else->isLoL()) {
+  if (defined($else) && $else->isQtLoL()) {
 	die "Malformed 'if' statement.\n" if $falseBlock;
 	$falseBlock = $else;
   }
@@ -2377,14 +2394,14 @@ sub macro_class {
   my ($class, $name, $superclass, $body) = @_;
   checkNargs(\@_, 3, 4);
 
-  if ($superclass->isLoL()) {
+  if ($superclass->isQtLoL()) {
 	$body = $superclass;
 	$superclass = LL::Symbol->new('Object');
   }
 
   $name->checkSymbol(" in class definition.");
   $superclass->checkSymbol(" in class definition");
-  $body->checkLoL(" in class definition.");
+  $body->checkQtLoL(" in class definition.");
 
   return LL::List->new([LL::Symbol->new('_::class'),
 						LL::Quote->new($name),
