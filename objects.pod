@@ -61,7 +61,8 @@ X			-doesNotUnderstand
 
 	-does a field decl. like "var x = [foo 4 2]" work?
 		-what field order should I use?
-
+		-how do I initialize them.
+			-maybe define a bunch of unnamed methods to do it?
 
 
 

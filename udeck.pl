@@ -3118,6 +3118,39 @@ sub builtin_intern {
 }
 
 
+sub class_fields {
+  my ($body) = @_;
+
+  my $fields = {};
+  for my $entry (@{$body}) {
+	next if scalar @{$entry} == 0;		# Maybe too tolerant
+
+	my $start = $entry->[0];
+	$start->checkSymbol();
+	next unless (${$start} eq 'var' || ${$start} eq 'const');
+
+	my $line = macro_varconst(@{$entry});
+	die "Const fields not supported in classes.\n"
+	  if ${ $line->[0] } eq '_::const';
+
+	shift @{$line};
+	while (@{$line}) {
+	  my $name = shift @{$line};
+	  my $value = shift @{$line};
+
+	  $name->value()->checkSymbol();
+	  $fields->{${$name->value()}} = NIL;
+
+	  die "No support for field initializers yet.\n"
+		unless $value->isNil();
+	}
+  }
+
+  return $fields;
+}
+
+
+
 sub builtin_class {
   my ($name, $superclass, $body) = @_;
 
@@ -3125,8 +3158,10 @@ sub builtin_class {
   $superclass->checkClass()
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
-  my $fields = {};
-  my $method = {};
+  my $fields = class_fields($body);
+  my $methods = {};
+
+=pod
 
   for my $entry (@{$body}) {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
@@ -3166,6 +3201,8 @@ sub builtin_class {
 
 
   }
+
+=cut
 
 #  die "'class' doesn't work yet.\n";
 
