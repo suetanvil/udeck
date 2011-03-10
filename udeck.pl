@@ -1870,11 +1870,9 @@ sub compile {
   die "Unknown compiler mode '$mode'\n"
 	unless $mode =~ /^(macro|proc|sub|method|toplevel)$/;
 
-  my $isMacro = 0;
-  if ($mode eq 'macro') {
-	$isMacro = 1;
-	$mode = 'proc';
-  }
+  my ($isMacro, $isProc, $isSub, $isMethod, $isTop)
+	= ($mode eq 'macro', $mode eq 'proc', $mode eq 'sub', $mode eq 'method',
+	   $mode eq 'toplevel');
 
   my $nargs = scalar @{$args};
   my $isVararg = $nargs > 0 && ${$args->[-1]} eq 'args';
@@ -1922,8 +1920,8 @@ sub compile {
 	my $lastexpr;
 
 	my $retname =
-	  ($mode eq 'proc' || $mode eq 'method') ? 'return' :
-	  ($mode eq 'sub') ? 'subreturn' : '';
+	  ($isProc || $isMethod || $isMacro) ? 'return' :
+	  ($isSub)                           ? 'subreturn' : '';
 	my $ret = sub {
 	  my ($retval) = @_;
 	  $retval ||= NIL;
@@ -1947,7 +1945,7 @@ sub compile {
 
 	# Procs return NIL by default.  Only explicit returns return a
 	# value.
-	return NIL if ($mode eq 'proc' && !$@);
+	return NIL if ($isProc && !$@);
 
 	return $lastexpr;
   };
