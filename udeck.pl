@@ -1881,12 +1881,10 @@ sub compile {
 	--$nargs;
   }
 
-
   my @fixedBody;
   {
-	my $macroContext = $outerContext ? $outerContext : $Globals;	# XXX
 	for my $expr (@{$body}) {
-	  my $newExpr = applyMacrosRecursively ($expr, $macroContext);
+	  my $newExpr = applyMacrosRecursively ($expr, $Globals);
 
 	  checkForScopeViolations($newExpr, $name);
 

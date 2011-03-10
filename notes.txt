@@ -22,6 +22,8 @@ Notes:
 
 	- okay, user-defined macros use the function arg convention.
 
+	- macros are always defined at the global (module) level.
+
 
 Functions Todo:
 X	-listSized
@@ -108,7 +110,8 @@ X			 expressions are.
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
-	- should we allow local macros?
+X	- should we allow local macros?
+X		-for now, no!
 
 X	- allow _ in numbers
 	- scientific notation
