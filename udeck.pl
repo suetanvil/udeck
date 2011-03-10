@@ -1867,6 +1867,9 @@ sub compile {
 
   $name ||= 'unnamed function';
 
+  die "Unknown compiler mode '$mode'\n"
+	unless $mode =~ /^(macro|proc|sub|method|toplevel)$/;
+
   my $isMacro = 0;
   if ($mode eq 'macro') {
 	$isMacro = 1;
@@ -1883,7 +1886,7 @@ sub compile {
 
   my @fixedBody;
   {
-	my $macroContext = $outerContext ? $outerContext : $Globals;
+	my $macroContext = $outerContext ? $outerContext : $Globals;	# XXX
 	for my $expr (@{$body}) {
 	  my $newExpr = applyMacrosRecursively ($expr, $macroContext);
 
@@ -1919,7 +1922,7 @@ sub compile {
 	my $lastexpr;
 
 	my $retname =
-	  ($mode eq 'proc') ? 'return' :
+	  ($mode eq 'proc' || $mode eq 'method') ? 'return' :
 	  ($mode eq 'sub') ? 'subreturn' : '';
 	my $ret = sub {
 	  my ($retval) = @_;
@@ -3147,6 +3150,40 @@ sub class_fields {
   }
 
   return $fields;
+}
+
+
+
+
+sub class_methods {
+  my ($body, $fields) = @_;
+
+  my %methods = ();
+
+  for my $entry (@{$body}) {
+	next if scalar @{$entry} == 0;		# Maybe too tolerant
+
+	my $start = $entry->[0];
+	$start->checkSymbol();
+	next if ${$start} ne 'method';
+
+	die "Malformed method declaration.\n" unless scalar @{$entry} == 4;
+	
+	my ($method, $name, $args, $body) = @{$entry};
+	$name->checkSymbol(" in method name.");
+	$args = fixFormalArgs($args);
+	$body->checkQtLoL(" in method definition.");
+
+	# Create a scratch LL::Context to keep the compiler happy
+	my $fieldsContext = LL::Context->new($Globals);
+	for my $key (keys %{$fields}) {$fieldsContext->def($key);}
+
+	my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
+	$code = LL::Method->new($method);
+	$methods{${$name}} = $code;
+  }
+
+  return \%methods;
 }
 
 

@@ -108,6 +108,8 @@ X			 expressions are.
 
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
+	- should we allow local macros?
+
 X	- allow _ in numbers
 	- scientific notation
 X	- the empty symbol should be false
@@ -125,7 +127,7 @@ X		-need to protect the namespace from badly-formed variables.
 X	- boolean not
 X	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 X		-also add unquoted versions	
-
+	
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

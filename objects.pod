@@ -35,6 +35,9 @@ grasp of everything.
 
 =head2 Semantics
 
+	-instance variables are visible only to the object's methods, NOT to
+	 subclasses and NOT to methods added after the fact.
+
 
 =head2 To Do
 

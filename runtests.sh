@@ -13,7 +13,7 @@ function fail() {
 }
 
 
-for i in  argtest.sh test*.dk fail*.dk; do
+for i in test*.dk argtest.sh fail*.dk; do
 	echo "$i"
 
 	if [ $i = ${i%.sh}.sh ]; then
