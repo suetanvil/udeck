@@ -717,8 +717,6 @@ sub lookup {
 }
 
 
-
-
 # ---------------------------------------------------------------------------
 
 package LL::Context;
@@ -1873,6 +1871,10 @@ sub compile {
   my ($isMacro, $isProc, $isSub, $isMethod, $isTop)
 	= ($mode eq 'macro', $mode eq 'proc', $mode eq 'sub', $mode eq 'method',
 	   $mode eq 'toplevel');
+
+  if ($isMethod) {
+	unshift @{$args}, LL::Symbol->new('self');
+  }
 
   my $nargs = scalar @{$args};
   my $isVararg = $nargs > 0 && ${$args->[-1]} eq 'args';
