@@ -38,6 +38,16 @@ grasp of everything.
 	-instance variables are visible only to the object's methods, NOT to
 	 subclasses and NOT to methods added after the fact.
 
+	-where is 'self' added?
+
+		stdout->print 42
+
+		[\-> stdout print] 42
+
+		var n = stdout->print
+		n 42
+
+	-what if a local class existed in the context that defined it?
 
 =head2 To Do
 
@@ -58,7 +68,9 @@ X			-doesNotUnderstand
 		-class 'Object'
 
 		-object instantiation
-		
+	
+		-make LL::Object a subclass of Context.
+	
 
 =head2 Issues
 

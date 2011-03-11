@@ -647,20 +647,24 @@ sub perlForm {my ($self) = @_; return $self->[0];}
 
 
 package LL::Object;
-use base 'LL::Datum';
+use base qw{LL::Datum LL::Context};
+
 sub isObject {return 1}
 sub checkObject {}
+sub class {my ($self) = @_; return $self->{' class'};}
 
 sub new {
   my ($class, $deckClass) = @_;
-  my $self = {' class'		=> $deckClass};
+  my $self = $class->LL::Context::new($Globals);
+  $self->{' class'}	= $deckClass;
 
   for my $field (@{$deckClass->{fields}}) {
-	$self->{$field} = LL::Nil::NIL;
+	$self->defset($field, LL::Nil::NIL);
   }
 
   return bless $self, $class;
 }
+
 
 
 
