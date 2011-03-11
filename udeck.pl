@@ -51,6 +51,7 @@ sub checkQtLoL  {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
+sub checkObject	{die "Expected object, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
 sub checkValidName {die "Expected valid name, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
@@ -629,6 +630,10 @@ package LL::Method;
 use base 'LL::Function';
 sub storeStr {return "<method>"}
 
+package LL::MethodCall;
+use base 'LL::Function';
+sub storeStr {return "<method call>"}
+
 package LL::PerlObj;
 use base 'LL::Datum';
 sub new {
@@ -644,6 +649,7 @@ sub perlForm {my ($self) = @_; return $self->[0];}
 package LL::Object;
 use base 'LL::Datum';
 sub isObject {return 1}
+sub checkObject {}
 
 sub new {
   my ($class, $deckClass) = @_;
@@ -1883,6 +1889,7 @@ sub compile {
 	--$nargs;
   }
 
+  # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
 	for my $expr (@{$body}) {
@@ -2411,6 +2418,17 @@ sub macro_class {
 }
 
 
+# The -> operator
+sub macro_methodLookupOp {
+  my ($arrow, $object, $method) = @_;
+
+  $method->checkSymbol(" on the LHS of a '->' operation.");
+  return LL::List->new([LL::Symbol->new('_::getMethod'),
+						$object,
+						LL::Quote->new($method)]);
+}
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
   my ($args) = @_;
@@ -2466,6 +2484,8 @@ sub initGlobals {
 				   ['apply',		\&builtin_apply],
 				   ['intern',		\&builtin_intern],
 				   ['_::class',		\&builtin_class],
+				   ['_::getMethod',	\&builtin_getMethod],
+				   ['getMethod',	\&builtin_getMethod],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -2545,6 +2565,7 @@ sub initGlobals {
   macro 'perlproc',		\&macro_perlproc;
   macro 'perluse',		\&macro_perluse;
   macro 'class',		\&macro_class;
+  macro '->',			\&macro_methodLookupOp;
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
@@ -3116,6 +3137,23 @@ sub builtin_intern {
   $string->checkString(" in 'intern'");
 
   return LL::Symbol->new(${$string});
+}
+
+
+# Implementation of the '->' operator
+sub builtin_getMethod {
+  my ($object, $methodName) = @_;
+
+  $object->checkObject(" in method call.");
+  $methodName->checkSymbol();
+
+  my $class = $object->{' class'};
+  my $method = $class->lookup (${$methodName});
+
+  # Turn into a self call
+  my $sub = sub {$method->($object, @_)};
+
+  return LL::MethodCall->new($sub);
 }
 
 
