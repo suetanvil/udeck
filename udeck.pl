@@ -8,6 +8,256 @@ use warnings;
 
 use feature "switch";
 
+# Forward-declare NIL as an alias for LL::Nil::NIL.
+sub NIL {return LL::Nil::NIL()}
+
+# ---------------------------------------------------------------------------
+
+package LL::Context;
+
+sub new {
+  my ($class, $parent) = @_;
+  return bless {
+				# Reserved fields:
+				' parent'		=> $parent,
+				' consts'		=> {},	# <- list of const names
+			   }, $class;
+}
+
+sub isQualified {
+  my ($self, $name) = @_;
+
+  return $name =~ /\:\:/;
+}
+
+sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
+sub normalizeName {my ($self, $name) = @_; return $name}
+
+sub checkScopeFor {
+  my ($self, $name) = @_;
+
+  die "Qualified name defined in local context."
+	if $self->isQualified($name);
+
+}
+
+# Ensure $name is a valid Deck variable
+sub checkName {
+  my ($self, $name) = @_;
+
+  (LL::Symbol->new($name))->checkValidName(" as variable name.");
+}
+
+sub def {
+  my ($self, $name) = @_;
+
+  $name = $self->normalizeName($name);
+  die "Expecting string, not reference!\n" unless ref($name) eq '';
+  $self->checkName($name);
+  $self->checkScopeFor($name);
+
+  return $self->{$name} = main::NIL;
+}
+
+sub set {
+  my ($self, $name, $value) = @_;
+
+  $name = $self->normalizeName($name);
+  die "Expecting string, not reference!\n" unless ref($name) eq '';
+  die "Attempted to modify a const: $name.\n"
+	if defined($self->{' consts'}->{$name});
+
+  exists($self->{$name}) and do {
+	$self->{$name} = $value;
+	return $value;
+  };
+
+  defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
+
+  die "Unknown variable: '$name'\n";
+}
+
+sub defset {
+  my ($self, $name, $value) = @_;
+
+  $name = $self->normalizeName($name);
+  $self->checkName($name);
+  $self->checkScopeFor($name);
+
+  $self->def($name);
+  $self->set($name, $value);
+
+  return $value;
+}
+
+sub defsetconst {
+  my ($self, $name, $value) = @_;
+
+  $name = $self->normalizeName($name);
+  $self->checkName($name);
+  $self->checkScopeFor($name);
+
+  $self->defset($name, $value);
+  $self->{' consts'}->{$name} = 1;
+
+  return $value;
+}
+
+
+sub lookup {
+  my ($self, $name) = @_;
+
+  $name = $self->normalizeName($name);
+
+  exists($self->{$name})      and return $self->{$name};
+  defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
+
+  die "Unknown variable: '$name'\n";
+}
+
+sub present {
+  my ($self, $name) = @_;
+
+  $name = $self->normalizeName($name);
+
+  exists($self->{$name}) and return 1;
+  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
+
+  return 0;
+}
+
+
+
+package LL::GlobalContext;
+use base 'LL::Context';
+
+sub new {
+  my $self = LL::Context::new(@_);
+  $self->{' namespace'} = '';			# The current namespace
+  $self->{' namespaces'} = {};			# The set of declared namespaces
+  $self->{' imported symbols'} = {};	# The set of names that are imports
+
+  return $self;
+}
+
+sub _chkns {
+  my ($self, $ns) = @_;
+  die "Undefined namespace '$ns'\n"
+	unless defined($self->{' namespaces'}->{$ns});
+}
+
+# Set default namespace
+sub setNamespace {
+  my ($self, $ns) = @_;
+  $self->_chkns($ns);
+  $self->{' namespace'} = $ns;
+  return;
+}
+
+sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
+
+sub defNamespace {
+  my ($self, $ns) = @_;
+  $self->checkName($ns);
+  $self->{' namespaces'}->{$ns} = 1;
+}
+
+sub hasNamespace {
+  my ($self, $ns) = @_;
+  return exists($self->{' namespaces'}->{$ns});
+}
+
+
+sub normalizeName {
+  my ($self, $name) = @_;
+
+  return $name if $self->isQualified($name);
+  return $self->getNamespace() . '::' . $name;
+}
+
+# Split a name into ($namespace, $name) pairs
+sub _splitName {
+  my ($self, $name) = @_;
+
+  my @np = split (/::/, $name);
+  my $namePart = pop @np;
+  my $namespacePart = join ("::", @np);
+
+  return ($namespacePart, $namePart);
+}
+
+sub deferToGlobal {return 0}
+
+# Ensure $name is valid for this context
+sub checkScopeFor {
+  my ($self, $name) = @_;
+
+  # We allow qualified names here but the namespace must be declared.
+  my ($namespace, $baseName) = $self->_splitName($name);
+  $self->_chkns($namespace);
+
+  return 1;
+}
+
+
+# Copy all public names in namespace $src to namespace $dest
+sub importPublic {
+  my ($self, $src, $dest, $withNames, $withoutNames, $renameNames) = @_;
+
+  $dest = $self->{' namespace'} unless $dest;
+
+  $self->_chkns($src);
+  $self->_chkns($dest);
+
+  my @srcNames = ();
+  foreach my $key (keys %{$self}) {
+	next if $key =~ /^\s/;	# Skip internal variables
+
+	# Skip existing imports
+	next if defined($self->{' imported symbols'}->{$key});
+
+	my ($namespace, $name) = $self->_splitName($key);
+	next unless $namespace eq $src;
+	next if $name =~ /^_/;
+
+	my $newVar = "${dest}::${name}";
+	if ($withNames) {
+	  next unless exists($withNames->{$name});
+	  $newVar = "${dest}::" . $withNames->{$name};
+	} elsif ($withoutNames) {
+	  next if exists($withoutNames->{$name});
+	} elsif ($renameNames && defined($renameNames->{$name})) {
+	  $newVar = "${dest}::" . $renameNames->{$name};
+	}
+
+	die "Importing name '$key' into '$dest' as '$newVar' overwrites existing " .
+	  "name.\n"
+	  if exists($self->{$newVar});
+
+	$self->defsetconst($newVar, $self->{"${src}::${name}"});
+
+	$self->{' imported symbols'}->{$newVar} = 1;
+  }
+
+  return;
+}
+
+# Test if $name is a qualified private symbol in any scope.
+sub nameIsQualifiedPrivate {
+  my ($self, $name) = @_;
+
+  return $name =~ /[^:]\:\:_[^:]*$/;
+}
+
+# Test if $name is legally accessible from the current namespace.
+sub isLegallyAccessible {
+  my ($self, $name) = @_;
+
+  my $ns = $self->getNamespace();
+  return 1 unless $self->nameIsQualifiedPrivate($name);
+  return $name =~ m{^${ns}};
+}
+
 # ---------------------------------------------------------------------------
 
 package LL::Datum;
@@ -655,11 +905,11 @@ sub class {my ($self) = @_; return $self->{' class'};}
 
 sub new {
   my ($class, $deckClass) = @_;
-  my $self = $class->LL::Context::new($Globals);
+  my $self = $class->LL::Context::new($LL::Main::Globals);
   $self->{' class'}	= $deckClass;
 
   for my $field (@{$deckClass->{fields}}) {
-	$self->defset($field, LL::Nil::NIL);
+	$self->defset($field, main::NIL);
   }
 
   return bless $self, $class;
@@ -727,253 +977,6 @@ sub lookup {
 }
 
 
-# ---------------------------------------------------------------------------
-
-package LL::Context;
-
-sub new {
-  my ($class, $parent) = @_;
-  return bless {
-				# Reserved fields:
-				' parent'		=> $parent,
-				' consts'		=> {},	# <- list of const names
-			   }, $class;
-}
-
-sub isQualified {
-  my ($self, $name) = @_;
-
-  return $name =~ /\:\:/;
-}
-
-sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
-sub normalizeName {my ($self, $name) = @_; return $name}
-
-sub checkScopeFor {
-  my ($self, $name) = @_;
-
-  die "Qualified name defined in local context."
-	if $self->isQualified($name);
-
-}
-
-# Ensure $name is a valid Deck variable
-sub checkName {
-  my ($self, $name) = @_;
-
-  (LL::Symbol->new($name))->checkValidName(" as variable name.");
-}
-
-sub def {
-  my ($self, $name) = @_;
-
-  $name = $self->normalizeName($name);
-  die "Expecting string, not reference!\n" unless ref($name) eq '';
-  $self->checkName($name);
-  $self->checkScopeFor($name);
-
-  return $self->{$name} = LL::Nil::NIL;
-}
-
-sub set {
-  my ($self, $name, $value) = @_;
-
-  $name = $self->normalizeName($name);
-  die "Expecting string, not reference!\n" unless ref($name) eq '';
-  die "Attempted to modify a const: $name.\n"
-	if defined($self->{' consts'}->{$name});
-
-  exists($self->{$name}) and do {
-	$self->{$name} = $value;
-	return $value;
-  };
-
-  defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
-
-  die "Unknown variable: '$name'\n";
-}
-
-sub defset {
-  my ($self, $name, $value) = @_;
-
-  $name = $self->normalizeName($name);
-  $self->checkName($name);
-  $self->checkScopeFor($name);
-
-  $self->def($name);
-  $self->set($name, $value);
-
-  return $value;
-}
-
-sub defsetconst {
-  my ($self, $name, $value) = @_;
-
-  $name = $self->normalizeName($name);
-  $self->checkName($name);
-  $self->checkScopeFor($name);
-
-  $self->defset($name, $value);
-  $self->{' consts'}->{$name} = 1;
-
-  return $value;
-}
-
-
-sub lookup {
-  my ($self, $name) = @_;
-
-  $name = $self->normalizeName($name);
-
-  exists($self->{$name})      and return $self->{$name};
-  defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
-
-  die "Unknown variable: '$name'\n";
-}
-
-sub present {
-  my ($self, $name) = @_;
-
-  $name = $self->normalizeName($name);
-
-  exists($self->{$name}) and return 1;
-  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
-
-  return 0;
-}
-
-
-
-package LL::GlobalContext;
-use base 'LL::Context';
-
-sub new {
-  my $self = LL::Context::new(@_);
-  $self->{' namespace'} = '';			# The current namespace
-  $self->{' namespaces'} = {};			# The set of declared namespaces
-  $self->{' imported symbols'} = {};	# The set of names that are imports
-
-  return $self;
-}
-
-sub _chkns {
-  my ($self, $ns) = @_;
-  die "Undefined namespace '$ns'\n"
-	unless defined($self->{' namespaces'}->{$ns});
-}
-
-# Set default namespace
-sub setNamespace {
-  my ($self, $ns) = @_;
-  $self->_chkns($ns);
-  $self->{' namespace'} = $ns;
-  return;
-}
-
-sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
-
-sub defNamespace {
-  my ($self, $ns) = @_;
-  $self->checkName($ns);
-  $self->{' namespaces'}->{$ns} = 1;
-}
-
-sub hasNamespace {
-  my ($self, $ns) = @_;
-  return exists($self->{' namespaces'}->{$ns});
-}
-
-
-sub normalizeName {
-  my ($self, $name) = @_;
-
-  return $name if $self->isQualified($name);
-  return $self->getNamespace() . '::' . $name;
-}
-
-# Split a name into ($namespace, $name) pairs
-sub _splitName {
-  my ($self, $name) = @_;
-
-  my @np = split (/::/, $name);
-  my $namePart = pop @np;
-  my $namespacePart = join ("::", @np);
-
-  return ($namespacePart, $namePart);
-}
-
-sub deferToGlobal {return 0}
-
-# Ensure $name is valid for this context
-sub checkScopeFor {
-  my ($self, $name) = @_;
-
-  # We allow qualified names here but the namespace must be declared.
-  my ($namespace, $baseName) = $self->_splitName($name);
-  $self->_chkns($namespace);
-
-  return 1;
-}
-
-
-# Copy all public names in namespace $src to namespace $dest
-sub importPublic {
-  my ($self, $src, $dest, $withNames, $withoutNames, $renameNames) = @_;
-
-  $dest = $self->{' namespace'} unless $dest;
-
-  $self->_chkns($src);
-  $self->_chkns($dest);
-
-  my @srcNames = ();
-  foreach my $key (keys %{$self}) {
-	next if $key =~ /^\s/;	# Skip internal variables
-
-	# Skip existing imports
-	next if defined($self->{' imported symbols'}->{$key});
-
-	my ($namespace, $name) = $self->_splitName($key);
-	next unless $namespace eq $src;
-	next if $name =~ /^_/;
-
-	my $newVar = "${dest}::${name}";
-	if ($withNames) {
-	  next unless exists($withNames->{$name});
-	  $newVar = "${dest}::" . $withNames->{$name};
-	} elsif ($withoutNames) {
-	  next if exists($withoutNames->{$name});
-	} elsif ($renameNames && defined($renameNames->{$name})) {
-	  $newVar = "${dest}::" . $renameNames->{$name};
-	}
-
-	die "Importing name '$key' into '$dest' as '$newVar' overwrites existing " .
-	  "name.\n"
-	  if exists($self->{$newVar});
-
-	$self->defsetconst($newVar, $self->{"${src}::${name}"});
-
-	$self->{' imported symbols'}->{$newVar} = 1;
-  }
-
-  return;
-}
-
-# Test if $name is a qualified private symbol in any scope.
-sub nameIsQualifiedPrivate {
-  my ($self, $name) = @_;
-
-  return $name =~ /[^:]\:\:_[^:]*$/;
-}
-
-# Test if $name is legally accessible from the current namespace.
-sub isLegallyAccessible {
-  my ($self, $name) = @_;
-
-  my $ns = $self->getNamespace();
-  return 1 unless $self->nameIsQualifiedPrivate($name);
-  return $name =~ m{^${ns}};
-}
-
 
 
 # ---------------------------------------------------------------------------
@@ -986,12 +989,14 @@ use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Datums
 use Cwd qw{abs_path getcwd};
 use File::Basename;
 
-use constant NIL => LL::Nil::NIL;
+sub NIL {return LL::Nil::NIL;}
+
+
 use constant TRUE => LL::Number->new(1);
 
 our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
-my $Globals = LL::GlobalContext->new();
+our $Globals = LL::GlobalContext->new();
 
 # ---------------------------------------------------------------------------
 
