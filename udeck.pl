@@ -941,7 +941,7 @@ sub refreshCache {
   my ($self) = @_;
 
   $self->{cache} = {};
-  if ($self->{superclass}) {
+  if (!$self->{superclass}->isNil()) {
 	$self->{cache} = { %{ $self->{superclass}->methodCache } };
   }
 
@@ -2420,10 +2420,13 @@ sub macro_class {
   $superclass->checkSymbol(" in class definition");
   $body->checkQtLoL(" in class definition.");
 
-  return LL::List->new([LL::Symbol->new('_::class'),
+  my $classDef = LL::List->new([LL::Symbol->new('_::class'),
+								$superclass,
+								$body]);
+
+  return LL::List->new([LL::Symbol->new('_::var'),
 						LL::Quote->new($name),
-						$superclass,
-						$body]);
+						$classDef]);
 }
 
 
@@ -3175,6 +3178,11 @@ sub class_fields {
 
 	my $start = $entry->[0];
 	$start->checkSymbol();
+
+	# Sanity check
+	die "Unknown class declaration part: '${$start}...'\n"
+	  unless ${$start} =~ /^(var|const|method)$/;
+
 	next unless (${$start} eq 'var' || ${$start} eq 'const');
 
 	my $line = macro_varconst(@{$entry});
@@ -3216,10 +3224,11 @@ sub class_methods {
 	
 	my ($method, $name, $args, $body) = @{$entry};
 	$name->checkSymbol(" in method name.");
-	$args = fixFormalArgs($args);
+	$args = fixFormalArgs($args)->value();
 	$body->checkQtLoL(" in method definition.");
 
-	# Create a scratch LL::Context to keep the compiler happy
+	# Create a scratch LL::Context to keep the compiler happy.  (Should
+	# this be an LL::Object?)
 	my $fieldsContext = LL::Context->new($Globals);
 	for my $key (keys %{$fields}) {$fieldsContext->def($key);}
 
@@ -3234,58 +3243,15 @@ sub class_methods {
 
 
 sub builtin_class {
-  my ($name, $superclass, $body) = @_;
+  my ($superclass, $body) = @_;
 
-  $name->checkSymbol();
   $superclass->checkClass()
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
   my $fields = class_fields($body);
-  my $methods = {};
+  my $methods = class_methods($body);
 
-=pod
+  my $class = LL::Class->new($fields, $methods, $superclass);
 
-  for my $entry (@{$body}) {
-	next if scalar @{$entry} == 0;		# Maybe too tolerant
-
-	my $start = $entry->[0];
-	$start->checkSymbol();
-
-	my $line;
-	given (${$start}) {
-	  when (['var', 'const']) {
-		$line = macro_varconst(@{$entry});
-		die "Const fields not supported in classes.\n"
-		  if ${ $line->[0] } eq '_::const';
-
-		shift @{$line};
-		while (@{$line}) {
-		  my $name = shift @{$line};
-		  my $value = shift @{$line};
-
-		  $name->value()->checkSymbol();
-		  $fields->{${$name->value()}} = NIL;
-
-		  die "No support for field initializers yet.\n"
-			unless $value->isNil();
-		}
-	  }
-
-	  when ('method') {
-		# to do
-	  }
-
-	  default {
-		die "Illegal class entry: @{[$line->printStr()]}\n";
-	  }
-
-	}
-
-
-  }
-
-=cut
-
-#  die "'class' doesn't work yet.\n";
-
+  return $class;
 }
