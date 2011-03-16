@@ -2498,6 +2498,7 @@ sub initGlobals {
 				   ['_::class',		\&builtin_class],
 				   ['_::getMethod',	\&builtin_getMethod],
 				   ['getMethod',	\&builtin_getMethod],
+				   ['new',			\&builtin_new],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -3195,7 +3196,11 @@ sub class_fields {
 	  my $value = shift @{$line};
 
 	  $name->value()->checkSymbol();
-	  $fields->{${$name->value()}} = NIL;
+	  my $nmStr = ${ $name->value() };
+
+	  die "Redefinition of field '$nmStr'\n"
+		if exists($fields->{$nmStr});
+	  $fields->{$nmStr} = NIL;
 
 	  die "No support for field initializers yet.\n"
 		unless $value->isNil();
@@ -3231,9 +3236,9 @@ sub class_methods {
 	# this be an LL::Object?)
 	my $fieldsContext = LL::Context->new($Globals);
 	for my $key (keys %{$fields}) {$fieldsContext->def($key);}
-
+$DB::single = 1;
 	my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
-	$code = LL::Method->new($method);
+	$code = LL::Method->new($code);
 	$methods{${$name}} = $code;
   }
 
@@ -3251,7 +3256,23 @@ sub builtin_class {
   my $fields = class_fields($body);
   my $methods = class_methods($body);
 
-  my $class = LL::Class->new($fields, $methods, $superclass);
+  my $class = LL::Class->new([keys %{$fields}], $methods, $superclass);
 
   return $class;
+}
+
+
+sub builtin_new {
+  my ($class, @args) = @_;
+
+  $class->checkClass(" in function 'new'.");
+
+  my $obj = LL::Object->new($class);
+
+  my $init = $class->{cache}->{_init};	# avoid lookup() to skip dnu
+  if ($init) {
+	$init->($obj, @args);
+  }
+
+  return $obj;
 }

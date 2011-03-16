@@ -24,6 +24,10 @@ Notes:
 
 	- macros are always defined at the global (module) level.
 
+	- INIT ==> _init
+
+	- 'new' used to create objects.
+
 
 Functions Todo:
 X	-listSized
