@@ -915,6 +915,16 @@ sub new {
   return bless $self, $class;
 }
 
+sub perlForm {
+  my ($self) = @_;
+
+  my $result = {};
+  for my $k (grep { !/^\s/ } keys %{$self}) {
+	$result->{$k} = $self->{$k};
+  }
+
+  return $result;
+}
 
 
 
@@ -1915,7 +1925,9 @@ sub compile {
 	if $dumpExpr;
 
   my $fn = sub {
-	my $context = $outerContext ? LL::Context->new($outerContext) : $Globals;
+	my $context = $outerContext ? LL::Context->new($outerContext)
+	  : $isMethod ? LL::Context->new($_[0])
+	  : $Globals;
 
 	#  Check for argument mismatch
 	(scalar @_ == $nargs || $isVararg && scalar @_ > $nargs)
