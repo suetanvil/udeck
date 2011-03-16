@@ -1877,6 +1877,7 @@ sub checkForScopeViolations {
 # $name is used for error messages and may be omitted.
 sub compile {
   my ($outerContext, $args, $body, $mode, $name) = @_;
+  $body->checkLoL();
 
   $name ||= 'unnamed function';
 
@@ -3230,13 +3231,15 @@ sub class_methods {
 	my ($method, $name, $args, $body) = @{$entry};
 	$name->checkSymbol(" in method name.");
 	$args = fixFormalArgs($args)->value();
+
 	$body->checkQtLoL(" in method definition.");
+	$body = $body->value();	# There's no more eval so drop the quote
 
 	# Create a scratch LL::Context to keep the compiler happy.  (Should
 	# this be an LL::Object?)
 	my $fieldsContext = LL::Context->new($Globals);
 	for my $key (keys %{$fields}) {$fieldsContext->def($key);}
-$DB::single = 1;
+
 	my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
 	$code = LL::Method->new($code);
 	$methods{${$name}} = $code;
