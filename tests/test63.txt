@@ -1,0 +1,6 @@
+WARNING: Entire LoL line is bracketed.  This may not be what you want.
+Method call!
+foo!
+Calling seta
+Calling puta
+42

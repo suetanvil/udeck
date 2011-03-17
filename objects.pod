@@ -52,25 +52,30 @@ grasp of everything.
 =head2 To Do
 
 	-basic class and object
-		-'class' type.
-		-'object' type.
+X		-'class' type.
+X		-'object' type.
 X			-doesNotUnderstand
-		-lookup function.
+X		-lookup function.
 			-special syntax for lookup.
 		-class definition
 			-class macro
-			-_::class function
+X			-_::class function
 				-inheritance
-				-methods
+X				-methods
 					-private methods
-				-instance variables
+X				-instance variables
 				-attributes
+			-initializer
+				-field initialization
 		-class 'Object'
 
-		-object instantiation
+X		-object instantiation
 	
 		-make LL::Object a subclass of Context.
 	
+
+
+
 
 =head2 Issues
 

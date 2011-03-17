@@ -1,0 +1,24 @@
+# Basic class definition
+
+class Foo  {
+	var a b c
+
+	method x {t} {puts t}
+	method seta {newA} {a = newA}
+	method puta {} {puts a}
+}
+
+var z = [new Foo]
+
+#perlproc dump{o} '''print "[", %{$o}, "]\n";'''
+
+(z->x) "Method call!"
+puts "foo!"
+
+puts "Calling seta"
+(z->seta) 42
+
+puts "Calling puta"
+(z->puta)
+
+
