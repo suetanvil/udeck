@@ -2431,6 +2431,7 @@ sub macro_class {
   my ($class, $name, $superclass, $body) = @_;
   checkNargs(\@_, 3, 4);
 
+  # Handle omitted superclass
   if ($superclass->isQtLoL()) {
 	$body = $superclass;
 	$superclass = LL::Symbol->new('Object');
@@ -2439,6 +2440,10 @@ sub macro_class {
   $name->checkSymbol(" in class definition.");
   $superclass->checkSymbol(" in class definition");
   $body->checkQtLoL(" in class definition.");
+
+  if (${$name} eq 'Object') {
+	$superclass = LL::Symbol->new('nil');
+  }
 
   my $classDef = LL::List->new([LL::Symbol->new('_::class'),
 								$superclass,

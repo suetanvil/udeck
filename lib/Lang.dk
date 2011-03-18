@@ -5,6 +5,13 @@
 
 var Version = '0.01';
 
+class Object {
+	method doesNotUnderstand {name args} {
+		die "Unable to load method '$name'"
+	}
+
+	method init {args} {}
+}
 
 
 

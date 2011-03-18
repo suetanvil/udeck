@@ -63,6 +63,7 @@ X			-_::class function
 				-inheritance
 X				-methods
 					-private methods
+					-must return self
 X				-instance variables
 				-attributes
 			-initializer

@@ -24,7 +24,7 @@ Notes:
 
 	- macros are always defined at the global (module) level.
 
-	- INIT ==> _init
+	- INIT ==> init
 
 	- 'new' used to create objects.
 
