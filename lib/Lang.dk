@@ -1,0 +1,11 @@
+# The Deck system library.  Contents are imported into module Lang
+# after startup.
+
+# no package declaration because this module has already been created.
+
+var Version = '0.01';
+
+
+
+
+

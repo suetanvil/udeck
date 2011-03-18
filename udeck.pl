@@ -1045,6 +1045,7 @@ sub pullOutArgs {
 }
 
 
+
 # ---------------------------------------------------------------------------
 
 # Run the command-line program or the REPL, depending.
@@ -2599,6 +2600,12 @@ sub initGlobals {
   macro 'class',		\&macro_class;
   macro '->',			\&macro_methodLookupOp;
 
+  # The external 'Lang' module
+  my $path = findFileFor('Lang');
+  die "Unable to find system module 'Lang.dk'.  Check your module path.\n"
+	unless $path;
+  readfile($path, 'Lang', 0, 0);
+
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');
   $Globals->setNamespace('Main');
@@ -2979,7 +2986,8 @@ sub builtin_mkstr_all {
 }
 
 
-sub _findFileFor {
+# Given a package name, find the corresponding source file.
+sub findFileFor {
   my ($moduleName) = @_;
 
   my $modPath = $Globals->lookup('Sys::ModPath');
@@ -3050,7 +3058,7 @@ sub builtin_usefn {
 
   # Import the file
   my $mn = ${$moduleName};
-  my $path = _findFileFor($mn);
+  my $path = findFileFor($mn);
   die "Unable to find module '$mn'\n"
 	unless $path;
 
