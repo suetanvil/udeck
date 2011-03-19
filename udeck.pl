@@ -932,6 +932,7 @@ package LL::Class;
 use base 'LL::Datum';
 sub isClass {return 1}
 sub checkClass {}
+sub storeStr {return "<class>"}
 
 sub new {
   my ($class, $fields, $methods, $superclass) = @_;
@@ -952,7 +953,7 @@ sub refreshCache {
 
   $self->{cache} = {};
   if (!$self->{superclass}->isNil()) {
-	$self->{cache} = { %{ $self->{superclass}->methodCache } };
+	$self->{cache} = { %{ $self->{superclass}->{cache} } };
   }
 
   for my $name (keys %{$self->{methods}}) {

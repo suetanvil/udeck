@@ -1,6 +1,6 @@
 # Basic class definition
 
-class Foo  {
+class Foo {
 	var a b c
 
 	method x {t} {puts t}
