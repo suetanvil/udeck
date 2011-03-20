@@ -95,9 +95,6 @@ X		- packages
 X		- with/without clauses
 X		- with renames
 X		- 'rename' 
-	- static variables
-	- objects
-	- integers
 
 X	-_lreturn should have a better name: 'subreturn'?
 X	- ARGS needs to be split into interp args and program args.
@@ -112,8 +109,6 @@ X		-hmmm.  What about ':"foo $bar"'
 X			-" expressions are syntact shorthand the same way infix
 X			 expressions are.
 
-	- What to do about user-defined operators?
-	- handle unescaped operator in prefix LoL expression
 X	- should we allow local macros?
 X		-for now, no!
 
@@ -125,16 +120,23 @@ X	- separate interp args from program args
 X	- apply
 X	- bug: need to unescape all operators
 X	- need to check the argument counts of all built-in functions.
-3
-	- merge symbol class-level qualified checks with namespace-level
-	  checks.
-	- intern.
+
+X	- intern.
 X		-added
 X		-need to protect the namespace from badly-formed variables.
 X	- boolean not
 X	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 X		-also add unquoted versions	
 	
+
+	- merge symbol class-level qualified checks with namespace-level
+	  checks.
+	- What to do about user-defined operators?
+	- handle unescaped operator in prefix LoL expression
+	- static variables
+	- objects
+	- integers
+	- subify builtin
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

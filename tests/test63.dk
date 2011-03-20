@@ -21,4 +21,9 @@ puts "Calling seta"
 puts "Calling puta"
 (z->puta)
 
+puts "Are they the same object?"
+var x = [(z->puta)]
+puts x ", " z
+puts (x === z)
+
 

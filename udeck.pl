@@ -915,18 +915,10 @@ sub new {
   return bless $self, $class;
 }
 
-sub perlForm {
-  my ($self) = @_;
+# Perlform is the unmodified object. This may change
+sub perlForm {my ($self) = @_; return $self;}
 
-  my $result = {};
-  for my $k (grep { !/^\s/ } keys %{$self}) {
-	$result->{$k} = $self->{$k};
-  }
-
-  return $result;
-}
-
-
+sub storeStr {return "<object>"}
 
 package LL::Class;
 use base 'LL::Datum';
@@ -1983,6 +1975,9 @@ sub compile {
 	# Procs return NIL by default.  Only explicit returns return a
 	# value.
 	return NIL if ($isProc && !$@);
+
+	# Methods return 'self' by default.
+	return $context->{' parent'} if ($isMethod && !$@);
 
 	return $lastexpr;
   };

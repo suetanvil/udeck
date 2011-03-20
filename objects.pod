@@ -53,6 +53,9 @@ grasp of everything.
 
 	-basic class and object
 X		-'class' type.
+			-equals
+			-perlform
+			-at, atPut, size, isIndexible
 X		-'object' type.
 X			-doesNotUnderstand
 X		-lookup function.
@@ -68,7 +71,9 @@ X				-instance variables
 				-attributes
 			-initializer
 				-field initialization
-		-class 'Object'
+X		-class 'Object'
+
+		-binary operator to method conversion
 
 X		-object instantiation
 	
