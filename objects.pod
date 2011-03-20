@@ -33,6 +33,15 @@ grasp of everything.
 	}
 
 
+	[o->m 42]
+
+	-"->" is magical.
+		-in prefix expressions, o->m is equivalent to (o->m) 
+		 at the start of an expression
+		-if escaped, behaves as usual.
+
+
+
 =head2 Semantics
 
 	-instance variables are visible only to the object's methods, NOT to

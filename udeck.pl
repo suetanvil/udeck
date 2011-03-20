@@ -662,6 +662,31 @@ sub parsedAsInfix {
 }
 
 
+# If $self takes the form [ <term> -> <term> ...], turn the first
+# three into a call to the '->' operator.
+sub withArrowResolved {
+  my ($self) = @_;
+
+  return $self if scalar @{$self} < 3;
+  return $self
+	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '->');
+
+  my $result = [ [$self->[1], $self->[0], $self->[2]], @{$self}[3..$#{$self}] ];
+  return LL::List->new($result);
+}
+
+
+# Treat $self as an infix expression and fix up all the OO-related
+# syntactic sugar.
+sub withOOSyntaxFixed {
+  my ($self) = @_;
+
+  my $result = $self->withArrowResolved();
+
+  return $result;
+}
+
+
 
 sub _sanitizeIndex {
   my ($self, $index) = @_;
@@ -1245,7 +1270,10 @@ sub readExpr {
 
   $tok->isParen() and do {
 	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
-	  return readSexp(${$tok})->asPrefixList();
+$DB::single = 1;
+my $x = readSexp(${$tok})->asPrefixList();
+	  return $x->withOOSyntaxFixed();
+#	  return readSexp(${$tok})->asPrefixList()->withOOSyntaxFixed();
 	};
 	
 	($tok->isBrace() && $tok->isOpen()) and do {
