@@ -11,6 +11,11 @@ class Object {
 	}
 
 	method init {args} {}
+
+	method at {index} {die "Not indexable."}
+	method atPut {index} {die "Not indexable."}
+	method size {} {die "Not indexable."}
+	method isIndexable {} {return nil}
 }
 
 

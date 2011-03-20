@@ -321,7 +321,6 @@ sub isRoundParen {return 0}
 sub isLiteral {return 0}
 sub isEmptyList {return 0}
 sub isList {return 0}
-sub isIndexable {return 0}
 sub isByteArray {return 0}
 sub isInfixList {return 0}
 sub isQuote {return 0}
@@ -348,9 +347,11 @@ sub equals {
 }
 sub inTypeEq {my ($self, $other) = @_; return $self == $other }
 
+sub isIndexable {return 0}
 sub at {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 sub atPut {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
 sub size {die "Expecting indexed object, got @{[shift()->printStr()]}\n"}
+
 sub checkIndexable {
   my ($self) = @_;
   die "Expecting indexable type, got @{[ref($self)]}\n"
@@ -915,10 +916,29 @@ sub new {
   return bless $self, $class;
 }
 
+# Call deck method named by $name on $self.  All arguments must go
+# through decktype correctly.
+sub deckCall {
+  my ($self, $name, @args) = @_;
+
+  @args = map { decktype($_) } @args;
+
+  my $method = $self->{' class'}->lookup($name);
+  my $result = $method->($self, @args);
+  return $result->perlForm();
+}
+
 # Perlform is the unmodified object. This may change
 sub perlForm {my ($self) = @_; return $self;}
-
 sub storeStr {return "<object>"}
+
+# Builtin-type behaviours
+sub isIndexable {my ($self) = @_;        $self->deckCall('isIndexable')}
+sub at          {my ($self, @args) = @_; $self->deckCall('at', @args)}
+sub atPut       {my ($self, @args) = @_; $self->deckCall('atPut', @args)}
+sub size        {my ($self) = @_;        $self->deckCall('size')}
+
+
 
 package LL::Class;
 use base 'LL::Datum';
@@ -2602,10 +2622,18 @@ sub initGlobals {
   macro '->',			\&macro_methodLookupOp;
 
   # The external 'Lang' module
-  my $path = findFileFor('Lang');
-  die "Unable to find system module 'Lang.dk'.  Check your module path.\n"
-	unless $path;
-  readfile($path, 'Lang', 0, 0);
+  {
+	# Hack: disable dumping when loading the library.
+	my $dbk = $dumpExpr;
+	$dumpExpr = 0;
+
+	my $path = findFileFor('Lang');
+	die "Unable to find system module 'Lang.dk'.  Check your module path.\n"
+	  unless $path;
+	readfile($path, 'Lang', 0, 0);
+
+	$dumpExpr = $dbk;
+  }
 
   # Finally, switch to Main and import all public system names.
   $Globals->importPublic('Lang', 'Main');

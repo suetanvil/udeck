@@ -1,7 +1,3 @@
-*top*: [[_::var :Version "0.01"]]
-*top*: [[_::var :Object [_::class nil :[[method doesNotUnderstand :[[name args]] :[[die [_::mkstr "Unable to load method '" name "'"]]]] [method init :[[args]] :[]]]]]]
-doesNotUnderstand: [[die [_::mkstr "Unable to load method '" name "'"]]]
-init: []
 *top*: [[puts Sys::Argv0]]
 argtest.dk
 *top*: [[puts Sys::Argv]]
