@@ -671,8 +671,8 @@ sub withArrowResolved {
   return $self
 	unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '->');
 
-  my $result = [ [$self->[1], $self->[0], $self->[2]], @{$self}[3..$#{$self}] ];
-  return LL::List->new($result);
+  my $arrowExpr = LL::List->new([$self->[1], $self->[0], $self->[2]]);
+  return LL::List->new([ $arrowExpr, @{$self}[3..$#{$self}] ]);
 }
 
 
@@ -720,6 +720,8 @@ sub atPut {
 package LL::InfixList;
 use base 'LL::List';
 sub isInfixList {return 1}
+sub withOOSyntaxFixed {my ($self) = @_; return $self}	# asPrefixList does it.
+
 {
   my @precedence = ([qw{-> . @}],	# method lookup, field lookup, seq. access
 					[qw{**}],		# power
@@ -1229,6 +1231,9 @@ sub readLoLLine {
 	$rlist = LL::InfixList->new(\@result)->asPrefixList();
   }
 
+  # Fix up the OO syntactic sugar
+  $rlist = $rlist->withOOSyntaxFixed();
+
   # Strip out any operator escapes.  We no longer need them.
   $rlist->unescapeAllOperators();
 
@@ -1270,10 +1275,12 @@ sub readExpr {
 
   $tok->isParen() and do {
 	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
-$DB::single = 1;
-my $x = readSexp(${$tok})->asPrefixList();
-	  return $x->withOOSyntaxFixed();
-#	  return readSexp(${$tok})->asPrefixList()->withOOSyntaxFixed();
+#$DB::single = 1;
+#	  my $x = readSexp(${$tok});
+#	  $x = $x->withOOSyntaxFixed();
+#	  $x = $x->asPrefixList();
+#	  return $x;
+	  return readSexp(${$tok})->withOOSyntaxFixed()->asPrefixList();
 	};
 	
 	($tok->isBrace() && $tok->isOpen()) and do {

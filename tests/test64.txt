@@ -1,0 +1,4 @@
+Calling x
+42
+42
+<method call>
