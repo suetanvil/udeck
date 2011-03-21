@@ -8,3 +8,4 @@ Are they the same object?
 42
 <object>, <object>
 1
+Is z indexable? nil

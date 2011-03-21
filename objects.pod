@@ -40,6 +40,13 @@ grasp of everything.
 		 at the start of an expression
 		-if escaped, behaves as usual.
 
+	-"." is magical
+		o.xxx = 123
+		o.yyy = o.xxx + 42
+		z = [foo o.xxx o.yyy]
+
+
+
 
 
 =head2 Semantics
