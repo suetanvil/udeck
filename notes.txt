@@ -137,6 +137,7 @@ X		-also add unquoted versions
 	- objects
 	- integers
 	- subify builtin
+	- bug: compiler doesn't catch undefined vars at compile time.
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

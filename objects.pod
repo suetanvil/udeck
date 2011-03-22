@@ -67,6 +67,8 @@ X			o.so->foo
 
 	-what if a local class existed in the context that defined it?
 
+	-'attrib' declares 'public' ivars.
+
 =head2 To Do
 
 	-basic class and object
@@ -94,7 +96,7 @@ X				-instance variables
 						-assignment support
 						-autoparen
 			-initializer
-				-field initialization
+X				-field initialization  (left out for now--spooky)
 X		-class 'Object'
 X			-isTrue
 

@@ -1,0 +1,7 @@
+
+proc foo {} {
+	puts undefinedVar
+}
+
+puts "Should die before getting here."
+foo

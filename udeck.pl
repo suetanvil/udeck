@@ -1277,11 +1277,6 @@ sub readExpr {
 
   $tok->isParen() and do {
 	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
-#$DB::single = 1;
-#	  my $x = readSexp(${$tok});
-#	  $x = $x->withOOSyntaxFixed();
-#	  $x = $x->asPrefixList();
-#	  return $x;
 	  return readSexp(${$tok})->withOOSyntaxFixed()->asPrefixList();
 	};
 	
@@ -3265,6 +3260,7 @@ sub class_fields {
   my ($body) = @_;
 
   my $fields = {};
+  my @attribs;
   for my $entry (@{$body}) {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
 
@@ -3273,32 +3269,35 @@ sub class_fields {
 
 	# Sanity check
 	die "Unknown class declaration part: '${$start}...'\n"
-	  unless ${$start} =~ /^(var|const|method)$/;
+	  unless ${$start} =~ /^(var|attrib|method)$/;
 
-	next unless (${$start} eq 'var' || ${$start} eq 'const');
+	next unless (${$start} eq 'var' || ${$start} eq 'attrib');
 
-	my $line = macro_varconst(@{$entry});
-	die "Const fields not supported in classes.\n"
-	  if ${ $line->[0] } eq '_::const';
+	my $attrib = 0;
+	if (${$start} eq 'attrib') {
+	  $attrib = 1;
+	}
+	shift @{$entry};
 
-	shift @{$line};
-	while (@{$line}) {
-	  my $name = shift @{$line};
-	  my $value = shift @{$line};
+	while (@{$entry}) {
+	  my $name = shift @{$entry};
+	  $name->checkSymbol(" as field name");
+	  my $nmStr = ${$name};
 
-	  $name->value()->checkSymbol();
-	  my $nmStr = ${ $name->value() };
+	  die "Attempted to use unescaped operator '${$name}' as field name.\n"
+		if ($name->isUnescapedOperator());
 
 	  die "Redefinition of field '$nmStr'\n"
 		if exists($fields->{$nmStr});
+
 	  $fields->{$nmStr} = NIL;
 
-	  die "No support for field initializers yet.\n"
-		unless $value->isNil();
+	  push @attribs, $nmStr
+		if $attrib;
 	}
   }
 
-  return $fields;
+  return ($fields, \@attribs);
 }
 
 
@@ -3308,7 +3307,6 @@ sub class_methods {
   my ($body, $fields) = @_;
 
   my %methods = ();
-
   for my $entry (@{$body}) {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
 
@@ -3346,8 +3344,9 @@ sub builtin_class {
   $superclass->checkClass()
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
-  my $fields = class_fields($body);
-  my $methods = class_methods($body);
+  my ($fields, $attribNames) = class_fields($body);
+  my $methods = class_methods($body, $fields);
+#  class_attributes (
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass);
 
