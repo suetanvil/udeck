@@ -16,6 +16,14 @@ class Object {
 	method atPut {index} {die "Not indexable."}
 	method size {} {die "Not indexable."}
 	method isIndexable {} {return nil}
+
+	method isTrue {} {
+		if {self->isIndexable} {
+			return (self->size > 0)
+		} else {
+			return nil
+		}
+	}
 }
 
 

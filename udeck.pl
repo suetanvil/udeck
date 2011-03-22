@@ -723,7 +723,8 @@ sub isInfixList {return 1}
 sub withOOSyntaxFixed {my ($self) = @_; return $self}	# asPrefixList does it.
 
 {
-  my @precedence = ([qw{-> . @}],	# method lookup, field lookup, seq. access
+  my @precedence = ([qw{. @}],		# field lookup, seq. access
+					[qw{->}],		# method lookup
 					[qw{**}],		# power
 					[qw{* / // %}], # mult, div, div rounded toward zero, modulo
 					[qw{+ -}],				# add, subtract
@@ -1240,10 +1241,11 @@ sub readLoLLine {
   # Warn of the case where an explicit list is the only element of a
   # line because the programmer may have accidentally bracketted the
   # line.
-  if (scalar @{$rlist} == 1 && $rlist->[0]->isList()) {
-	dkwarn ("Entire LoL line is bracketed.  This may not be what",
-			"you want.");
-  }
+# autobracketting causes this
+#  if (scalar @{$rlist} == 1 && $rlist->[0]->isList()) {
+#	dkwarn ("Entire LoL line is bracketed.  This may not be what",
+#			"you want.");
+#  }
 
   return $rlist
 }
@@ -1593,13 +1595,11 @@ sub readLoL {
 		  $result .= q{'} x ($quotesFound - $delimCount);
 		  return ($line, $result);
 		}
-
 	  } else {
 		$result .= $char;
 	  }
 	}
   }
-
 }
 
 

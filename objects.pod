@@ -41,10 +41,12 @@ grasp of everything.
 		-if escaped, behaves as usual.
 
 	-"." is magical
-		o.xxx = 123
-		o.yyy = o.xxx + 42
-		z = [foo o.xxx o.yyy]
-
+			o.xxx = 123
+			o.yyy = o.xxx + 42
+			z = [foo o.xxx o.yyy]
+		-'.' magically autoparens
+X		-'.' needs higher precedence than '->'.
+X			o.so->foo
 
 
 
@@ -82,12 +84,19 @@ X			-_::class function
 				-inheritance
 X				-methods
 					-private methods
-					-must return self
+X					-must return self
+					-self must be const
+					-super
 X				-instance variables
 				-attributes
+					-access methods
+					-'.'
+						-assignment support
+						-autoparen
 			-initializer
 				-field initialization
 X		-class 'Object'
+X			-isTrue
 
 		-binary operator to method conversion
 
