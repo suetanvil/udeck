@@ -1053,13 +1053,15 @@ our $Globals = LL::GlobalContext->new();
 
 # Flags:
 my $dumpExpr = 0;
+my $noLib = 0;
 
 use Getopt::Long;
 
 {
   my $args = pullOutArgs();
 
-  GetOptions ('dump-expr'			=> \$dumpExpr)
+  GetOptions ('dump-expr'			=> \$dumpExpr,
+			  'no-lib'				=> \$noLib)
 	or die "Invalid argument.\n";
 
   initGlobals($args);
@@ -1151,7 +1153,7 @@ sub readfile {
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
-	my $fn = compile(undef, $args, $expr, 'toplevel', "*top*");
+	my $fn = compile($Globals, $args, $expr, 'toplevel', "*top*");
 
 	my $result;
 	eval {
@@ -1924,6 +1926,51 @@ sub checkForScopeViolations {
 }
 
 
+# Search $expr for uses of words undefined in $context.  If $expr is a
+# var or const declaration, first adds the names to $context.
+sub ensureVarsDeclaredRecursively {
+  my ($expr, $context) = @_;
+$DB::single = 1;
+
+  # If this is a var or const declaration, add the elements to $context
+  if ($expr->[0]->isSymbol() && ${ $expr->[0] } =~ /^_::(var|const)$/) {
+	my @elems = @{$expr};
+	shift @elems;	# lose leading _::var or _::const
+
+	if ($1 eq 'var') {
+	  builtin_var($context, @elems);
+	} else {
+	  builtin_const($context, @elems);
+	}
+  }
+
+  for my $element (@{$expr}) {
+	if ($element->isSymbol()) {
+	  die "Use of undeclared variable '${$element}'\n"
+		unless $context->present(${$element});
+	} elsif ($element->isList()) {
+	  ensureVarsDeclaredRecursively($element, $context);
+	}
+  }
+}
+
+# Search $body for uses of undeclared variables.
+sub ensureVarsDeclared {
+  my ($outerContext, $args, $body, $name) = @_;
+
+  # Check for uses of udeclared variables.
+  my $scratchContext = LL::Context->new($outerContext);
+  for my $arg (@{$args}) {
+	$arg->checkSymbol(" in formal argument of '$name'.");
+	$scratchContext->def(${$arg});
+  }
+
+  for my $entry (@{$body}) {
+	ensureVarsDeclaredRecursively($entry, $scratchContext);
+  }
+
+}
+
 
 # Return a blessed func. ref which executes a sub with $args and $body
 # in the given context.  If $context is undef, the $Global context is
@@ -1964,6 +2011,9 @@ sub compile {
 	  push @fixedBody, $newExpr;
 	}
   }
+
+  # Find undeclared variables.
+  ensureVarsDeclared($outerContext, $args, [@fixedBody], $name);
 
   print "$name: ", LL::List->new(\@fixedBody)->storeStr(), "\n"
 	if $dumpExpr;
@@ -2652,7 +2702,7 @@ sub initGlobals {
   macro '->',			\&macro_methodLookupOp;
 
   # The external 'Lang' module
-  {
+  if (!$noLib) {
 	# Hack: disable dumping when loading the library.
 	my $dbk = $dumpExpr;
 	$dumpExpr = 0;

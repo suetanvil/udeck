@@ -139,6 +139,11 @@ X		-also add unquoted versions
 	- subify builtin
 	- bug: compiler doesn't catch undefined vars at compile time.
 
+	- rewrite compiler
+		- make the context a PerlObj in itself and pass it to
+		  var/const/sub/set.
+
+
 	- needs a better name.
 		-I'm thinking turtle-themed.
 		-How about 'Mydas', from c. mydas, the green sea turtle?
