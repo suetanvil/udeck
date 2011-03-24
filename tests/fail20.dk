@@ -1,6 +1,8 @@
 
 var bigret
 
+
+var f2
 proc f1 {} {
 	f2 return
 	puts "f1"

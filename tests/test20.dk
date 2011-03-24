@@ -6,6 +6,7 @@ proc outer {} {
 
 puts [outer]
 
+var f2		# forward declaration
 
 proc f1 {} {
 	f2 return

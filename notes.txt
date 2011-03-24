@@ -138,7 +138,8 @@ X		-also add unquoted versions
 	- integers
 	- subify builtin
 	- bug: compiler doesn't catch undefined vars at compile time.
-
+	- forward declaration of functions
+		-var works but should be a bonk/oif pairing that ensures it.
 	- rewrite compiler
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.

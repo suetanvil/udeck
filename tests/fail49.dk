@@ -1,6 +1,6 @@
 
 # Test recursive macro definitions
-
+var foo
 macro foo {args} {
 	puts "Macro 'foo' called with " args
 

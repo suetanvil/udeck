@@ -36,7 +36,7 @@ sub normalizeName {my ($self, $name) = @_; return $name}
 sub checkScopeFor {
   my ($self, $name) = @_;
 
-  die "Qualified name defined in local context."
+  die "Qualified name '$name' defined in local context.\n"
 	if $self->isQualified($name);
 
 }
@@ -1930,14 +1930,17 @@ sub checkForScopeViolations {
 # var or const declaration, first adds the names to $context.
 sub ensureVarsDeclaredRecursively {
   my ($expr, $context) = @_;
-$DB::single = 1;
 
   # If this is a var or const declaration, add the elements to $context
   if ($expr->[0]->isSymbol() && ${ $expr->[0] } =~ /^_::(var|const)$/) {
+	my $kw = $1;
 	my @elems = @{$expr};
 	shift @elems;	# lose leading _::var or _::const
 
-	if ($1 eq 'var') {
+	# Strip quotes to mimic what evaluation does.
+	@elems = map { $_->isQuote() ? $_->value() : $_ } @elems;
+
+	if ($kw eq 'var') {
 	  builtin_var($context, @elems);
 	} else {
 	  builtin_const($context, @elems);
@@ -1956,10 +1959,20 @@ $DB::single = 1;
 
 # Search $body for uses of undeclared variables.
 sub ensureVarsDeclared {
-  my ($outerContext, $args, $body, $name) = @_;
+  my ($outerContext, $args, $body, $name, $mode, $isVararg) = @_;
+
+  # We skip toplevel expressions because a) it complicates this hack and
+  # b) compile() will detect this stuff soon enough anyway.
+  return if $mode eq 'toplevel';
 
   # Check for uses of udeclared variables.
   my $scratchContext = LL::Context->new($outerContext);
+
+  $scratchContext->def('return') if $mode =~ /^(method|proc|macro)$/;
+  $scratchContext->def('subreturn') if $mode eq 'sub';
+  $scratchContext->def('self') if $mode eq 'method';
+  $scratchContext->def('args') if $isVararg;
+
   for my $arg (@{$args}) {
 	$arg->checkSymbol(" in formal argument of '$name'.");
 	$scratchContext->def(${$arg});
@@ -2013,7 +2026,8 @@ sub compile {
   }
 
   # Find undeclared variables.
-  ensureVarsDeclared($outerContext, $args, [@fixedBody], $name);
+  ensureVarsDeclared($outerContext, $args, [@fixedBody], $name, $mode,
+					 $isVararg);
 
   print "$name: ", LL::List->new(\@fixedBody)->storeStr(), "\n"
 	if $dumpExpr;
@@ -2023,10 +2037,11 @@ sub compile {
 	my $context;
 	if ($isMethod) {
 	  $context = LL::Context->new($_[0]);
-	} elsif ($outerContext) {
-	  $context = LL::Context->new($outerContext);
-	} else {
+	} elsif ($isTop) {
 	  $context = $Globals;
+	} else {
+	  $context = LL::Context->new($outerContext);
+	  die "WTF? null outerContext!\n" if !defined($outerContext);
 	}
 
 	#  Check for argument mismatch
