@@ -3321,6 +3321,22 @@ sub builtin_getMethod {
 }
 
 
+# Given an entry in a class definition, return which sort of
+# declaration it is, die-ing if it is invalid.
+sub fieldType {
+  my ($entry) = @_;
+
+  my $start = $entry->[0];
+  $start->checkSymbol();
+
+  # Sanity check
+  die "Unknown class declaration part: '${$start}...'\n"
+	unless ${$start} =~ /^(var|public|readonly|writeonly|method)$/;
+
+  return ${$start};
+}
+
+
 sub class_fields {
   my ($body) = @_;
 
@@ -3329,20 +3345,12 @@ sub class_fields {
   for my $entry (@{$body}) {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
 
-	my $start = $entry->[0];
-	$start->checkSymbol();
-
-	# Sanity check
-	die "Unknown class declaration part: '${$start}...'\n"
-	  unless ${$start} =~ /^(var|attrib|method)$/;
-
-	next unless (${$start} eq 'var' || ${$start} eq 'attrib');
-
-	my $attrib = 0;
-	if (${$start} eq 'attrib') {
-	  $attrib = 1;
-	}
+	my $start = fieldType($entry);
+	next if ($start eq 'method');
 	shift @{$entry};
+
+	my $readable = ($start =~ /^(public|readable)$/);
+	my $writeable = ($start =~ /^(public|writeable)$/);
 
 	while (@{$entry}) {
 	  my $name = shift @{$entry};
@@ -3357,8 +3365,8 @@ sub class_fields {
 
 	  $fields->{$nmStr} = NIL;
 
-	  push @attribs, $nmStr
-		if $attrib;
+	  push @attribs, "${nmStr}_get" if $readable;
+	  push @attribs, "${nmStr}_set" if $writeable;
 	}
   }
 
@@ -3366,6 +3374,20 @@ sub class_fields {
 }
 
 
+
+
+
+sub mk_method {
+  my ($method, $name, $args, $fields, $body) = @_;
+
+  # Create a scratch LL::Context to keep the compiler happy.  (Should
+  # this be an LL::Object?)
+  my $fieldsContext = LL::Context->new($Globals);
+  for my $key (keys %{$fields}) {$fieldsContext->def($key);}
+
+  my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
+  return LL::Method->new($code);
+}
 
 
 sub class_methods {
@@ -3388,19 +3410,33 @@ sub class_methods {
 	$body->checkQtLoL(" in method definition.");
 	$body = $body->value();	# There's no more eval so drop the quote
 
-	# Create a scratch LL::Context to keep the compiler happy.  (Should
-	# this be an LL::Object?)
-	my $fieldsContext = LL::Context->new($Globals);
-	for my $key (keys %{$fields}) {$fieldsContext->def($key);}
-
-	my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
-	$code = LL::Method->new($code);
-	$methods{${$name}} = $code;
+	$methods{${$name}} = mk_method($method, $name, $args, $fields, $body);
   }
 
   return \%methods;
 }
 
+
+# Add the attributes to $methods
+sub class_attributes {
+  my ($attribNames, $body, $fields, $methods) = @_;
+
+  for my $attrib (@{$attribNames}) {
+	my $method;
+	if ($attrib =~ /$(.*)_set$/) {
+#	  $method = 
+# XXXXX
+	} elsif ($attrib =~ /$(.*)_get$/) {
+
+	} else {
+	  die "Malformed attribute: '$attrib'\n";
+	}
+
+
+  }
+
+
+}
 
 
 sub builtin_class {
@@ -3411,7 +3447,7 @@ sub builtin_class {
 
   my ($fields, $attribNames) = class_fields($body);
   my $methods = class_methods($body, $fields);
-#  class_attributes (
+  class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass);
 
