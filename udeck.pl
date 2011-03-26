@@ -676,12 +676,47 @@ sub withArrowResolved {
 }
 
 
+sub withDotsResolved {
+  my ($self) = @_;
+
+  my @result = @{$self};
+
+  while (1) {
+	my $dotIndex = 0;
+
+	# Find '<expr> . <expr>' sequences
+	for my $item (@result) {
+	  last if ($item->isUnescapedOperator() && ${$item} eq '.');
+	  $dotIndex++;
+	}
+	last if $dotIndex > $#result;
+
+	# Check for errors
+	die "Unescaped dot at start or end of expression.\n"
+	  if ($dotIndex == 0 || $dotIndex == $#result);
+
+	die "Syntax error: two consecutive '.' operators.\n"
+	  if ($result[$dotIndex]->isUnescapedOperator() && 
+		  ${$result[$dotIndex]} eq '.');
+
+	# Replace the sequence with a single sub-expression (prefix) of
+	# '.' being called on left and right operands
+	my $expr = LL::List->new([]);
+	my @op = splice @result, $dotIndex-1, 3, $expr;
+	push @{$expr}, $op[1], $op[0], $op[2];	# Order makes it prefix
+  }
+
+  return LL::List->new(\@result);
+}
+
+
 # Treat $self as an infix expression and fix up all the OO-related
 # syntactic sugar.
 sub withOOSyntaxFixed {
   my ($self) = @_;
 
-  my $result = $self->withArrowResolved();
+  my $result = $self->withDotsResolved();
+  $result = $self->withArrowResolved($result);
 
   return $result;
 }

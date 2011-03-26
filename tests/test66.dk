@@ -1,0 +1,28 @@
+# Test the magical -> operator
+
+class Foo {
+	readable r
+	writeable w
+	public p
+	var x
+
+	method _init {} {
+		r = "var r"
+		w = "var w"
+		p = "var p"
+		x = "var x"
+	}
+}
+
+var x = [new Foo]
+
+puts [x->get_p]
+x->set_p 42
+puts [x->get_p]
+
+
+
+
+
+
+
