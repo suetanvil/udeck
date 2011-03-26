@@ -695,9 +695,9 @@ sub withDotsResolved {
 	die "Unescaped dot at start or end of expression.\n"
 	  if ($dotIndex == 0 || $dotIndex == $#result);
 
-	die "Syntax error: two consecutive '.' operators.\n"
-	  if ($result[$dotIndex]->isUnescapedOperator() && 
-		  ${$result[$dotIndex]} eq '.');
+#	die "Syntax error: two consecutive '.' operators.\n"
+#	  if ($result[$dotIndex+1]->isUnescapedOperator() &&
+#		  ${$result[$dotIndex+1]} eq '.');
 
 	# Replace the sequence with a single sub-expression (prefix) of
 	# '.' being called on left and right operands
@@ -1395,11 +1395,6 @@ sub readLoL {
 
   sub fillTokList {
 
-	# Regexp to match operators: may begin with '\'; may not end with
-	# '-' (to keep from interfering with trailing negative int) except
-	# if it's the minus operator.
-	my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]+}x;
-
 	while (!@tokens) {
 	  my $line = getLine();
 	  if (!defined($line)) {
@@ -1643,7 +1638,7 @@ sub parseSymbol {
   # Regexp to match operators: may begin with '\'; may not end with
   # '-' (to keep from interfering with trailing negative int) except
   # if it's the minus operator.
-  my $OPER_REGEX = qr{\\? [-!@\$\%^&*+=?<>\/]+}x;
+  my $OPER_REGEX = qr{\\? [-.!@\$\%^&*+=?<>\/]+}x;
 
   # Regexp to parse a name segment.
   my $WRE = qr{(?: [a-zA-Z_] \w*)}x;
@@ -2605,10 +2600,23 @@ sub macro_class {
 sub macro_methodLookupOp {
   my ($arrow, $object, $method) = @_;
 
-  $method->checkSymbol(" on the LHS of a '->' operation.");
+  $method->checkSymbol(" on the RHS of a '->' operation.");
   return LL::List->new([LL::Symbol->new('_::getMethod'),
 						$object,
 						LL::Quote->new($method)]);
+}
+
+
+# The '.' operator (reading only)
+sub macro_fieldget {
+  my ($dot, $object, $field) = @_;
+
+  $field->checkSymbol(" on the RHS of a '.' operation.");
+
+  my $method = LL::Symbol->new("get_${$field}");
+  my $lookupExpr = macro_methodLookupOp('-> ignored', $object, $method);
+
+  return LL::List->new([$lookupExpr]);
 }
 
 
@@ -2750,6 +2758,7 @@ sub initGlobals {
   macro 'perluse',		\&macro_perluse;
   macro 'class',		\&macro_class;
   macro '->',			\&macro_methodLookupOp;
+  macro '.',			\&macro_fieldget;
 
   # The external 'Lang' module
   if (!$noLib) {
@@ -3458,28 +3467,27 @@ sub attrib_parts {
   my ($attrib) = @_;
 
   my ($args, $body);
-  if ($attrib =~ /^set_(.+)$/) {
-	my $field = $1;
 
+  die "Malformed attribute: '$attrib'\n"
+	unless ($attrib =~ /^(set|get)_(.+)$/);
+  my ($type, $field) = ($1, $2);
+
+  $body = LL::List->new([]);
+
+  if ($type eq 'set') {
 	$args = LL::List->new([LL::Symbol->new("new_$field")]);
 
-	$body = LL::List->new([LL::Symbol->new('_::set'),
-						   LL::Quote->new(LL::Symbol->new($field)),
-						   LL::Symbol->new("new_$field")]);
+	push @{$body},LL::List->new([LL::Symbol->new('_::set'),
+								 LL::Quote->new(LL::Symbol->new($field)),
+								 LL::Symbol->new("new_$field")]);
 
-  } elsif ($attrib =~ /^get_(.+)$/) {
-	my $field = $1;
+  } else {	# $type eq 'get'
 	$args = LL::List->new([]);
-
-	$body = LL::List->new([LL::Symbol->new('return'),
-							 LL::Symbol->new($field)]);
-
-  } else {
-	die "Malformed attribute: '$attrib'\n";
   }
 
-
-  $body = LL::List->new([$body]);
+  # We always need to return the value
+  push @{$body}, LL::List->new([LL::Symbol->new('return'),
+								LL::Symbol->new($field)]);
 
   return ($args, $body);
 }

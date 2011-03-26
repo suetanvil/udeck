@@ -144,9 +144,11 @@ X		-also add unquoted versions
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.
 	- tuple assignment
-		a,b,c = [foo]
-		a,b,c = :[1 2 3]
-		a, = :[1]
+			a,b,c = [foo]
+			a,b,c = :[1 2 3]
+			a, = :[1]
+		-also, comma as list constructor?
+
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

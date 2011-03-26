@@ -95,6 +95,7 @@ X				-instance variables
 					-'.'
 						-assignment support
 						-autoparen
+						-_set must return assignment value
 			-initializer
 X				-field initialization  (left out for now--spooky)
 X		-class 'Object'
