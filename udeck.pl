@@ -979,7 +979,7 @@ sub new {
 
   my $self = {fields		=> $fields,
 			  methods		=> $methods,
-			  methodCache	=> {},
+			  cache			=> {},
 			  superclass	=> $superclass};
 
   bless $self, $class;
@@ -3331,7 +3331,7 @@ sub fieldType {
 
   # Sanity check
   die "Unknown class declaration part: '${$start}...'\n"
-	unless ${$start} =~ /^(var|public|readonly|writeonly|method)$/;
+	unless ${$start} =~ /^(var|public|readable|writeable|method)$/;
 
   return ${$start};
 }
@@ -3365,8 +3365,8 @@ sub class_fields {
 
 	  $fields->{$nmStr} = NIL;
 
-	  push @attribs, "${nmStr}_get" if $readable;
-	  push @attribs, "${nmStr}_set" if $writeable;
+	  push @attribs, "get_${nmStr}" if $readable;
+	  push @attribs, "set_${nmStr}" if $writeable;
 	}
   }
 
@@ -3378,7 +3378,7 @@ sub class_fields {
 
 
 sub mk_method {
-  my ($method, $name, $args, $fields, $body) = @_;
+  my ($name, $args, $fields, $body) = @_;
 
   # Create a scratch LL::Context to keep the compiler happy.  (Should
   # this be an LL::Object?)
@@ -3402,7 +3402,7 @@ sub class_methods {
 	next if ${$start} ne 'method';
 
 	die "Malformed method declaration.\n" unless scalar @{$entry} == 4;
-	
+
 	my ($method, $name, $args, $body) = @{$entry};
 	$name->checkSymbol(" in method name.");
 	$args = fixFormalArgs($args)->value();
@@ -3410,11 +3410,45 @@ sub class_methods {
 	$body->checkQtLoL(" in method definition.");
 	$body = $body->value();	# There's no more eval so drop the quote
 
-	$methods{${$name}} = mk_method($method, $name, $args, $fields, $body);
+	$methods{${$name}} = mk_method($name, $args, $fields, $body);
   }
 
   return \%methods;
 }
+
+
+
+
+sub attrib_parts {
+  my ($attrib) = @_;
+
+  my ($args, $body);
+  if ($attrib =~ /^set_(.+)$/) {
+	my $field = $1;
+
+	$args = LL::List->new([LL::Symbol->new("new_$field")]);
+
+	$body = LL::List->new([LL::Symbol->new('_::set'),
+						   LL::Quote->new(LL::Symbol->new($field)),
+						   LL::Symbol->new("new_$field")]);
+
+  } elsif ($attrib =~ /^get_(.+)$/) {
+	my $field = $1;
+	$args = LL::List->new([]);
+
+	$body = LL::List->new([LL::Symbol->new('return'),
+							 LL::Symbol->new($field)]);
+
+  } else {
+	die "Malformed attribute: '$attrib'\n";
+  }
+
+
+  $body = LL::List->new([$body]);
+
+  return ($args, $body);
+}
+
 
 
 # Add the attributes to $methods
@@ -3422,20 +3456,14 @@ sub class_attributes {
   my ($attribNames, $body, $fields, $methods) = @_;
 
   for my $attrib (@{$attribNames}) {
-	my $method;
-	if ($attrib =~ /$(.*)_set$/) {
-#	  $method = 
-# XXXXX
-	} elsif ($attrib =~ /$(.*)_get$/) {
 
-	} else {
-	  die "Malformed attribute: '$attrib'\n";
-	}
+	# Don't redefine existing method
+	next if defined($methods->{$attrib});
 
-
+	my $attribSym = LL::Symbol->new($attrib);
+	my ($args, $body) = attrib_parts($attrib);
+	$methods->{$attrib} = mk_method($attribSym, $args, $fields, $body);
   }
-
-
 }
 
 
