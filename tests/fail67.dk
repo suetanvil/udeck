@@ -1,0 +1,11 @@
+# Test the magical -> operator
+
+class Foo {
+	var x
+	method foo {n} {
+		self = n
+	}
+}
+
+[new Foo]->foo 42
+

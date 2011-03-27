@@ -1782,7 +1782,7 @@ sub applyMacrosRecursively {
   my ($expr, $context) = @_;
 
   return $expr unless $expr->isList();
-#$DB::single = 1 if ($expr->[0]->isSymbol() && ${$expr->[0]} eq '=');
+
   $expr = applyMacros($expr, $context);
 
   my @result;
@@ -2035,9 +2035,11 @@ sub compile {
   my ($isMacro, $isProc, $isSub, $isMethod, $isTop)
 	= ($mode eq 'macro', $mode eq 'proc', $mode eq 'sub', $mode eq 'method',
 	   $mode eq 'toplevel');
+  my $firstArgIsConst = 0;
 
   if ($isMethod) {
 	unshift @{$args}, LL::Symbol->new('self');
+	$firstArgIsConst = 1;
   }
 
   my $nargs = scalar @{$args};
@@ -2046,7 +2048,7 @@ sub compile {
 	pop @{$args};
 	--$nargs;
   }
-#$DB::single = 1 if $name eq '*top*';
+
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
@@ -2085,6 +2087,12 @@ sub compile {
 
 	# Bind arguments
 	for my $arg (@{$args}) {
+	  if ($firstArgIsConst) {
+		$firstArgIsConst = 0;
+		$context->defsetconst(${$arg}, shift @_);
+		next;
+	  }
+
 	  $context->defset (${$arg}, shift @_ );
 	}
 

@@ -148,6 +148,7 @@ X		-also add unquoted versions
 			a,b,c = :[1 2 3]
 			a, = :[1]
 		-also, comma as list constructor?
+			a, b, c = d, e, f = g, h, i
 
 
 	- needs a better name.

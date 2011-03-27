@@ -87,16 +87,16 @@ X			-_::class function
 X				-methods
 					-private methods
 X					-must return self
-					-self must be const
+X					-self must be const
 					-super
 X				-instance variables
-				-attributes
-					-access methods
-					-'.'
-						-assignment support
-						-autoparen
-						-_set must return assignment value
-			-initializer
+X				-attributes
+X					-access methods
+X					-'.'
+X						-assignment support
+X						-autoparen
+X						-_set must return assignment value
+X			-initializer
 X				-field initialization  (left out for now--spooky)
 X		-class 'Object'
 X			-isTrue
