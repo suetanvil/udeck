@@ -716,7 +716,7 @@ sub withOOSyntaxFixed {
   my ($self) = @_;
 
   my $result = $self->withDotsResolved();
-  $result = $self->withArrowResolved($result);
+  $result = $result->withArrowResolved();
 
   return $result;
 }
