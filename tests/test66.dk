@@ -22,8 +22,14 @@ puts [x->get_p]
 
 puts x.p
 
+x.p = "new p value"
+puts x.p
 
+set x.p "newer p value"
+puts x.p
 
+puts [set x.p "even newer p value"]
+puts x.p
 
 
 

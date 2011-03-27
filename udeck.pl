@@ -651,6 +651,10 @@ sub couldBeImpliedInfix {
   return 1 if ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '@' &&
 			   $self->[3]->isUnescapedOperator() && ${$self->[3]} eq '=');
 
+  # True if it takes the form '<x>.<y> = <z>'
+  return 1 if ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '.' &&
+			   $self->[3]->isUnescapedOperator() && ${$self->[3]} eq '=');
+
   # False otherwise
   return 0;
 }
@@ -1778,7 +1782,7 @@ sub applyMacrosRecursively {
   my ($expr, $context) = @_;
 
   return $expr unless $expr->isList();
-
+#$DB::single = 1 if ($expr->[0]->isSymbol() && ${$expr->[0]} eq '=');
   $expr = applyMacros($expr, $context);
 
   my @result;
@@ -2042,7 +2046,7 @@ sub compile {
 	pop @{$args};
 	--$nargs;
   }
-
+#$DB::single = 1 if $name eq '*top*';
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
@@ -2427,7 +2431,16 @@ sub macro_assign {
 				 $dest->[1],	# list
 				 $dest->[2],	# index
 				 $value);
-	} elsif (0) {
+	} elsif (${$dest->[0]} eq '.') {
+	  # Case 3: Object field assignment (eg: 'foo.a = 42')
+	  my $object = $dest->[1];
+	  my $field = $dest->[2];
+	  $field->checkSymbol(" in object field name.");
+
+	  my $setter = LL::Symbol->new("set_${$field}");
+	  my $lookup = macro_methodLookupOp('', $object, $setter);
+
+	  @result = ($lookup, $value);
 
 	} else {
 	  die $err;
