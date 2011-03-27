@@ -2407,24 +2407,34 @@ sub macro_varconst {
 
 # Handle the 'set' and '=' functions.
 sub macro_assign {
-  my @result = @_;
-  $result[0] = LL::Symbol->new('_::set');
+  my ($set, $dest, $value) = @_;
 
-  my $target = $result[1];
+  my $err = "Malformed assignment: " . LL::List->new(\@_)->printStr() . "\n";
 
-  if ($target->isSymbol()) {
+  my @result;
+  if ($dest->isSymbol()) {
 	# Case 1: simple assignment to variable
-	$result[1] = LL::Quote->new($target);
-  } elsif ($target->isList() && scalar @{$target} == 3 &&
-		   $target->[0]->isUnescapedOperator() &&
-		   ${$target->[0]} eq '@') {
-	# Case 2: List element assignment (eg: 'l@5 = 42')
-	@result = (LL::Symbol->new('_::atput'), @{$target}[1..2],
-			   @result[2..$#result]);
+	@result = (LL::Symbol->new('_::set'),
+			   LL::Quote->new($dest),
+			   $value);
+
+  } elsif ($dest->isList() && scalar @{$dest} == 3 &&
+		   $dest->[0]->isUnescapedOperator()) {
+	
+	if (${$dest->[0]} eq '@') {
+	  # Case 2: List element assignment (eg: 'l@5 = 42')
+	  @result = (LL::Symbol->new('_::atput'),
+				 $dest->[1],	# list
+				 $dest->[2],	# index
+				 $value);
+	} elsif (0) {
+
+	} else {
+	  die $err;
+	}
+
   } else {
-	my $err = LL::List->new(\@_)->printStr();
-	die "Malformed assignment: $err\n";
-	# To do: handle list and object-field assignments as well
+	die $err;
   }
 
   return LL::List->new(\@result);
