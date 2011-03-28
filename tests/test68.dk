@@ -1,3 +1,4 @@
+# Test class inheritance
 
 class Base {
 	public p
@@ -5,15 +6,20 @@ class Base {
 	writeable w
 	var pvar
 
-	method _init {} {
-		p = "public"
-		r = "readable"
-		w = "writeable"
-		pvar = "private var"
+	method _init {np nr nw npv} {
+		p = np		# Heh
+		r = nr
+		w = nw
+		pvar = npv
 	}
 	
 	method foo {} {
 		puts "base foo"
+	}
+
+	method putall {label} {
+		puts label
+		puts p "\n" r "\n" w "\n" pvar
 	}
 }
 
@@ -29,12 +35,19 @@ class Derived Base {
 }
 
 
-var b = [new Base]
-var d = [new Derived]
+var b = [new Base "public var" "readable var" "writable var" "private var"]
+var d = [new Derived "public var2" "readable var2" "writable var2"
+		 "private var2"]
 
 b->foo
 d->foo
 d->foofoo
+
+puts b.r "\n" b.p
+b->putall "Base class:"
+
+puts d.r "\n" d.p
+d->putall "Derived class:"
 
 
 

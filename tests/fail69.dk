@@ -1,0 +1,17 @@
+# Test init args mismatch
+
+class Base {
+	public p
+	readable r
+	writeable w
+	var pvar
+
+	method _init {np nr nw npv} {
+		p = np		# Heh
+		r = nr
+		w = nw
+		pvar = npv
+	}
+}
+
+var x = [new Base 1 2 3]

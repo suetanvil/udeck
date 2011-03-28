@@ -127,7 +127,7 @@ X		-need to protect the namespace from badly-formed variables.
 X	- boolean not
 X	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 X		-also add unquoted versions	
-	
+X	- bug: arg. mismatch error msg is wrong for methods. count is off.	
 
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
@@ -149,6 +149,7 @@ X		-also add unquoted versions
 			a, = :[1]
 		-also, comma as list constructor?
 			a, b, c = d, e, f = g, h, i
+
 
 
 	- needs a better name.

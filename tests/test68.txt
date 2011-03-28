@@ -2,3 +2,17 @@ base foo
 derived foo
 derived foo
 base foo
+readable var
+public var
+Base class:
+public var
+readable var
+writable var
+private var
+readable var2
+public var2
+Derived class:
+public var2
+readable var2
+writable var2
+private var2
