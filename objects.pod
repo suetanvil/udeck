@@ -67,7 +67,31 @@ X			o.so->foo
 
 	-what if a local class existed in the context that defined it?
 
-	-'attrib' declares 'public' ivars.
+	-'public', 'readable' and 'writeable' declare public access for
+	 ivars.
+
+	-'super' is a magic word used by the . and -> macros as a flag
+	 to indicate that it should expand to a different lookup function.
+
+	-'_' convention should work on accessors as well.  So need to
+	 append _get or _set rather than prepending.
+
+	-going to make all ivars C++-private.
+
+
+=head3 Subclass Implementation
+
+	-objects are still a hash of names/values
+		-ivars are mangled with the class ID.
+		-uses are mangled at compile time.
+			-this has to be done in methods and subs inside methods.
+
+	-for now, we can get most of this by requiring that ivars are
+	 unique in an inheritance tree.
+		-call it a ToDo.
+	
+
+
 
 =head2 To Do
 
@@ -107,7 +131,12 @@ X		-object instantiation
 	
 		-make LL::Object a subclass of Context.
 	
+=head 2 To Test
 
+	-do init args match up with [new Class args]?
+	-test passing args to _init
+	-subclass ivar may not mask superclass ivar
+	
 
 
 
@@ -117,6 +146,8 @@ X		-object instantiation
 		-what field order should I use?
 		-how do I initialize them.
 			-maybe define a bunch of unnamed methods to do it?
+		-answer: no.  Too spooky.  Do it in _init.
+
 
 
 

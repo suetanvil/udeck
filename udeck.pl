@@ -976,7 +976,7 @@ sub new {
   my $self = $class->LL::Context::new($LL::Main::Globals);
   $self->{' class'}	= $deckClass;
 
-  for my $field (@{$deckClass->{fields}}) {
+  for my $field (keys %{$deckClass->{fieldCache}}) {
 	$self->defset($field, main::NIL);
   }
 
@@ -1017,26 +1017,45 @@ sub new {
   my ($class, $fields, $methods, $superclass) = @_;
 
   my $self = {fields		=> $fields,
+			  fieldCache	=> {},
 			  methods		=> $methods,
-			  cache			=> {},
+			  methodCache	=> {},
 			  superclass	=> $superclass};
 
   bless $self, $class;
   $self->refreshCache();
+  $self->refreshFieldCache();
 
   return $self;
+}
+
+
+sub refreshFieldCache {
+  my ($self) = @_;
+
+  $self->{fieldCache} = {};
+  if (!$self->{superclass}->isNil()) {
+	$self->{fieldCache} = { %{ $self->{superclass}->{fieldCache} } };
+  }
+
+  for my $name (@{$self->{fields}}) {
+	die "Redefinition of field '$name'.\n"
+	  if exists ($self->{fieldCache}->{$name});
+
+	$self->{fieldCache}->{$name} = 1;
+  }
 }
 
 sub refreshCache {
   my ($self) = @_;
 
-  $self->{cache} = {};
+  $self->{methodCache} = {};
   if (!$self->{superclass}->isNil()) {
-	$self->{cache} = { %{ $self->{superclass}->{cache} } };
+	$self->{methodCache} = { %{ $self->{superclass}->{methodCache} } };
   }
 
   for my $name (keys %{$self->{methods}}) {
-	$self->{cache}->{$name} = $self->{methods}->{$name};
+	$self->{methodCache}->{$name} = $self->{methods}->{$name};
   }
 }
 
@@ -1047,13 +1066,13 @@ sub lookup {
   my ($self, $name) = @_;
 
   # If the method is defined, just return it.
-  return $self->{cache}->{$name}
-	if defined($self->{cache}->{$name});
+  return $self->{methodCache}->{$name}
+	if defined($self->{methodCache}->{$name});
 
   # If this class implements 'doesNotUnderstand', call it with the
   # name and arguments.
-  if (defined($self->{cache}->{doesNotUnderstand})) {
-	my $dnu = $self->{cache}->{doesNotUnderstand};
+  if (defined($self->{methodCache}->{doesNotUnderstand})) {
+	my $dnu = $self->{methodCache}->{doesNotUnderstand};
 	my $method = sub {
 	  my ($dkSelf, @args) = @_;
 
@@ -2632,7 +2651,14 @@ sub macro_methodLookupOp {
   my ($arrow, $object, $method) = @_;
 
   $method->checkSymbol(" on the RHS of a '->' operation.");
-  return LL::List->new([LL::Symbol->new('_::getMethod'),
+
+  my $lookupFn = '_::getMethod';
+  if ($object->isSymbol() && ${$object} eq 'super') {
+	$object = LL::Symbol->new('self');
+	$lookupFn = '_::getSuperMethod';
+  }
+
+  return LL::List->new([LL::Symbol->new($lookupFn),
 						$object,
 						LL::Quote->new($method)]);
 }
@@ -2681,34 +2707,36 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-				   ['println',		\&builtin_println],
-				   ['puts',			\&builtin_println],
-				   ['storestr',		\&builtin_storestr],
-				   ['show',			\&builtin_show],
-				   ['_::proc',		\&builtin_proc],
-				   ['_::sub',		\&builtin_subfn],
-				   ['_::if',		\&builtin_iffn],
-				   ['_::while',		\&builtin_whilefn],
-				   ['_::set',		\&builtin_set],
-				   ['_::var',		\&builtin_var],
-				   ['_::const',		\&builtin_const],
-				   ['_::atput',		\&builtin_atput],
-				   ['atput',		\&builtin_atput],
-				   ['_::map',		\&builtin_mapfn],
-				   ['_::foreach',	\&builtin_foreachfn],
-				   ['_::macro',		\&builtin_macro],
-				   ['_::mproc',		\&builtin_mproc],
-				   ['_::mkstr',		\&builtin_mkstr],
-				   ['_::mkstr_all',	\&builtin_mkstr_all],
-				   ['_::use',		\&builtin_usefn],
-				   ['_::perlproc',	\&builtin_perlproc],
-				   ['_::perluse',	\&builtin_perluse],
-				   ['apply',		\&builtin_apply],
-				   ['intern',		\&builtin_intern],
-				   ['_::class',		\&builtin_class],
-				   ['_::getMethod',	\&builtin_getMethod],
-				   ['getMethod',	\&builtin_getMethod],
-				   ['new',			\&builtin_new],
+				   ['println',			\&builtin_println],
+				   ['puts',				\&builtin_println],
+				   ['storestr',			\&builtin_storestr],
+				   ['show',				\&builtin_show],
+				   ['_::proc',			\&builtin_proc],
+				   ['_::sub',			\&builtin_subfn],
+				   ['_::if',			\&builtin_iffn],
+				   ['_::while',			\&builtin_whilefn],
+				   ['_::set',			\&builtin_set],
+				   ['_::var',			\&builtin_var],
+				   ['_::const',			\&builtin_const],
+				   ['_::atput',			\&builtin_atput],
+				   ['atput',			\&builtin_atput],
+				   ['_::map',			\&builtin_mapfn],
+				   ['_::foreach',		\&builtin_foreachfn],
+				   ['_::macro',			\&builtin_macro],
+				   ['_::mproc',			\&builtin_mproc],
+				   ['_::mkstr',			\&builtin_mkstr],
+				   ['_::mkstr_all',		\&builtin_mkstr_all],
+				   ['_::use',			\&builtin_usefn],
+				   ['_::perlproc',		\&builtin_perlproc],
+				   ['_::perluse',		\&builtin_perluse],
+				   ['apply',			\&builtin_apply],
+				   ['intern',			\&builtin_intern],
+				   ['_::class',			\&builtin_class],
+				   ['_::getMethod',		\&builtin_getMethod],
+				   ['getMethod',		\&builtin_getMethod],
+				   ['_::getSuperMethod',\&builtin_getSuperMethod],
+				   ['getSuperMethod',	\&builtin_getSuperMethod],
+				   ['new',				\&builtin_new],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -3379,14 +3407,25 @@ sub builtin_intern {
 }
 
 
-# Implementation of the '->' operator
-sub builtin_getMethod {
-  my ($object, $methodName) = @_;
+# Create a MethodCall which calls the method named by $methodName on
+# object $object.  If $super is true, the method search starts in the
+# superclass instead of the class.
+sub doMethodLookup {
+  my ($object, $methodName, $super) = @_;
 
   $object->checkObject(" in method call.");
   $methodName->checkSymbol();
 
   my $class = $object->{' class'};
+  if ($super) {
+	$class = $class->{superclass};
+	
+	# This should not happen.  The only case where it can is if $class
+	# is Object, which is provided and has no such foolishness.
+	die "'super' call in class without superclass.\n"
+	  unless $class;
+  }
+
   my $method = $class->lookup (${$methodName});
 
   # Turn into a self call
@@ -3394,6 +3433,21 @@ sub builtin_getMethod {
 
   return LL::MethodCall->new($sub);
 }
+
+# Return the MethodCall that invokes the named method on $object.
+# Implements the guts of the '->' operator.
+sub builtin_getMethod {
+  my ($object, $methodName) = @_;
+  return doMethodLookup($object, $methodName, 0);
+}
+
+# Like builtin_getMethod but the method search starts in the
+# superclass.
+sub builtin_getSuperMethod {
+  my ($object, $methodName) = @_;
+  return doMethodLookup($object, $methodName, 1);
+}
+
 
 
 # Given an entry in a class definition, return which sort of
@@ -3564,7 +3618,7 @@ sub builtin_new {
 
   my $obj = LL::Object->new($class);
 
-  my $init = $class->{cache}->{_init};	# avoid lookup() to skip dnu
+  my $init = $class->{methodCache}->{_init};	# avoid lookup() to skip dnu
   if ($init) {
 	$init->($obj, @args);
   }

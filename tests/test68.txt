@@ -1,0 +1,4 @@
+base foo
+derived foo
+derived foo
+base foo

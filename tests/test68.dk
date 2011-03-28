@@ -1,0 +1,41 @@
+
+class Base {
+	public p
+	readable r
+	writeable w
+	var pvar
+
+	method _init {} {
+		p = "public"
+		r = "readable"
+		w = "writeable"
+		pvar = "private var"
+	}
+	
+	method foo {} {
+		puts "base foo"
+	}
+}
+
+class Derived Base {
+	method foo {} {
+		puts "derived foo"
+	}
+
+	method foofoo  {} {
+		self->foo
+		super->foo
+	}
+}
+
+
+var b = [new Base]
+var d = [new Derived]
+
+b->foo
+d->foo
+d->foofoo
+
+
+
+
