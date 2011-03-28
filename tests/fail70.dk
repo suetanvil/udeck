@@ -1,0 +1,10 @@
+# Test scoping rules
+class Ninja {
+	var shuriken katana
+}
+
+class SuperNinja Ninja {
+	var crossbow
+	var katana		# Error!
+}
+

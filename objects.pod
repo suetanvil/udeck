@@ -133,9 +133,9 @@ X		-object instantiation
 	
 =head 2 To Test
 
-	-do init args match up with [new Class args]?
-	-test passing args to _init
-	-subclass ivar may not mask superclass ivar
+X	-do init args match up with [new Class args]?
+X	-test passing args to _init
+X	-subclass ivar may not mask superclass ivar
 	
 
 
