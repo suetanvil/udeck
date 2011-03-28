@@ -2100,10 +2100,10 @@ sub compile {
 	}
 
 	#  Check for argument mismatch
-	if (scalar @_ != $nargs || $isVararg && scalar @_ < $nargs) {
+	if (scalar @_ != $nargs && !($isVararg && scalar @_ > $nargs)) {
 	  my ($expecting, $got) = ($nargs, scalar @_);
 	  do {--$expecting, --$got} if $isMethod;	# Skip 'self'
-	  my $atleast = $isVararg ? " at least" : "";
+	  my $atleast = $isVararg ? "at least " : "";
 	  die "Argument count mismatch in call to $name.  Expecting $atleast"
 		. "$expecting, got $got.\n";
 	}
