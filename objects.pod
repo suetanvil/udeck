@@ -103,13 +103,15 @@ X		-'class' type.
 X		-'object' type.
 X			-doesNotUnderstand
 X		-lookup function.
-			-special syntax for lookup.
+X			-special syntax for lookup.
 		-class definition
-			-class macro
+X			-class macro
 X			-_::class function
-				-inheritance
+X				-inheritance
 X				-methods
 					-private methods
+						-enforce at macro level
+						-rename get and set so that _ is preserved
 X					-must return self
 X					-self must be const
 					-super
@@ -129,14 +131,14 @@ X			-isTrue
 
 X		-object instantiation
 	
-		-make LL::Object a subclass of Context.
+X		-make LL::Object a subclass of Context.
 	
 =head 2 To Test
 
 X	-do init args match up with [new Class args]?
 X	-test passing args to _init
 X	-subclass ivar may not mask superclass ivar
-	
+	-private methods
 
 
 

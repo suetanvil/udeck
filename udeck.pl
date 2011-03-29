@@ -2662,6 +2662,13 @@ sub macro_methodLookupOp {
 	$lookupFn = '_::getSuperMethod';
   }
 
+  # Enforce method privacy rules (as such).
+  if (${$method} =~ /^_/ &&
+	  !($object->isSymbol() && ${$object} =~ /^(self|super)$/)) {
+	die "Attempted to send private message ${$method} to something not "
+	  . "'self' or super.\n";
+  }
+
   return LL::List->new([LL::Symbol->new($lookupFn),
 						$object,
 						LL::Quote->new($method)]);

@@ -21,6 +21,10 @@ class Base {
 		puts label
 		puts p "\n" r "\n" w "\n" pvar
 	}
+
+	method superPublicBob {} {
+		self->_bob
+	}
 }
 
 class Derived Base {
@@ -32,6 +36,14 @@ class Derived Base {
 		self->foo
 		super->foo
 	}
+
+	method _bob {} {
+		puts "_bob called."
+	}
+
+	method publicBob {} {
+		self->_bob
+	}
 }
 
 
@@ -42,12 +54,18 @@ var d = [new Derived "public var2" "readable var2" "writable var2"
 b->foo
 d->foo
 d->foofoo
+puts ""
 
 puts b.r "\n" b.p
 b->putall "Base class:"
+puts ""
 
 puts d.r "\n" d.p
 d->putall "Derived class:"
+puts ""
+
+d->publicBob
+d->superPublicBob
 
 
 
