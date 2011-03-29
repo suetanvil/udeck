@@ -1,0 +1,18 @@
+# Test calling abstract methods
+class Ninja {
+	method attack {} {
+		self->_stab
+		self->_slash
+	}
+}
+
+class SuperNinja Ninja {
+	method _stab {} {puts "stabbity stabbity stab!"}
+	method _slash {} {puts "slash slash slash!"}
+}
+
+var b = [new Ninja]
+var d = [new SuperNinja]
+
+d->attack
+b->attack		# fails! 
