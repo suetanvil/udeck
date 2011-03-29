@@ -97,24 +97,23 @@ X			o.so->foo
 
 	-basic class and object
 X		-'class' type.
-			-equals
 			-perlform
-			-at, atPut, size, isIndexible
+X			-at, atPut, size, isIndexible
 X		-'object' type.
 X			-doesNotUnderstand
 X		-lookup function.
 X			-special syntax for lookup.
-		-class definition
+X		-class definition
 X			-class macro
 X			-_::class function
 X				-inheritance
 X				-methods
-					-private methods
-						-enforce at macro level
-						-rename get and set so that _ is preserved
+X					-private methods
+X						-enforce at macro level
+X						-rename get and set so that _ is preserved
 X					-must return self
 X					-self must be const
-					-super
+X					-super
 X				-instance variables
 X				-attributes
 X					-access methods
@@ -128,6 +127,7 @@ X		-class 'Object'
 X			-isTrue
 
 		-binary operator to method conversion
+			-equals
 
 X		-object instantiation
 	
@@ -138,7 +138,17 @@ X		-make LL::Object a subclass of Context.
 X	-do init args match up with [new Class args]?
 X	-test passing args to _init
 X	-subclass ivar may not mask superclass ivar
-	-private methods
+X	-private methods
+
+
+=head2 Promoting Builtin Types
+
+	1) Add class Datum as the root.
+	2) Add Deck classes for the builtins.
+	3) Add method 'deckClass' to all Deck types to retrieve
+	   the class.  For Objects, it returns the ' class' field; for
+	   everything else, it's the builtin Deck class.
+	4) replace all uses of ' class' with calls to 'deckClass'.
 
 
 
