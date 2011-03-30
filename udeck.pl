@@ -762,26 +762,30 @@ sub isInfixList {return 1}
 sub withOOSyntaxFixed {my ($self) = @_; return $self}	# asPrefixList does it.
 
 {
-  my @precedence = ([qw{. @}],		# field lookup, seq. access
-					[qw{->}],		# method lookup
-					[qw{**}],		# power
-					[qw{* / // %}], # mult, div, div rounded toward zero, modulo
-					[qw{+ -}],				# add, subtract
-					[qw{<< >> >>> <<<}],	# shifts	
-					[qw{== === != !== < > <= >=}],	# Equality and magnitude
-					[qw{&}],		# Bitwise AND.
-					[qw{| ^}],		# Bitwise OR, bitwise XOR
-					[qw{&&}],		# Logical AND, short-circuited
-					[qw{||}],		# Logical OR, short-circuited
-					[qw{=}],		# Assignment
-				   );
   my %precPerOp = ();
-  {
+  my $userPrec;
+  BEGIN {
+	my @precedence = ([qw{. @}],	# field lookup, seq. access
+					  [qw{->}],		# method lookup
+					  [qw{**}],		# power
+					  [qw{* / // %}],# mult, div, div rounded toward zero, mod
+					  [qw{+ -}],	# add, subtract
+					  [qw{<< >> >>> <<<}],	# shifts	
+					  [qw{== === != !== < > <= >=}],	# Equality and magnitude
+					  [qw{&}],		# Bitwise AND.
+					  [qw{| ^}],	# Bitwise OR, bitwise XOR
+					  [qw{&&}],		# Logical AND, short-circuited
+					  [qw{||}],		# Logical OR, short-circuited
+					  [qw{}],		# User-defined operators
+					  [qw{=}],		# Assignment
+					 );
 	my $prec = 1;
 	for my $lev (reverse @precedence) {
 	  map { $precPerOp{$_} = $prec } @{$lev};
 	  ++$prec;
 	}
+
+	$userPrec = $precPerOp{'='} + 1;
   }
 
   sub _findOuterOp {
@@ -3426,7 +3430,7 @@ sub doMethodLookup {
   $object->checkObject(" in method call.");
   $methodName->checkSymbol();
 
-  my $class = $object->{' class'};
+  my $class = $object->class();
   if ($super) {
 	$class = $class->{superclass};
 	

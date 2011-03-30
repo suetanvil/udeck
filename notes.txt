@@ -28,6 +28,8 @@ Notes:
 
 	- 'new' used to create objects.
 
+	- user-defined operators all have the same precedence--just above '='.
+		-will also be above ',' if I add that.
 
 Functions Todo:
 X	-listSized
@@ -130,12 +132,13 @@ X		-also add unquoted versions
 X	- bug: arg. mismatch error msg is wrong for methods. count is off.	
 X	- objects
 X	- bug: compiler doesn't catch undefined vars at compile time.
+X	- What to do about user-defined operators?
+X		-allow them but advise against for now.
+X		-need some testing
 
+	- make everything an object
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
-	- What to do about user-defined operators?
-		-allow them but advise against for now.
-		-need some testing
 	- handle unescaped operator in prefix LoL expression
 	- static variables
 	- integers
@@ -159,6 +162,7 @@ X	- bug: compiler doesn't catch undefined vars at compile time.
 			-no, taken.  Not a language but a DAS implementation.
 				-but it's spelled MyDas, so maybe I can get away
 				 without the capitalization.  Contact the author.
+			-author contacted.  Trigger is pulled.
 
 
 		

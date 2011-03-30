@@ -131,6 +131,8 @@ X			-isTrue
 		-binary operator to method conversion
 			-equals
 
+		-make everything an object
+
 X		-object instantiation
 	
 X		-make LL::Object a subclass of Context.
@@ -143,14 +145,20 @@ X	-subclass ivar may not mask superclass ivar
 X	-private methods
 
 
+
 =head2 Promoting Builtin Types
 
 	1) Add class Datum as the root.
 	2) Add Deck classes for the builtins.
-	3) Add method 'deckClass' to all Deck types to retrieve
+	3) Add method 'class' to all Deck types to retrieve
 	   the class.  For Objects, it returns the ' class' field; for
 	   everything else, it's the builtin Deck class.
 	4) replace all uses of ' class' with calls to 'deckClass'.
+	5) Move relevant stuff into Datum
+
+
+
+
 
 
 
