@@ -1,0 +1,25 @@
+# Test scoping rules
+class Ninja {
+	public _shuriken _katana
+}
+
+class SuperNinja Ninja {
+	public _crossbow
+
+	method _init {} {
+		_crossbow = "sproing!"
+		self._shuriken = "whizzzzzz"
+		self._katana = "slice"
+	}
+	
+	method attack {} {
+		puts _crossbow
+		puts self._shuriken
+		puts self._katana
+	}
+}
+
+var x = [new SuperNinja]
+x._crossbow = "snap"		# failure!
+
+
