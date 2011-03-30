@@ -16,9 +16,9 @@ class Foo {
 
 var x = [new Foo]
 
-puts [x->get_p]
-x->set_p 42
-puts [x->get_p]
+puts [x->p_get]
+x->p_set 42
+puts [x->p_get]
 
 puts x.p
 

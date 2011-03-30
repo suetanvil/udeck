@@ -128,16 +128,16 @@ X	- boolean not
 X	- rename checkLoL and isLoL to checkQuotedLoL and isQuotedLoL
 X		-also add unquoted versions	
 X	- bug: arg. mismatch error msg is wrong for methods. count is off.	
+X	- objects
+X	- bug: compiler doesn't catch undefined vars at compile time.
 
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
 	- What to do about user-defined operators?
 	- handle unescaped operator in prefix LoL expression
 	- static variables
-	- objects
 	- integers
 	- subify builtin
-	- bug: compiler doesn't catch undefined vars at compile time.
 	- forward declaration of functions
 		-var works but should be a bonk/oif pairing that ensures it.
 	- rewrite compiler

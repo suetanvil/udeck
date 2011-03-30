@@ -2468,7 +2468,7 @@ sub macro_assign {
 	  my $field = $dest->[2];
 	  $field->checkSymbol(" in object field name.");
 
-	  my $setter = LL::Symbol->new("set_${$field}");
+	  my $setter = LL::Symbol->new("${$field}_set");
 	  my $lookup = macro_methodLookupOp('', $object, $setter);
 
 	  @result = ($lookup, $value);
@@ -2681,7 +2681,7 @@ sub macro_fieldget {
 
   $field->checkSymbol(" on the RHS of a '.' operation.");
 
-  my $method = LL::Symbol->new("get_${$field}");
+  my $method = LL::Symbol->new("${$field}_get");
   my $lookupExpr = macro_methodLookupOp('-> ignored', $object, $method);
 
   return LL::List->new([$lookupExpr]);
@@ -3505,8 +3505,8 @@ sub class_fields {
 
 	  $fields->{$nmStr} = NIL;
 
-	  push @attribs, "get_${nmStr}" if $readable;
-	  push @attribs, "set_${nmStr}" if $writeable;
+	  push @attribs, "${nmStr}_get" if $readable;
+	  push @attribs, "${nmStr}_set" if $writeable;
 	}
   }
 
@@ -3565,8 +3565,8 @@ sub attrib_parts {
   my ($args, $body);
 
   die "Malformed attribute: '$attrib'\n"
-	unless ($attrib =~ /^(set|get)_(.+)$/);
-  my ($type, $field) = ($1, $2);
+	unless ($attrib =~ /^(.+)_(set|get)$/);
+  my ($field, $type) = ($1, $2);
 
   $body = LL::List->new([]);
 

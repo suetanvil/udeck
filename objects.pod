@@ -121,6 +121,7 @@ X					-'.'
 X						-assignment support
 X						-autoparen
 X						-_set must return assignment value
+						-must preserve privacy (name_set, not set_name)
 X			-initializer
 X				-field initialization  (left out for now--spooky)
 X		-class 'Object'
