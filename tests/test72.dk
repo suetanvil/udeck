@@ -1,0 +1,9 @@
+# Test user-defined operators
+
+proc !!! {a b} {return "$a chicka chick chicka $b"}
+proc +- {a b} {puts a "+-" b}
+
+val (1 +- 2)
+
+puts (1 !!! 2)
+puts (1+3 !!! 4*2)

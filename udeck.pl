@@ -1658,9 +1658,8 @@ sub readLoL {
 sub parseSymbol {
   my ($line) = @_;
 
-  # Regexp to match operators: may begin with '\'; may not end with
-  # '-' (to keep from interfering with trailing negative int) except
-  # if it's the minus operator.
+  # Regexp to match operators: may begin with '\' to indicate escaped
+  # version.
   my $OPER_REGEX = qr{\\? [-.!@\$\%^&*+=?<>\/]+}x;
 
   # Regexp to parse a name segment.

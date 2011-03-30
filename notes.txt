@@ -134,6 +134,8 @@ X	- bug: compiler doesn't catch undefined vars at compile time.
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
 	- What to do about user-defined operators?
+		-allow them but advise against for now.
+		-need some testing
 	- handle unescaped operator in prefix LoL expression
 	- static variables
 	- integers

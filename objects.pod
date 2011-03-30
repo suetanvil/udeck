@@ -121,9 +121,10 @@ X					-'.'
 X						-assignment support
 X						-autoparen
 X						-_set must return assignment value
-						-must preserve privacy (name_set, not set_name)
+X						-must preserve privacy (name_set, not set_name)
 X			-initializer
 X				-field initialization  (left out for now--spooky)
+			-must allow duplicate field names in the class heirarchy
 X		-class 'Object'
 X			-isTrue
 
