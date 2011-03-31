@@ -2810,6 +2810,10 @@ sub initGlobals {
   prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
 							  return boolObj(!$arg->isTrue());
 							};
+  prim2 'int',			sub { my ($arg) = @_; checkNargs(\@_, 1);
+							  $arg->checkNumber(" in 'int'");
+							  return LL::Number->new(int(${$arg}));
+							};
 
   # Macros
   macro 'var',			\&macro_varconst;

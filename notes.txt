@@ -135,6 +135,8 @@ X	- bug: compiler doesn't catch undefined vars at compile time.
 X	- What to do about user-defined operators?
 X		-allow them but advise against for now.
 X		-need some testing
+X	-bug: infix precedence is broken.
+
 
 	- make everything an object
 	- merge symbol class-level qualified checks with namespace-level
@@ -154,7 +156,8 @@ X		-need some testing
 			a, = :[1]
 		-also, comma as list constructor?
 			a, b, c = d, e, f = g, h, i
-	-bug: infix precedence is broken.
+	-need canary to catch broken infix expressions		
+	-list slice
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

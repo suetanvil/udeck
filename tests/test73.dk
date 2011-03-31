@@ -1,0 +1,6 @@
+# test the new 'int' function
+
+foreach n in [list 1.2 -1.2 5.0 4.9999999 (-6.725/0.025)] {
+	puts [int n]
+}
+

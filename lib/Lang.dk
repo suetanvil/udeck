@@ -28,4 +28,9 @@ class Object {
 
 
 
+# Produce a list of elements between start and end separated by 1
+#proc ... {start end} {
+#	start = [int start]
 
+
+#}

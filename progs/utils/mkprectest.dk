@@ -1,0 +1,26 @@
+# Create a test case to exercise operator precedence
+
+proc !!! {a b} {return (a+b)}
+
+
+mproc foreach_perm {
+	aList
+	sub1 bodySub
+} {
+	do_foreach_perm list bodySub
+}
+
+
+proc do_foreach_perm {list bodySub} {
+	if {[length list] < 1} {
+		return [bodySub list]
+	}
+
+	
+}
+
+
+var ops = :[. @ -> ** * / // % + - << >> >>> <<< == === != !== < > <= >=
+			& | ^ && || = !!!]
+
+
