@@ -762,7 +762,7 @@ sub isInfixList {return 1}
 sub withOOSyntaxFixed {my ($self) = @_; return $self}	# asPrefixList does it.
 
 {
-  my %precPerOp = ();
+  my %precPerOp;
   my $userPrec;
   BEGIN {
 	my @precedence = ([qw{. @}],	# field lookup, seq. access

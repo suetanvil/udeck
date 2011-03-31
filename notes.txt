@@ -154,7 +154,7 @@ X		-need some testing
 			a, = :[1]
 		-also, comma as list constructor?
 			a, b, c = d, e, f = g, h, i
-
+	-bug: infix precedence is broken.
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

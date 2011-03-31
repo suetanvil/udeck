@@ -3,3 +3,4 @@
 4 chicka chick chicka 8
 5
 5
+[!!! [+ 1 3] [* 4 2]]
