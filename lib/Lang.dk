@@ -5,6 +5,17 @@
 
 var Version = '0.01';
 
+
+# Return the absolute value of a number
+proc abs {n} {
+	if (n < 0) {
+		return [-n]
+	}
+	return n
+}
+
+
+# Base class for all traditional structured objects
 class Object {
 	method doesNotUnderstand {name args} {
 		die "Unknown method '$name'"
@@ -13,7 +24,7 @@ class Object {
 	method init {args} {}
 
 	method at {index} {die "Not indexable."}
-	method atPut {index} {die "Not indexable."}
+	method atPut {index value} {die "Not indexable."}
 	method size {} {die "Not indexable."}
 	method isIndexable {} {return nil}
 
@@ -28,9 +39,46 @@ class Object {
 
 
 
+# This object mimics a list containing a consecutive sequence of
+# numbers
+class Interval Object {
+	var start length incr
+
+	method _init {startVal endVal incrVal} {
+		start = [int startVal]
+		var end = [int endVal]
+		incr = [int incrVal]
+
+		if (start > end) {
+			incr = [- incr]
+		}
+
+		length = ([abs (end - start)] + 1)
+		
+	}
+
+	method isIndexable {} {return 1}
+	method atPut {index value} {
+		die "Attempted to write to read-only object."
+	}
+
+	method size {} {return length}
+
+	method at {index} {
+		if (index >= length) {
+			die "Attempted to read past end of interval."
+		}
+
+		return (start + (index * incr))
+	}
+}
+
+
 # Produce a list of elements between start and end separated by 1
-#proc ... {start end} {
-#	start = [int start]
+proc .. {start end} {
+	return [new Interval start end 1]
+}
 
 
-#}
+
+

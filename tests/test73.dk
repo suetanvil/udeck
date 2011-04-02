@@ -4,3 +4,7 @@ foreach n in [list 1.2 -1.2 5.0 4.9999999 (-6.725/0.025)] {
 	puts [int n]
 }
 
+# Also test abs
+puts [abs -42]
+puts [abs 42]
+puts [abs 0]

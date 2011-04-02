@@ -436,6 +436,7 @@ sub isInterpString {return 1}
 
 package LL::ByteArray;
 use base 'LL::Stringlike';
+sub isByteArray {return 1}
 
 sub new {
   my ($class, @bytes) = @_;
@@ -988,15 +989,15 @@ sub new {
 }
 
 # Call deck method named by $name on $self.  All arguments must go
-# through decktype correctly.
+# through decktype correctly.  The result is still a deckType
 sub deckCall {
   my ($self, $name, @args) = @_;
 
-  @args = map { decktype($_) } @args;
+  @args = map { LL::Main::decktype($_) } @args;
 
   my $method = $self->{' class'}->lookup($name);
   my $result = $method->($self, @args);
-  return $result->perlForm();
+  return $result;
 }
 
 # Perlform is the unmodified object. This may change
@@ -1004,10 +1005,14 @@ sub perlForm {my ($self) = @_; return $self;}
 sub storeStr {return "<object>"}
 
 # Builtin-type behaviours
-sub isIndexable {my ($self) = @_;        $self->deckCall('isIndexable')}
-sub at          {my ($self, @args) = @_; $self->deckCall('at', @args)}
-sub atPut       {my ($self, @args) = @_; $self->deckCall('atPut', @args)}
-sub size        {my ($self) = @_;        $self->deckCall('size')}
+sub isIndexable {my ($self) = @_;
+				 $self->deckCall('isIndexable')->perlForm()}
+sub at          {my ($self, @args) = @_;
+				 $self->deckCall('at', @args)}
+sub atPut       {my ($self, @args) = @_;
+				 $self->deckCall('atPut', @args)}
+sub size        {my ($self) = @_;
+				 $self->deckCall('size')->perlForm()}
 
 
 
@@ -1097,7 +1102,7 @@ sub lookup {
 package LL::Main;
 
 use Term::ReadLine;
-use Scalar::Util qw(looks_like_number);
+use Scalar::Util qw(looks_like_number blessed);
 use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Datums
 use Cwd qw{abs_path getcwd};
 use File::Basename;
@@ -1723,6 +1728,7 @@ sub decktype {
   my ($arg) = @_;
 
   # Handle non-reference scalars.
+  return $arg if (blessed($arg) && $arg->can('checkType'));
   return NIL unless defined($arg);
   return LL::Number->new($arg) if looks_like_number($arg);
   return LL::String->new($arg) unless ref($arg);
@@ -1781,12 +1787,14 @@ sub applyMacros {
   my @backtrace = ([@{$expr}]);
   while (1) {
 	my $name = $expr->[0];
-	last unless ($name->isSymbol() && $context->present($ {$name})) ;
+	last unless ($name->isSymbol() && $context->present(${$name})) ;
 
 	my $val = $context->lookup(${$name});
 	last unless $val->isMacro();
 
+	print "*macro* ${$name}(@{[$expr->printStr()]}) => " if $dumpExpr;
 	$expr = $val->(@{$expr});
+	print $expr->printStr() . "\n" if $dumpExpr;
 
 	push @backtrace, $expr;
 	if (scalar @backtrace > 20) {
@@ -2757,7 +2765,7 @@ sub initGlobals {
 
   # Simple numeric primitive functions
   prim 'Number', '+',  "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
-  prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
+#  prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
   prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
   prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
   prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
@@ -2813,6 +2821,10 @@ sub initGlobals {
   prim2 'int',			sub { my ($arg) = @_; checkNargs(\@_, 1);
 							  $arg->checkNumber(" in 'int'");
 							  return LL::Number->new(int(${$arg}));
+							};
+  prim2 '-',			sub { my ($l, $r) = @_; checkNargs(\@_, 1, 2);
+							  return LL::Number->new(-${$l}) if scalar @_ == 1;
+							  return decktype(${$l} - ${$r});
 							};
 
   # Macros
@@ -3548,7 +3560,8 @@ sub class_methods {
 	$start->checkSymbol();
 	next if ${$start} ne 'method';
 
-	die "Malformed method declaration.\n" unless scalar @{$entry} == 4;
+	die "Malformed method declaration: '@{[$entry->printStr()]}'.\n"
+	  unless scalar @{$entry} == 4;
 
 	my ($method, $name, $args, $body) = @{$entry};
 	$name->checkSymbol(" in method name.");
