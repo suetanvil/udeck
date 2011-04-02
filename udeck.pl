@@ -1305,7 +1305,7 @@ sub readLoLLine {
   $rlist = $rlist->withOOSyntaxFixed();
 
   # Strip out any operator escapes.  We no longer need them.
-  $rlist->unescapeAllOperators();
+#  $rlist->unescapeAllOperators();
 
   # Warn of the case where an explicit list is the only element of a
   # line because the programmer may have accidentally bracketted the
@@ -2085,6 +2085,8 @@ sub compile {
 	for my $expr (@{$body}) {
 	  my $newExpr = applyMacrosRecursively ($expr, $Globals);
 
+	  $newExpr->unescapeAllOperators();
+
 	  checkForScopeViolations($newExpr, $name);
 
 	  push @fixedBody, $newExpr;
@@ -2748,6 +2750,7 @@ sub initGlobals {
 				   ['_::mproc',			\&builtin_mproc],
 				   ['_::mkstr',			\&builtin_mkstr],
 				   ['_::mkstr_all',		\&builtin_mkstr_all],
+				   ['mkstr',			\&builtin_mkstr],
 				   ['_::use',			\&builtin_usefn],
 				   ['_::perlproc',		\&builtin_perlproc],
 				   ['_::perluse',		\&builtin_perluse],

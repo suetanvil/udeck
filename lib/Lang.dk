@@ -35,6 +35,10 @@ class Object {
 			return nil
 		}
 	}
+
+#	method printStr {} {
+#		return [mkstr "[new " [typeof self] "]"]
+#	}
 }
 
 
@@ -42,7 +46,12 @@ class Object {
 # This object mimics a list containing a consecutive sequence of
 # numbers
 class Interval Object {
-	var start length incr
+	readable start
+	var length incr
+
+	method end_get {} {
+		return (self @ (length - 1))
+	}
 
 	method _init {startVal endVal incrVal} {
 		start = [int startVal]
@@ -75,9 +84,38 @@ class Interval Object {
 
 
 # Produce a list of elements between start and end separated by 1
-proc .. {start end} {
+proc range {start end} {
 	return [new Interval start end 1]
 }
+const \.. = range
+
+
+# Extract a sublist from aList
+proc slice {aList start end} {
+	if (end == nil) {
+		end = ([size aList] - 1)
+	}
+
+	if (start < 0) {
+		start = [size aList] + start
+	}
+
+	if (end < 0) {
+		end = [size aList] + end
+	}
+
+	
+	var range = (start .. end)
+	var result = [listSized [size range]]
+	var index = 0
+	foreach n in range {
+		result@index = aList@n
+		index = index + 1
+	}
+
+	return result
+}
+
 
 
 

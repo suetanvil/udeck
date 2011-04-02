@@ -136,12 +136,13 @@ X	- What to do about user-defined operators?
 X		-allow them but advise against for now.
 X		-need some testing
 X	-bug: infix precedence is broken.
-
+X	-bug: 'var' doesn't allow operators as var names.
 
 	- make everything an object
+	- traits
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
-	- handle unescaped operator in prefix LoL expression
+	- catch unescaped operator in prefix LoL expression
 	- static variables
 	- integers
 	- subify builtin
@@ -158,6 +159,9 @@ X	-bug: infix precedence is broken.
 			a, b, c = d, e, f = g, h, i
 	-need canary to catch broken infix expressions		
 	-list slice
+		-adding a slice fn.
+		-should add the ability to '@'
+	-object printstr/storestr
 
 	- needs a better name.
 		-I'm thinking turtle-themed.

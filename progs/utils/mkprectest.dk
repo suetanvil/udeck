@@ -1,7 +1,5 @@
 # Create a test case to exercise operator precedence
 
-proc !!! {a b} {return (a+b)}
-
 
 mproc foreach_perm {
 	aList
@@ -21,6 +19,6 @@ proc do_foreach_perm {list bodySub} {
 
 
 var ops = :[. @ -> ** * / // % + - << >> >>> <<< == === != !== < > <= >=
-			& | ^ && || = !!!]
+			& | ^ && || = ..]
 
 
