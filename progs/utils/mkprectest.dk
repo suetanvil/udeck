@@ -1,24 +1,40 @@
 # Create a test case to exercise operator precedence
 
 
-mproc foreach_perm {
-	aList
-	sub1 bodySub
-} {
-	do_foreach_perm list bodySub
-}
-
-
-proc do_foreach_perm {list bodySub} {
-	if {[length list] < 1} {
-		return [bodySub list]
+proc _do_foreach_perm {aList fn} {
+	if ([size aList] < 2) {
+		return [bodySub [concat prefix aList]]
 	}
 
-	
+	var subList = [slice aList 1 nil]
+	var prefix  = [list aList@0]	
+	_do_foreach_perm subList {
+		for pos in (0 .. [size a]) {
+			var left  = [split subList 0 (pos - 1)]
+			var right = [split sublist pos nil]
+
+			[fn [concat left prefix right]]
+		}
+	}
+}
+
+mproc foreach_perm {
+	aList 
+	sub 1 fn
+} {
+	_do_foreach_perm aList fn
 }
 
 
-var ops = :[. @ -> ** * / // % + - << >> >>> <<< == === != !== < > <= >=
-			& | ^ && || = ..]
+
+
+foreach_perm :[1 2 3 4 5] {
+	puts a "\n"
+}
+
+
+
+#var ops = :[. @ -> ** * / // % + - << >> >>> <<< == === != !== < > <= >=
+#			& | ^ && || = ..]
 
 

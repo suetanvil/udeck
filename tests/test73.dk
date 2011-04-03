@@ -9,6 +9,15 @@ puts [abs -42]
 puts [abs 42]
 puts [abs 0]
 
+# Test intervals and 'say'
+foreach r in [list (0 .. 5) (5 .. 0) (-3 .. -9) [range 23 26] (-3 .. 4)] {
+	puts "Range " r.start " .. " r.end ":"
+	foreach e in r {
+		say " " e
+	}
+	say "\n"
+}
+
 # Test splice and concat
 var foo = [concat (1 .. 10)]
 puts foo
