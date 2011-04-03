@@ -1480,7 +1480,7 @@ sub readLoL {
 		};
 
 		# Floating-point literal
-		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9_]*)(\W?)/$3/ and do {
+		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9_]+)(\W?)/$3/ and do {
 		  $tok = "$1.$2";
 		  $tok =~ s/_//g;
 		  push @tokens, LL::Number->new($tok);
@@ -2733,6 +2733,7 @@ sub initGlobals {
   for my $special (
 				   ['println',			\&builtin_println],
 				   ['puts',				\&builtin_println],
+				   ['say',				\&builtin_say],
 				   ['storestr',			\&builtin_storestr],
 				   ['show',				\&builtin_show],
 				   ['_::proc',			\&builtin_proc],
@@ -2896,6 +2897,18 @@ sub builtin_println {
 
   return NIL;
 }
+
+sub builtin_say {
+  for my $obj (@_) {
+	die "Not an object: '$obj'\n"
+	  unless (ref($obj) && isa($obj, 'LL::Datum'));
+	print $obj->printStr();
+  }
+
+  return NIL;
+}
+
+
 
 sub builtin_storestr {
   my $result = "";
