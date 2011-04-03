@@ -1,4 +1,4 @@
-# test the new 'int' function
+# test several built-in functions
 
 foreach n in [list 1.2 -1.2 5.0 4.9999999 (-6.725/0.025)] {
 	puts [int n]
@@ -8,3 +8,15 @@ foreach n in [list 1.2 -1.2 5.0 4.9999999 (-6.725/0.025)] {
 puts [abs -42]
 puts [abs 42]
 puts [abs 0]
+
+# Test splice and concat
+var foo = [concat (1 .. 10)]
+puts foo
+
+var bar = [concat foo foo (20 .. 23)]
+puts bar
+
+puts [slice foo 3 7]
+puts [slice foo 7 3]
+puts [slice foo -1 -5]
+

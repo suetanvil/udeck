@@ -31,6 +31,9 @@ Notes:
 	- user-defined operators all have the same precedence--just above '='.
 		-will also be above ',' if I add that.
 
+	- in float literals, the character following the '.' may not be an
+	  underscore.
+
 Functions Todo:
 X	-listSized
 
@@ -162,14 +165,10 @@ X	-bug: 'var' doesn't allow operators as var names.
 		-adding a slice fn.
 		-should add the ability to '@'
 	-object printstr/storestr
+	-get rid of println
+	- 'var x = <y>' should parse the assignment as fully infix.
+		-maybe.	
 
-	- needs a better name.
-		-I'm thinking turtle-themed.
-		-How about 'Mydas', from c. mydas, the green sea turtle?
-			-no, taken.  Not a language but a DAS implementation.
-				-but it's spelled MyDas, so maybe I can get away
-				 without the capitalization.  Contact the author.
-			-author contacted.  Trigger is pulled.
 
 
 		

@@ -96,15 +96,6 @@ proc slice {aList start end} {
 		end = ([size aList] - 1)
 	}
 
-	if (start < 0) {
-		start = [size aList] + start
-	}
-
-	if (end < 0) {
-		end = [size aList] + end
-	}
-
-	
 	var range = (start .. end)
 	var result = [listSized [size range]]
 	var index = 0
@@ -116,7 +107,23 @@ proc slice {aList start end} {
 	return result
 }
 
+# Concatenate all list-like arguments together.
+proc concat {args} {
+	var len = 0
+	foreach l in args {
+		len = len + [size l]
+	}
 
+	var result = [listSized len]
+	var pos = 0
+	foreach l in args {
+		foreach elem in l {
+			result@pos = elem
+			pos = pos + 1
+		}
+	}
 
+	return result
+}
 
 
