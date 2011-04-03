@@ -2990,9 +2990,9 @@ sub builtin_proc {
   $args->checkList();
   $body->checkList();
 
+  $Globals->def(${$name});
   my $func = compile ($Globals, $args, $body, 'proc', ${$name});
-
-  $Globals->defset(${$name}, $func);
+  $Globals->set(${$name}, $func);
 
   return $func;
 }

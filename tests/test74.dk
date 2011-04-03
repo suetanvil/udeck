@@ -1,0 +1,15 @@
+# Test recursion
+
+proc factorial {n} {
+	if (n < 2) {
+		return n
+	}
+
+	return (n * [factorial (n - 1)])
+}
+
+puts [factorial 1]
+puts [factorial 3]
+puts [factorial 6]
+puts [factorial 12]
+
