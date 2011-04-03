@@ -1480,7 +1480,7 @@ sub readLoL {
 		};
 
 		# Floating-point literal
-		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9_]+)(\W?)/$3/ and do {
+		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9][0-9_]*)(\W?)/$3/ and do {
 		  $tok = "$1.$2";
 		  $tok =~ s/_//g;
 		  push @tokens, LL::Number->new($tok);
