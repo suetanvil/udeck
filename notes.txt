@@ -84,6 +84,33 @@ X	perlproc hello {nm} '''print "Hello, $nm\n";'''
 
 
 
+Forward declarations:
+
+	proc Foo
+	
+	...
+
+	proc Foo {a b} {....}
+
+or
+
+	mproc map {
+		sub1 fn
+		aList
+	}
+
+	...
+
+	mproc map {
+		sub1 fn
+		aList
+	} { ... }
+
+
+
+
+
+
 
 Todo:
 	-implement a "compiler" to produce perl subs
@@ -143,14 +170,21 @@ X	-bug: 'var' doesn't allow operators as var names.
 
 	- make everything an object
 	- traits
+	- forward declaration of functions
+		-var works but should be a bonk/oif pairing that ensures it.
+		-mprocs should also work this way
+	- should 'sub{}{}' magically auto-bracket?
+		-how about the => operator?
+	-need canary to catch broken infix expressions		
+	-bug: implement '||' and '&&'
+
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
 	- catch unescaped operator in prefix LoL expression
 	- static variables
 	- integers
 	- subify builtin
-	- forward declaration of functions
-		-var works but should be a bonk/oif pairing that ensures it.
+
 	- rewrite compiler
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.
@@ -160,14 +194,17 @@ X	-bug: 'var' doesn't allow operators as var names.
 			a, = :[1]
 		-also, comma as list constructor?
 			a, b, c = d, e, f = g, h, i
-	-need canary to catch broken infix expressions		
 	-list slice
 		-adding a slice fn.
 		-should add the ability to '@'
 	-object printstr/storestr
 	-get rid of println
-	- 'var x = <y>' should parse the assignment as fully infix.
+	-'var x = <y>' should parse the assignment as fully infix.
 		-maybe.	
+	-mprocs should be able to select the argument name(s) of their
+	 blocks.  (e.g. foreach)
+
+
 
 
 
