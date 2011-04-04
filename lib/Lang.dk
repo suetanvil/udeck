@@ -14,6 +14,11 @@ proc abs {n} {
 	return n
 }
 
+# Return the last index in 'aList'
+proc last {aList} {
+	return ([size aList] - 1)
+}
+
 
 # Base class for all traditional structured objects
 class Object {
@@ -92,8 +97,12 @@ const \.. = range
 
 # Extract a sublist from aList
 proc slice {aList start end} {
-	if (end == nil) {
-		end = ([size aList] - 1)
+	if (end == nil || end > [size last]) {
+		end = [size last]
+	}
+
+	if (start > end || start > [last aList]) {
+		return :[]
 	}
 
 	var range = (start .. end)

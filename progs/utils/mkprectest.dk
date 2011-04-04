@@ -2,20 +2,30 @@
 
 
 proc _do_foreach_perm {aList fn} {
-	if ([size aList] < 2) {
-		return [bodySub [concat prefix aList]]
+puts "call " aList
+	if ([size aList] <= 1) {
+puts "<=1"
+		fn aList
+		return
+	}
+
+	if ([size aList] == 2) {
+puts "2"
+		fn aList
+		fn [list (aList@1) (aList@0)]
 	}
 
 	var subList = [slice aList 1 nil]
-	var prefix  = [list aList@0]	
-	_do_foreach_perm subList {
-		for pos in (0 .. [size a]) {
-			var left  = [split subList 0 (pos - 1)]
-			var right = [split sublist pos nil]
+	var prefix  = [list (aList@0)]
+	_do_foreach_perm subList [sub {a} {
+		foreach pos in (0 .. [size a] - 1) {
+puts subList "/" aList "/" prefix
+			var left  = [slice subList 0 pos]
+			var right = [slice subList (pos + 1) nil]
 
 			[fn [concat left prefix right]]
 		}
-	}
+	}]
 }
 
 mproc foreach_perm {
@@ -28,7 +38,7 @@ mproc foreach_perm {
 
 
 
-foreach_perm :[1 2 3 4 5] {
+foreach_perm :[1 2] {
 	puts a "\n"
 }
 
