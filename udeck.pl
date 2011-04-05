@@ -2287,6 +2287,7 @@ sub subify {
 }
 
 
+# Attempt to subify the arguments, dying if this is impossible.
 sub subifyStrict {
   my ($expr, @args) = @_;
 
@@ -2701,6 +2702,17 @@ sub macro_fieldget {
 }
 
 
+# Logical AND (&&).  This expands into an if statement, which works
+# because _:if returns the result of the last expression evaluated.
+sub macro_logand {
+  my ($or, $left, $right) = @_;
+
+  return LL::List->new([LL::Symbol->new('_::if'),
+						subifyStrict($left),
+						subifyStrict($right)]);
+}
+
+
 # ---------------------------------------------------------------------------
 sub initGlobals {
   my ($args) = @_;
@@ -2852,6 +2864,7 @@ sub initGlobals {
   macro 'class',		\&macro_class;
   macro '->',			\&macro_methodLookupOp;
   macro '.',			\&macro_fieldget;
+  macro '&&',			\&macro_logand;
 
   # The external 'Lang' module
   if (!$noLib) {
