@@ -177,6 +177,8 @@ X	-bug: 'var' doesn't allow operators as var names.
 		-how about the => operator?
 	-need canary to catch broken infix expressions		
 	-bug: implement '||' and '&&'
+		-also, & and | (bitwise ops)
+	-bug: if (n) doesn't work.
 
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.

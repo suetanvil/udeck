@@ -1,0 +1,26 @@
+# Test boolean or and and.
+
+proc foo {n} {
+	puts "foo " n " called.  "
+	return n
+}
+
+proc bar {n} {
+	puts "bar " n " called.  "
+	return n
+}
+	
+proc stat {b} {
+	say "[" b "] "
+	if [val b] {
+		puts "TRUE"
+	} else {
+		puts "FALSE"
+	}
+}
+
+stat ([foo 1] && [bar 2])
+stat ([foo :[]] && [bar 2])
+stat (1 < 2 && 2 < 3)
+stat (1 > 2 && 2 < 3)
+stat (1 < 2 && 2 > 3)
