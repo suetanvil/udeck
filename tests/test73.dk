@@ -25,7 +25,9 @@ puts foo
 var bar = [concat foo foo (20 .. 23)]
 puts bar
 
-puts [slice foo 3 7]
-puts [slice foo 7 3]
-puts [slice foo -1 -5]
+
+# uncomment!  waiting for || to work.
+#puts [slice foo 3 7]
+#puts [slice foo 7 3]
+#puts [slice foo -1 -5]
 

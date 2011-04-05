@@ -2709,7 +2709,8 @@ sub macro_logand {
 
   return LL::List->new([LL::Symbol->new('_::if'),
 						subifyStrict($left),
-						subifyStrict($right)]);
+						subifyStrict($right),
+						NIL]);
 }
 
 
@@ -3189,6 +3190,7 @@ sub builtin_subfn {
 # evaluated.  The third closure (the 'else' clause) is optional and may be NIL.
 sub builtin_iffn {
   my ($test, $trueBlock, $falseBlock) = @_;
+  checkNargs(\@_, 3);
 
   my $result = $test->();
   if ($result->isTrue()) {

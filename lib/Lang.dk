@@ -97,13 +97,27 @@ const \.. = range
 
 # Extract a sublist from aList
 proc slice {aList start end} {
-	if (end == nil || end > [size last]) {
+# 	if (end == nil || end > [size last]) {
+# 		end = [size last]
+# 	}
+
+#	if (start > end || start > [last aList]) {
+#		return :[]
+#	}
+
+	if (end == nil) {
 		end = [size last]
 	}
-
-	if (start > end || start > [last aList]) {
+	if (end > [size last]) {
+		end = [size last]
+	}
+	if (start > end) {
 		return :[]
 	}
+	if (start > [last aList]) {
+		return :[]
+	}
+
 
 	var range = (start .. end)
 	var result = [listSized [size range]]
