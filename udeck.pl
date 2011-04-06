@@ -2299,20 +2299,17 @@ sub subifyStrict {
 }
 
 
-
-
-# Wrap $expr with a sub which, when called, evaluates the expression.
+# Wrap $expr with a sub which, when called, evaluates the expression
+# and returns it.
 sub delayed {
-# XXX
-  my ($expr, @args) = @_;
+  my ($expr) = @_;
 
-  my $result = subify($expr, @args);
-  return $result if $result != $expr;
+  $expr = LL::List->new([LL::Symbol->new('_::val'), $expr]);
 
-  my $bs = $expr->storeStr();
-  die "Expecting a single expression or quoted list of list. Got '$bs'\n";
-
-
+  return LL::List->new([LL::Symbol->new('_::sub'),
+						LL::Quote->new(LL::List->new([])),
+						LL::Quote->new(LL::List->new([$expr])),
+					   ]);
 }
 
 
@@ -2725,8 +2722,8 @@ sub macro_logand {
   my ($or, $left, $right) = @_;
 
   return LL::List->new([LL::Symbol->new('_::if'),
-						subifyStrict($left),
-						subifyStrict($right),
+						delayed($left),
+						delayed($right),
 						NIL]);
 }
 
@@ -2737,9 +2734,9 @@ sub macro_logor {
   my ($or, $left, $right) = @_;
 
   return LL::List->new([LL::Symbol->new('_::if'),
-						subifyStrict($left),
+						delayed($left),
 						NIL,
-						subifyStrict($right)]);
+						delayed($right)]);
 }
 
 
@@ -2826,7 +2823,6 @@ sub initGlobals {
   prim2 '===',			sub { checkNargs(\@_, 2); return boolObj($_[0] == $_[1])};
   prim2 '==',			sub { checkNargs(\@_, 2); return $_[0]->equals($_[1]) };
   prim2 'list',			sub { return LL::List->new(\@_) };
-  prim2 'val',			sub { return NIL unless scalar @_; return $_[-1] };
   prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs(\@_, 2);
 							  return $l->at($ndx) };
   prim2 'size',			sub { my ($l) = @_;  checkNargs(\@_, 1);
@@ -2872,6 +2868,9 @@ sub initGlobals {
 							  return LL::Number->new(-${$l}) if scalar @_ == 1;
 							  return decktype(${$l} - ${$r});
 							};
+
+  prim2 '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
+  $Globals->defset('val', $Globals->{'_::val'});
 
   # Macros
   macro 'var',			\&macro_varconst;

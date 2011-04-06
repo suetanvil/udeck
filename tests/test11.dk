@@ -7,8 +7,7 @@ proc foo {} {
 	return [sub {puts a}]
 }
 
-var x
-set x [foo]
+var x = [foo]
 x
 
 var y
