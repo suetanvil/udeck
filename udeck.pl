@@ -1669,7 +1669,7 @@ sub parseSymbol {
 
   # Regexp to match operators: may begin with '\' to indicate escaped
   # version.
-  my $OPER_REGEX = qr{\\? [-.!@\$\%^&*+=?<>\/]+}x;
+  my $OPER_REGEX = qr{\\? [-.\|!@\$\%^&*+=?<>\/]+}x;
 
   # Regexp to parse a name segment.
   my $WRE = qr{(?: [a-zA-Z_] \w*)}x;
@@ -2702,7 +2702,7 @@ sub macro_fieldget {
 }
 
 
-# Logical AND (&&).  This expands into an if statement, which works
+# Logical AND (&&).  This expands into an _::if statement, which works
 # because _:if returns the result of the last expression evaluated.
 sub macro_logand {
   my ($or, $left, $right) = @_;
@@ -2711,6 +2711,18 @@ sub macro_logand {
 						subifyStrict($left),
 						subifyStrict($right),
 						NIL]);
+}
+
+# Logical OR (||).  This expands into an _::if statement with the
+# 'true' block nil.  This results in the getting the LHS if TRUE or
+# the RHS.
+sub macro_logor {
+  my ($or, $left, $right) = @_;
+
+  return LL::List->new([LL::Symbol->new('_::if'),
+						subifyStrict($left),
+						NIL,
+						subifyStrict($right)]);
 }
 
 
@@ -2866,6 +2878,7 @@ sub initGlobals {
   macro '->',			\&macro_methodLookupOp;
   macro '.',			\&macro_fieldget;
   macro '&&',			\&macro_logand;
+  macro '||',			\&macro_logand;
 
   # The external 'Lang' module
   if (!$noLib) {
@@ -3187,14 +3200,15 @@ sub builtin_subfn {
 
 
 # Perform the 'if' operation.  Return the result of the last closure
-# evaluated.  The third closure (the 'else' clause) is optional and may be NIL.
+# evaluated.  The second and third closure (the 'true' and 'else' parts)
+# may be NIL in which case they are skipped.
 sub builtin_iffn {
   my ($test, $trueBlock, $falseBlock) = @_;
   checkNargs(\@_, 3);
 
   my $result = $test->();
   if ($result->isTrue()) {
-	$result = $trueBlock->();
+	$result = $trueBlock->() if $trueBlock->isFunction();
   } elsif ($falseBlock->isFunction()) {
 	$result = $falseBlock->();
   }
