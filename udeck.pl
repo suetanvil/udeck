@@ -2299,6 +2299,23 @@ sub subifyStrict {
 }
 
 
+
+
+# Wrap $expr with a sub which, when called, evaluates the expression.
+sub delayed {
+# XXX
+  my ($expr, @args) = @_;
+
+  my $result = subify($expr, @args);
+  return $result if $result != $expr;
+
+  my $bs = $expr->storeStr();
+  die "Expecting a single expression or quoted list of list. Got '$bs'\n";
+
+
+}
+
+
 sub quoteIfSym {
   my ($sym, $strict) = @_;
 

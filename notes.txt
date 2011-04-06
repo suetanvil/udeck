@@ -178,7 +178,10 @@ X	-bug: 'var' doesn't allow operators as var names.
 	-need canary to catch broken infix expressions		
 	-bug: implement '||' and '&&'
 		-also, & and | (bitwise ops)
-	-bug: if (n) doesn't work.
+	-bug: if (n) doesn't work.  Also (a || b).
+		-should (n) expand to [val n] or should subify do that?
+			-is there a non-control-flow expression that handles this?
+				-no.  Because only CF expressions wrap things in subs.
 
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.

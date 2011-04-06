@@ -1,8 +1,1 @@
-foo 1 called.  
-bar 2 called.  
-[2] TRUE
-foo [] called.  
-[[]] FALSE
-[1] TRUE
-[] FALSE
-[] FALSE
+foo 1 called.  foo 2 called.  2
