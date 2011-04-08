@@ -2921,6 +2921,11 @@ sub initGlobals {
 							  return NIL unless $ns eq "";
 							  return decktype($num);
 							};
+  prim2 'exit',			sub { my ($status) = @_; checkNargs(\@_, 1);
+							  $status->checkNumber(" in 'exit'");
+							  exit(${$status});
+							  return NIL;	# not reached
+							};
 
 
   prim2 '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
@@ -2937,6 +2942,7 @@ sub initGlobals {
   macro 'if',			\&macro_iffn;
   macro 'while',		\&macro_whilefn;
   macro 'foreach',		\&macro_foreachfn;
+  macro 'for',			\&macro_foreachfn;
   macro 'map',			\&macro_mapfn;
   macro 'macro',		\&macro_macro;
   macro 'mproc',		\&macro_mproc;

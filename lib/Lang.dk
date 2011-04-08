@@ -26,6 +26,17 @@ proc last {aList} {
 }
 
 
+# Insert spacer between all elements in aList
+# proc withSpacer {aList spacer} {
+
+# 	var rs = [size aList] * 2
+# 	if ([size aList] % 2
+# 	var result = [listSized 
+
+
+# }
+
+
 # Base class for all traditional structured objects
 class Object {
 	method doesNotUnderstand {name args} {

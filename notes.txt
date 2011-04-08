@@ -167,6 +167,10 @@ X		-allow them but advise against for now.
 X		-need some testing
 X	-bug: infix precedence is broken.
 X	-bug: 'var' doesn't allow operators as var names.
+X	-bug: if (n) doesn't work.  Also (a || b).
+X		-should (n) expand to [val n] or should subify do that?
+X			-is there a non-control-flow expression that handles this?
+X				-no.  Because only CF expressions wrap things in subs.
 
 	- make everything an object
 	- traits
@@ -178,10 +182,7 @@ X	-bug: 'var' doesn't allow operators as var names.
 	-need canary to catch broken infix expressions		
 	-bug: implement '||' and '&&'
 		-also, & and | (bitwise ops)
-	-bug: if (n) doesn't work.  Also (a || b).
-		-should (n) expand to [val n] or should subify do that?
-			-is there a non-control-flow expression that handles this?
-				-no.  Because only CF expressions wrap things in subs.
+	- '+' should also concatenate lists and strings
 
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
