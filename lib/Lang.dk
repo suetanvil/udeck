@@ -14,6 +14,12 @@ proc abs {n} {
 	return n
 }
 
+# The not-equal operator
+proc != {l r} {
+	return [not (l == r)]
+}
+
+
 # Return the last index in 'aList'
 proc last {aList} {
 	return ([size aList] - 1)

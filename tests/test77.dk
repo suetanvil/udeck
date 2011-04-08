@@ -1,0 +1,22 @@
+# Test the str2num function and the != operator
+
+# !=
+puts (1 != 2)
+puts (1 != 1)
+puts ("foo" != "foo")
+puts ("foo" != "bar")
+
+
+proc ifne {s n} {
+	if ([str2num s] != n) {
+		die "Test failed.\n"
+	}
+}
+
+ifne "42" 42
+ifne "0x20" 0x20
+ifne "0b101" 0b101
+ifne " 42" nil
+ifne "hello" nil
+ifne "42 " nil
+
