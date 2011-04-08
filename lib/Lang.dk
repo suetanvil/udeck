@@ -97,8 +97,9 @@ const \.. = range
 
 # Extract a sublist from aList
 proc slice {aList start end} {
-	if (end == nil || end > [size last]) {
-		end = [size last]
+
+	if (end == nil || end > [last aList]) {
+		end = [last aList]
 	}
 
 	if (start > end || start > [last aList]) {

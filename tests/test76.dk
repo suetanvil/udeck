@@ -20,6 +20,19 @@ if "" {puts "True"} else {puts "False"}
 puts ""
 
 
+# Test while loop
+var n = 5
+while n {
+	n = n - 1
+	puts n
+}
+
+n = :[1 2 3 4 5]
+while n {
+	puts n
+	n = [slice n 0 ([last n] - 1)]
+}
+
 
 
 

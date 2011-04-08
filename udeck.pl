@@ -2584,7 +2584,7 @@ sub macro_whilefn {
 	unless scalar @_ == 3;
 
   return LL::List->new([LL::Symbol->new('_::while'),
-						subifyStrict($cond),
+						subifyOrDelay($cond),
 						subifyStrict($body)]);
 }
 
