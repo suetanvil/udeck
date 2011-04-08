@@ -1,1 +1,9 @@
 foo 1 called.  foo 2 called.  2
+foo [] called.  []
+foo 42 called.  foo  called.  
+0
+
+1
+42
+42
+[]

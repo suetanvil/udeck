@@ -2057,7 +2057,7 @@ sub compile {
   my ($outerContext, $args, $body, $mode, $name) = @_;
   $body->checkLoL();
 
-  $name ||= 'unnamed function';
+  $name ||= '<unnamed function>';
 
   die "Unknown compiler mode '$mode'\n"
 	unless $mode =~ /^(macro|proc|sub|method|toplevel)$/;
@@ -2894,7 +2894,7 @@ sub initGlobals {
   macro '->',			\&macro_methodLookupOp;
   macro '.',			\&macro_fieldget;
   macro '&&',			\&macro_logand;
-  macro '||',			\&macro_logand;
+  macro '||',			\&macro_logor;
 
   # The external 'Lang' module
   if (!$noLib) {

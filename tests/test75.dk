@@ -6,7 +6,15 @@ proc foo {n} {
 }
 
 puts ([foo 1] && [foo 2])
+puts ([foo :[]] && [foo "yup"])
+puts ([foo 42] && [foo ""])
+puts (0 && "foo")
 
-# more to come
+puts ""
+puts (0 || 1)
+puts (42 || 0)
+puts (42 || 1)
+puts (0 || :[])
+
 
 
