@@ -34,6 +34,11 @@ Notes:
 	- in float literals, the character following the '.' may not be an
 	  underscore.
 
+	- => operator creates closures
+		-lhs is arguments, rhs body.  Both must be QtLoLs.
+		-auto-paren'd like '.' and '->'
+
+
 Functions Todo:
 X	-listSized
 
@@ -172,13 +177,14 @@ X		-should (n) expand to [val n] or should subify do that?
 X			-is there a non-control-flow expression that handles this?
 X				-no.  Because only CF expressions wrap things in subs.
 
+	- => operator creates closures
+		-lhs is arguments, rhs body.  Both must be QtLoLs.
+		-auto-paren'd like '.' and '->'
 	- make everything an object
 	- traits
 	- forward declaration of functions
 		-var works but should be a bonk/oif pairing that ensures it.
 		-mprocs should also work this way
-	- should 'sub{}{}' magically auto-bracket?
-		-how about the => operator?
 	-need canary to catch broken infix expressions		
 	-bug: implement '||' and '&&'
 		-also, & and | (bitwise ops)

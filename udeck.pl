@@ -682,7 +682,9 @@ sub withArrowResolved {
 }
 
 
-sub withDotsResolved {
+# Search for auto-infixed operations (specifically '.' and '=>') and
+# turn them into infix subexpressions.
+sub withOtherAutoInfixResolved {
   my ($self) = @_;
 
   my @result = @{$self};
@@ -690,23 +692,20 @@ sub withDotsResolved {
   while (1) {
 	my $dotIndex = 0;
 
-	# Find '<expr> . <expr>' sequences
+	# Find '<expr> . <expr>' or '<expr> => <expr>' sequences
 	for my $item (@result) {
-	  last if ($item->isUnescapedOperator() && ${$item} eq '.');
+	  last if ($item->isUnescapedOperator() && ${$item} =~ /^(\.|=>)$/);
 	  $dotIndex++;
 	}
+	my $oper = $1;
 	last if $dotIndex > $#result;
 
 	# Check for errors
-	die "Unescaped dot at start or end of expression.\n"
+	die "Unescaped '$oper' at start or end of expression.\n"
 	  if ($dotIndex == 0 || $dotIndex == $#result);
 
-#	die "Syntax error: two consecutive '.' operators.\n"
-#	  if ($result[$dotIndex+1]->isUnescapedOperator() &&
-#		  ${$result[$dotIndex+1]} eq '.');
-
 	# Replace the sequence with a single sub-expression (prefix) of
-	# '.' being called on left and right operands
+	# the operator being called on left and right operands
 	my $expr = LL::List->new([]);
 	my @op = splice @result, $dotIndex-1, 3, $expr;
 	push @{$expr}, $op[1], $op[0], $op[2];	# Order makes it prefix
@@ -718,10 +717,10 @@ sub withDotsResolved {
 
 # Treat $self as an infix expression and fix up all the OO-related
 # syntactic sugar.
-sub withOOSyntaxFixed {
+sub withAutoInfixDone {
   my ($self) = @_;
 
-  my $result = $self->withDotsResolved();
+  my $result = $self->withOtherAutoInfixResolved();
   $result = $result->withArrowResolved();
 
   return $result;
@@ -761,19 +760,19 @@ sub atPut {
 package LL::InfixList;
 use base 'LL::List';
 sub isInfixList {return 1}
-sub withOOSyntaxFixed {my ($self) = @_; return $self}	# asPrefixList does it.
+sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 
 {
   my %precPerOp;
   my $userPrec;
   BEGIN {
-	my @precedence = ([qw{. @}],	# field lookup, seq. access
+	my @precedence = ([qw{. @ =>}],	# field lookup, seq. access, closure
 					  [qw{->}],		# method lookup
 					  [qw{**}],		# power
 					  [qw{* / // %}],# mult, div, div rounded toward zero, mod
 					  [qw{+ -}],	# add, subtract
 					  [qw{<< >> >>> <<<}],	# shifts	
-					  [qw{== === != !== < > <= >=}],	# Equality and magnitude
+					  [qw{== === != !== < > <= >=}],  # Equality and magnitude
 					  [qw{&}],		# Bitwise AND.
 					  [qw{| ^}],	# Bitwise OR, bitwise XOR
 					  [qw{&&}],		# Logical AND, short-circuited
@@ -1309,7 +1308,7 @@ sub readLoLLine {
   }
 
   # Fix up the OO syntactic sugar
-  $rlist = $rlist->withOOSyntaxFixed();
+  $rlist = $rlist->withAutoInfixDone();
 
   # Strip out any operator escapes.  We no longer need them.
 #  $rlist->unescapeAllOperators();
@@ -1353,7 +1352,7 @@ sub readExpr {
 
   $tok->isParen() and do {
 	(($tok->isSquareParen() || $tok->isRoundParen()) && $tok->isOpen()) and do{
-	  return readSexp(${$tok})->withOOSyntaxFixed()->asPrefixList();
+	  return readSexp(${$tok})->withAutoInfixDone()->asPrefixList();
 	};
 	
 	($tok->isBrace() && $tok->isOpen()) and do {
