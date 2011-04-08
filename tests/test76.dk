@@ -19,9 +19,7 @@ if "no" {puts "True"} else {puts "False"}
 if "" {puts "True"} else {puts "False"}
 puts ""
 
-if :[1 2 3] {puts "True"} else {puts "False"}
-if :[] {puts "True"} else {puts "False"}
-puts ""
+
 
 
 

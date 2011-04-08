@@ -331,6 +331,7 @@ sub isCallable {return 0}
 sub isTrue {return 1}
 sub isNumber {return 0}
 sub isQtLoL {return 0}	# Is a quoted list containing only lists
+sub isQtList {return 0}	# Is a quoted list?
 sub isLoL {return 0}	# Is an list containing only lists
 sub isPerlObj {return 0}
 sub isClass {return 0}
@@ -919,6 +920,12 @@ sub isQtLoL {	# Is this a quoted list of lists?
   my ($self) = @_;
   return $self->value()->isLoL();
 }
+
+sub isQtList {	# Is this a quoted list?
+  my ($self) = @_;
+  return $self->value()->isList();
+}
+
 
 sub checkQtLoL {
   my ($self, @args) = @_;
@@ -2307,7 +2314,8 @@ sub subifyOrDelay {
   die "WTF: args passed to subifyOrDelay.\n"
 	if scalar @_ > 1;
 
-  return delayed($expr) unless $expr->isList();
+  return delayed($expr)
+	unless ($expr->isList() || $expr->isQtList());
   return subify($expr);
 }
 
