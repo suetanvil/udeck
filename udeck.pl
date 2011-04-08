@@ -1486,43 +1486,13 @@ sub readLoL {
 		  next;
 		};
 
-		# Floating-point literal
-		$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9][0-9_]*)(\W?)/$3/ and do {
-		  $tok = "$1.$2";
-		  $tok =~ s/_//g;
-		  push @tokens, LL::Number->new($tok);
+		# See if this is a number
+		my ($newLine, $numObj) = readNumber($line);
+		if ($numObj) {
+		  push @tokens, $numObj;
+		  $line = $newLine;
 		  next;
-		};
-
-		# Hex literal
-		$line =~ s/^(\-?)0x([0-9a-fA-F_]*)(\W?)/$3/ and do {
-		  my ($sign, $num) = ($1, $2);
-		  $num =~ s/_//g;
-		  $tok = oct("0x$num");
-		  $tok = -$tok if $sign eq '-';
-		  push @tokens, LL::Number->new($tok);
-		  next;
-		};
-
-		# Binary literal
-		$line =~ s/^(\-?)0b([01_]*)(\W?)/$3/ and do {
-		  my ($sign, $num) = ($1, $2);
-		  $num =~ s/_//g;
-		  $tok = oct("0b$num");
-		  $tok = -$tok if $sign eq '-';
-		  push @tokens, LL::Number->new($tok);
-		  next;
-		};
-
-		# Decimal literal.  Perl's conversion to number ignores
-		# leading zeroes
-		$line =~ s/^(\-?\d[0-9_]*)(\W?)/$2/ and do {
-		  my $num = $1;
-		  $num =~ s/_//g;
-		  $tok = $num + 0;
-		  push @tokens, LL::Number->new($tok);
-		  next;
-		};
+		}
 
 		# Empty single-quoted string is a special case, since there
 		# needs to be an even number of quotes.
@@ -1667,6 +1637,59 @@ sub readLoL {
 	}
   }
 }
+
+
+sub readNumber {
+  my ($line) = @_;
+
+  my $result;
+
+  {
+	my $tok;
+
+	# Floating-point literal
+	$line =~ s/^(\-?[0-9][0-9_]*)\.([0-9][0-9_]*)(\W?)/$3/ and do {
+	  $tok = "$1.$2";
+	  $tok =~ s/_//g;
+	  $result = LL::Number->new($tok);
+	  next;
+	};
+
+	# Hex literal
+	$line =~ s/^(\-?)0x([0-9a-fA-F_]*)(\W?)/$3/ and do {
+	  my ($sign, $num) = ($1, $2);
+	  $num =~ s/_//g;
+	  $tok = oct("0x$num");
+	  $tok = -$tok if $sign eq '-';
+	  $result = LL::Number->new($tok);
+	  next;
+	};
+
+	# Binary literal
+	$line =~ s/^(\-?)0b([01_]*)(\W?)/$3/ and do {
+	  my ($sign, $num) = ($1, $2);
+	  $num =~ s/_//g;
+	  $tok = oct("0b$num");
+	  $tok = -$tok if $sign eq '-';
+	  $result = LL::Number->new($tok);
+	  next;
+	};
+
+	# Decimal literal.  Perl's conversion to number ignores
+	# leading zeroes
+	$line =~ s/^(\-?\d[0-9_]*)(\W?)/$2/ and do {
+	  my $num = $1;
+	  $num =~ s/_//g;
+	  $tok = $num + 0;
+	  $result = LL::Number->new($tok);
+	  next;
+	};
+  }
+
+  return ($line, $result);
+
+}
+
 
 
 # Attempt to parse the start of $line as a symbol.  On success, return
@@ -2892,6 +2915,13 @@ sub initGlobals {
 							  return LL::Number->new(-${$l}) if scalar @_ == 1;
 							  return decktype(${$l} - ${$r});
 							};
+  prim2 'str2num',		sub { my ($str) = @_; checkNargs(\@_, 1);
+							  $str->checkString(" in 'num'");
+							  my ($ns, $num) = readNumber(${$str});
+							  return NIL unless $ns eq "";
+							  return decktype($num);
+							};
+
 
   prim2 '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
   $Globals->defset('val', $Globals->{'_::val'});
