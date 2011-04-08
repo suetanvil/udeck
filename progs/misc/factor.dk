@@ -1,0 +1,81 @@
+
+# A simple program to factor an integer
+
+proc isInt {n} {
+	return (n == [int n])
+}
+
+
+proc idb {value divisor} {
+	return [isInt (value / divisor)]
+}
+
+proc firstFactorOf {num} {
+	for factor in (2 .. [int ((num / 2) + 1)]) {
+		if [idb num factor] {
+			return factor
+		}
+	}
+
+	return num
+}
+
+
+
+proc allFactors {num} {
+	if (num < 4) {
+		return [list 1 num]
+	}
+
+	var result = [list 1]
+
+	while (num > 1) {
+		var ff = [firstFactorOf num]
+		result = [concat result [list ff]]
+		num = num / ff
+	}
+
+	return result
+}
+
+
+proc factor {num} {
+	puts "Factoring num..."
+
+	for f in [allFactors num] {
+		say f " "
+	}
+	puts ""
+}
+
+proc main {} {
+
+	if ([size Sys::Argv] != 1) {
+		puts "Usage: factor.dk <integer>"
+		exit 1
+	}
+
+	var num = [str2num (Sys::Argv@0)]
+	if (num == nil) {
+		die "Argument must be a number greater than 1"
+	}
+
+	if (num == 1) {
+		puts 1
+		exit 0
+	}
+
+	if (num < 4) {
+		puts "1 " num
+		exit 0
+	}
+
+	if [not [isInt num]] {
+		die "Argument '$num' is not an integer."
+	}
+
+	factor num
+}
+
+main
+
