@@ -60,6 +60,10 @@ proc main {} {
 		die "Argument must be a number greater than 1"
 	}
 
+	if [not [isInt num]] {
+		die "Argument '$num' is not an integer."
+	}
+
 	if (num == 1) {
 		puts 1
 		exit 0
@@ -68,10 +72,6 @@ proc main {} {
 	if (num < 4) {
 		puts "1 " num
 		exit 0
-	}
-
-	if [not [isInt num]] {
-		die "Argument '$num' is not an integer."
 	}
 
 	factor num
