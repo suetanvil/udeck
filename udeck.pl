@@ -2299,6 +2299,20 @@ sub subifyStrict {
 }
 
 
+# Subify the argument.  If it is not a list, just return a sub that
+# evaluates the naked expression.
+sub subifyOrDelay {
+  my ($expr) = @_;
+
+  die "WTF: args passed to subifyOrDelay.\n"
+	if scalar @_ > 1;
+
+  return delayed($expr) unless $expr->isList();
+  return subify($expr);
+}
+
+
+
 # Wrap $expr with a sub which, when called, evaluates the expression
 # and returns it.
 sub delayed {
@@ -2311,6 +2325,8 @@ sub delayed {
 						LL::Quote->new(LL::List->new([$expr])),
 					   ]);
 }
+
+
 
 
 sub quoteIfSym {
@@ -2547,7 +2563,7 @@ sub macro_iffn {
 
   my $falsePart = $falseBlock ? subifyStrict($falseBlock) : NIL;
   return LL::List->new([LL::Symbol->new('_::if'),
-						subifyStrict($cond),
+						subifyOrDelay($cond),
 						subifyStrict($trueBlock),
 						$falsePart]);
 }

@@ -21,3 +21,6 @@ puts [not i]
 i = nil
 puts i
 puts [not i]
+
+
+

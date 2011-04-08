@@ -105,20 +105,6 @@ proc slice {aList start end} {
 		return :[]
 	}
 
-# 	if (end == nil) {
-# 		end = [size last]
-# 	}
-# 	if (end > [size last]) {
-# 		end = [size last]
-# 	}
-# 	if (start > end) {
-# 		return :[]
-# 	}
-# 	if (start > [last aList]) {
-# 		return :[]
-# 	}
-
-
 	var range = (start .. end)
 	var result = [listSized [size range]]
 	var index = 0
