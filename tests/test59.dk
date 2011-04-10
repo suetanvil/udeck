@@ -1,6 +1,6 @@
 # Test basic packages
 
-use Test::Util with {foo => localFoo; num; blort => localBlort }
+use Test::Util with {localFoo = foo; num; localBlort = blort }
 
 puts [defined :foo]
 puts [defined :localFoo]

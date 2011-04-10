@@ -37,6 +37,10 @@ Notes:
 	- => operator creates closures
 		-lhs is arguments, rhs body.  Both must be QtLoLs.
 		-auto-paren'd like '.' and '->'
+		-use rename changed to '='.
+
+	- '->' now honoured in entire expression.  More consistent.
+
 
 
 Functions Todo:

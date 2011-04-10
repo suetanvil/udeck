@@ -3405,26 +3405,25 @@ sub _getImportNameList {
   my ($list, $with) = @_;
   my %result = ();
 
-  for my $sublist (@{$list}) {
-	$sublist->checkList(" in '$with' clause element.");
-	($sublist->size() == 1 || $sublist->size() == 3)
+  for my $expr (@{$list}) {
+	$expr->checkList(" in '$with' clause element.");
+	($expr->size() == 1 || $expr->size() == 3)
 	  or die "Empty list as '$with' clause element.\n";
 
-	my $sym = $sublist->[0];
-	$sym->checkLocalName(" as imported symbol.");
+	my $isRename = $expr->size() == 3;
+	die "Malformed '$with' clause element '" . $expr->printStr() . "'\n"
+	  if ($isRename && (!$expr->[0]->isSymbol() || ${$expr->[0]} ne '='));
 
-	my $newName = $sym;
-	if ($sublist->size() == 3) {
-	  my $asn = ${ $sublist->[1] };
-	  die "Malformed rename expression for '${$sym}': expecting '=>', "
-		. "got '$asn'.\n"
-		unless ($asn eq '=>');
+	my $newName = $isRename ? $expr->[1] : $expr->[0];
+	my $oldName = $isRename ? $expr->[2] : $newName;
 
-	  $newName = $sublist->[2];
-	  $newName->checkLocalName("as rename target for '${$sym}'.");
-	}
+	$newName->checkSymbol (" in name part of '$with' clause element.");
+	$newName->checkLocalName("as imported symbol.");
 
-	$result{${$sym}} = ${$newName};
+	$oldName->checkSymbol (" in old name field of '$with' clause element.");
+	$oldName->checkLocalName(" as old name of an imported symbol.");
+
+	$result{${$oldName}} = ${$newName};
   }
 
   return \%result;
@@ -3458,7 +3457,7 @@ sub builtin_usefn {
 	$with->checkSymbol();
 	$list->checkList(" in '_::use'.");
 
-	$names = _getImportNameList($list, $with);
+	$names = _getImportNameList($list, ${$with});
   }
 
   my ($withSet, $withoutSet, $renameSet);

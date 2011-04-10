@@ -1,6 +1,6 @@
 # Test basic packages
 
-use Test::Util rename {foo => localFoo}
+use Test::Util rename {localFoo = foo}
 
 puts [defined :foo]
 puts [defined :localFoo]
