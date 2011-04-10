@@ -2565,23 +2565,20 @@ sub macro_assign {
 
 
 sub macro_subfn {
-  my @args = @_;
+  my ($sub, $args, $body) = @_;
+  checkNargs (\@_, 3, 2);
 
-  die "Too many arguments for 'sub'.\n"
-	if (scalar @args > 3);
-
-  $args[0] = LL::Symbol->new('_::sub');
-
-  # Insert the arg. list if it was omitted.
-  if (scalar @args == 2) {
-	$args[2] = $args[1];
-	$args[1] = LL::Quote->new(LL::List->new([]));
+  # If args are omitted, add them.
+  if (scalar @_ == 2) {
+	$body = $args;
+	$args = LL::Quote->new(LL::List->new([]));
   }
 
-  # Normalize the arg list.
-  $args[1] = fixFormalArgs($args[1]);
+  $args = fixFormalArgs($args);
 
-  return LL::List->new(\@args)
+  return LL::List->new([LL::Symbol->new('_::sub'),
+						$args,
+						$body]);
 }
 
 
