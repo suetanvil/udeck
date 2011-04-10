@@ -1,0 +1,11 @@
+# Module that implements a basic, mostly trivial class
+
+package Test::Util3
+
+class TestUtil3 {
+	public v1
+
+	method m1 {a b} {
+		return [mkstr "a: " a " b: " b ]
+	}
+}

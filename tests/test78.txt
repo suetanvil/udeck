@@ -1,0 +1,11 @@
+Hello, world 1
+Hello, world 2
+Hello, world 3
+Hello, arg!
+Hello, arg 2!
+Hello, arg 3!
+43
+45
+<method call>
+a: 2 b: 3
+x: 42

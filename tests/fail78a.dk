@@ -1,0 +1,7 @@
+
+use Test::Util3
+
+var o = [new TestUtil3]
+
+o.v1 = {a}
+set x o.v1 => {puts a}

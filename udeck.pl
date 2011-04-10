@@ -531,6 +531,30 @@ sub asUnescapedOperator {
   return LL::Symbol->new($op);
 }
 
+# Return the list of patterns to detect an operator that is
+# auto-infixed.  Order is in decreasing precedence.
+sub autoInfixPatterns {
+  my ($selfOrClass) = @_;
+
+  return (qr{(\.|\=\>)}, qr{\-\>});
+}
+
+# Test if $self is one of the few operators which is promoted to an
+# infix expression from inside a prefix expression.
+sub isAutoInfixOperator {
+  my ($self) = @_;
+
+  return 0 unless $self->isUnescapedOperator();
+
+  for my $pattern ($self->autoInfixPatterns()) {
+	return 1 if ${$self} =~ /^($pattern)$/;	
+  }
+
+  return 0;
+}
+
+
+
 sub isLocalName {
   my ($self) = @_;
 
@@ -562,6 +586,9 @@ sub checkValidName {
 }
 
 sub atPut {die "Attempted to alter a symbol.\n"}
+
+
+
 
 
 package LL::List;
@@ -720,11 +747,13 @@ sub withAutoInfixed {
   return LL::List->new(\@result);
 }
 
+
+# Automatically convert to infix those operators that support it.
 sub withAutoInfixDone {
   my ($self) = @_;
 
   my $result = $self;
-  for my $op (qr{(\.|\=\>)}, qr{\-\>}) {
+  for my $op (LL::Symbol->autoInfixPatterns()) {
 	$result = $result->withAutoInfixed($op);
   }
 
@@ -2791,10 +2820,12 @@ sub macro_logor {
 sub macro_suboper {
   my ($arrow, $left, $right) = @_;
 
-  $left->checkList(" in LHS of ${$arrow} operator.");
-  $right->checkQtLoL(" in RHS of ${$arrow} operator.");
+  die "LHS of '=>' operator was created from an auto-infix expression.\n"
+	if ($left->isList() && $left->size() > 0 &&
+		$left->[0]->isAutoInfixOperator());
 
   $left = fixFormalArgs($left);
+  $right->checkQtLoL(" in RHS of ${$arrow} operator.");
 
   return LL::List->new([LL::Symbol->new('_::sub'),
 						$left,
@@ -2970,6 +3001,7 @@ sub initGlobals {
   macro '.',			\&macro_fieldget;
   macro '&&',			\&macro_logand;
   macro '||',			\&macro_logor;
+  macro '=>',			\&macro_suboper;
 
   # The external 'Lang' module
   if (!$noLib) {
@@ -3483,6 +3515,8 @@ sub builtin_usefn {
 
   $Globals->importPublic($mn, $Globals->getNamespace(), $withSet,
 						 $withoutSet, $renameSet);
+
+  return NIL;
 }
 
 
