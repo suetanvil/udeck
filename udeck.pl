@@ -724,7 +724,7 @@ sub withAutoInfixDone {
   my ($self) = @_;
 
   my $result = $self;
-  for my $op (qr{(\.)}, qr{\-\>}) {
+  for my $op (qr{(\.|\=\>)}, qr{\-\>}) {
 	$result = $result->withAutoInfixed($op);
   }
 
@@ -2788,6 +2788,20 @@ sub macro_logor {
 						delayed($left),
 						NIL,
 						delayed($right)]);
+}
+
+
+sub macro_suboper {
+  my ($arrow, $left, $right) = @_;
+
+  $left->checkList(" in LHS of ${$arrow} operator.");
+  $right->checkQtLoL(" in RHS of ${$arrow} operator.");
+
+  $left = fixFormalArgs($left);
+
+  return LL::List->new([LL::Symbol->new('_::sub'),
+						$left,
+						$right]);
 }
 
 
