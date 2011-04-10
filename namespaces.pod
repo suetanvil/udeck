@@ -28,15 +28,15 @@ The import statement allows selective importing and renaming:
     use VectorMath
     use VectorMath with {add; subtract; eigenValue}
     use VectorMath without {multiply; divide}
-	use VectorMath with {add => plus; subtract => minus; eigenValue}
-	use VectorMath rename {add => vectorAdd; subtract => vectorMinus}
+	use VectorMath with {plus = add; minus = subtract; eigenValue}
+	use VectorMath rename {vectorAdd = add; vectorMinus = subtract}
 
 A with/without/rename clause contains multiple sublists, each
 containing either:
 	1) a single symbol
-	2) [=> <oldname> <newname>]
+	2) [= <newname> <oldname>]
 
-
+(Changed from '=>', which is now the closure operator.)
 
 Predefined namespaces:
 

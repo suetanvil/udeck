@@ -667,6 +667,7 @@ sub parsedAsInfix {
   return LL::InfixList->new($self)->asPrefixList();
 }
 
+=pod xxx
 
 # If $self takes the form [ <term> -> <term> ...], turn the first
 # three into a call to the '->' operator.
@@ -681,11 +682,14 @@ sub withArrowResolved {
   return LL::List->new([ $arrowExpr, @{$self}[3..$#{$self}] ]);
 }
 
+=cut
 
-# Search for auto-infixed operations (specifically '.' and '=>') and
-# turn them into infix subexpressions.
-sub withOtherAutoInfixResolved {
-  my ($self) = @_;
+
+# Search for auto-infixed operations (e.g '.' and '=>') and turn them
+# into infix subexpressions.  $oper is a regex that matches the
+# operator.
+sub withAutoInfixed {
+  my ($self, $opRegex) = @_;
 
   my @result = @{$self};
 
@@ -693,11 +697,13 @@ sub withOtherAutoInfixResolved {
 	my $dotIndex = 0;
 
 	# Find '<expr> . <expr>' or '<expr> => <expr>' sequences
+	my $oper;
 	for my $item (@result) {
-	  last if ($item->isUnescapedOperator() && ${$item} =~ /^(\.|=>)$/);
+	  last if ($item->isUnescapedOperator() &&
+			   ${$item} =~ /^($opRegex)$/);
 	  $dotIndex++;
 	}
-	my $oper = $1;
+	$oper = $1;
 	last if $dotIndex > $#result;
 
 	# Check for errors
@@ -714,14 +720,13 @@ sub withOtherAutoInfixResolved {
   return LL::List->new(\@result);
 }
 
-
-# Treat $self as an infix expression and fix up all the OO-related
-# syntactic sugar.
 sub withAutoInfixDone {
   my ($self) = @_;
 
-  my $result = $self->withOtherAutoInfixResolved();
-  $result = $result->withArrowResolved();
+  my $result = $self;
+  for my $op (qr{(\.)}, qr{\-\>}) {
+	$result = $result->withAutoInfixed($op);
+  }
 
   return $result;
 }
