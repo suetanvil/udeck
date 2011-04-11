@@ -5,6 +5,6 @@ Calling puta
 42
 Are they the same object?
 42
-<object>, <object>
+<struct>, <struct>
 1
 Is z indexable? nil

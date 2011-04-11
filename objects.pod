@@ -148,14 +148,14 @@ X	-private methods
 
 =head2 Promoting Builtin Types
 
-	0) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
-	1) Add class Datum as the root.
+	1) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
 	2) Add Deck classes for the builtins.
 	3) Add method 'class' to all Deck types to retrieve
 	   the class.  For Objects, it returns the ' class' field; for
 	   everything else, it's the builtin Deck class.
 	4) replace all uses of ' class' with calls to 'deckClass'.
-	5) Move relevant stuff into Datum
+	5) Move relevant stuff into Object
+	6) Let declarations in Lang.dk modify base class definitions.
 
 
 

@@ -38,7 +38,7 @@ proc last {aList} {
 
 
 # Base class for all traditional structured objects
-class Object {
+class Struct {
 	method doesNotUnderstand {name args} {
 		die "Unknown method '$name'"
 	}
@@ -67,7 +67,7 @@ class Object {
 
 # This object mimics a list containing a consecutive sequence of
 # numbers
-class Interval Object {
+class Interval Struct {
 	readable start
 	var length incr
 

@@ -301,7 +301,7 @@ sub checkQtLoL  {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected LoL, got @{[ref(shift)]}@_\n"}
 sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
 sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
-sub checkObject	{die "Expected object, got @{[ref(shift)]}@_\n"}
+sub checkStruct	{die "Expected struct, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
 sub checkValidName {die "Expected valid name, got @{[ref(shift)]}@_\n"}
 sub isAtom {return 0}
@@ -335,7 +335,7 @@ sub isQtList {return 0}	# Is a quoted list?
 sub isLoL {return 0}	# Is an list containing only lists
 sub isPerlObj {return 0}
 sub isClass {return 0}
-sub isObject {return 0}
+sub isStruct {return 0}
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
@@ -1009,11 +1009,11 @@ sub storeStr {my ($self) = @_; return "<perlobj @{[ref($self->[0])]}>"}
 sub perlForm {my ($self) = @_; return $self->[0];}
 
 
-package LL::Object;
+package LL::Struct;
 use base qw{LL::Datum LL::Context};
 
-sub isObject {return 1}
-sub checkObject {}
+sub isStruct {return 1}
+sub checkStruct {}
 sub class {my ($self) = @_; return $self->{' class'};}
 
 sub new {
@@ -1042,7 +1042,7 @@ sub deckCall {
 
 # Perlform is the unmodified object. This may change
 sub perlForm {my ($self) = @_; return $self;}
-sub storeStr {return "<object>"}
+sub storeStr {return "<struct>"}
 
 # Builtin-type behaviours
 sub isIndexable {my ($self) = @_;
@@ -2571,7 +2571,7 @@ sub macro_assign {
 				 $dest->[2],	# index
 				 $value);
 	} elsif (${$dest->[0]} eq '.') {
-	  # Case 3: Object field assignment (eg: 'foo.a = 42')
+	  # Case 3: Struct field assignment (eg: 'foo.a = 42')
 	  my $object = $dest->[1];
 	  my $field = $dest->[2];
 	  $field->checkSymbol(" in object field name.");
@@ -2734,14 +2734,14 @@ sub macro_class {
   # Handle omitted superclass
   if ($superclass->isQtLoL()) {
 	$body = $superclass;
-	$superclass = LL::Symbol->new('Object');
+	$superclass = LL::Symbol->new('Struct');
   }
 
   $name->checkSymbol(" in class definition.");
   $superclass->checkSymbol(" in class definition");
   $body->checkQtLoL(" in class definition.");
 
-  if (${$name} eq 'Object') {
+  if (${$name} eq 'Struct') {
 	$superclass = LL::Symbol->new('nil');
   }
 
@@ -2858,8 +2858,8 @@ sub initGlobals {
 
   $Globals->defsetconst ('nil', NIL);
 
-  # Temp. definition of Object.  Fix later.  XXX
-  $Globals->defset('Object', NIL);
+  # Temp. definition of Struct.  Fix later.  XXX
+  $Globals->defset('Struct', NIL);
 
   # Externally-defined primitive functions
   for my $special (
@@ -3612,7 +3612,7 @@ sub builtin_intern {
 sub doMethodLookup {
   my ($object, $methodName, $super) = @_;
 
-  $object->checkObject(" in method call.");
+  $object->checkStruct(" in method call.");
   $methodName->checkSymbol();
 
   my $class = $object->class();
@@ -3620,7 +3620,7 @@ sub doMethodLookup {
 	$class = $class->{superclass};
 	
 	# This should not happen.  The only case where it can is if $class
-	# is Object, which is provided and has no such foolishness.
+	# is Struct, which is provided and has no such foolishness.
 	die "'super' call in class without superclass.\n"
 	  unless $class;
   }
@@ -3709,7 +3709,7 @@ sub mk_method {
   my ($name, $args, $fields, $body) = @_;
 
   # Create a scratch LL::Context to keep the compiler happy.  (Should
-  # this be an LL::Object?)
+  # this be an LL::Struct?)
   my $fieldsContext = LL::Context->new($Globals);
   for my $key (keys %{$fields}) {$fieldsContext->def($key);}
 
@@ -3816,7 +3816,7 @@ sub builtin_new {
 
   $class->checkClass(" in function 'new'.");
 
-  my $obj = LL::Object->new($class);
+  my $obj = LL::Struct->new($class);
 
   my $init = $class->{methodCache}->{_init};	# avoid lookup() to skip dnu
   if ($init) {
