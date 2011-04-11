@@ -221,8 +221,7 @@ X	-bug: implement '||' and '&&'
 		-maybe.	
 	-mprocs should be able to select the argument name(s) of their
 	 blocks.  (e.g. foreach)
-
-
+	-class fn should take an optional intrinsic name.
 
 
 

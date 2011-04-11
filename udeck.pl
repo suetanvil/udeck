@@ -360,6 +360,19 @@ sub checkIndexable {
 }
 
 
+# Return the corresponding Deck class for $self.  This won't work
+# until initGlobals has been called.
+sub class {
+  my ($self) = @_;
+
+  my $name = ref($self);
+  $name =~ s/^LL:://
+	or die "Invalid class name '$name'\n";
+
+  return $LL::Main::Globals->{"Lang::$name"};
+}
+
+
 
 package LL::Number;
 use base 'LL::Object';
@@ -1035,7 +1048,7 @@ sub deckCall {
 
   @args = map { LL::Main::decktype($_) } @args;
 
-  my $method = $self->{' class'}->lookup($name);
+  my $method = $self->class()->lookup($name);
   my $result = $method->($self, @args);
   return $result;
 }
@@ -1060,22 +1073,33 @@ package LL::Class;
 use base 'LL::Object';
 sub isClass {return 1}
 sub checkClass {}
-sub storeStr {return "<class>"}
+sub storeStr {my ($self) = @_;
+			  my $nm = $self->{name};
+			  $nm = $nm ? " '$nm'" : $nm;
+			  return "<class$nm>"}
 
 sub new {
-  my ($class, $fields, $methods, $superclass) = @_;
+  my ($class, $fields, $methods, $superclass, $structured, $builtin, $name)=@_;
 
   my $self = {fields		=> $fields,
 			  fieldCache	=> {},
 			  methods		=> $methods,
 			  methodCache	=> {},
-			  superclass	=> $superclass};
+			  superclass	=> $superclass,
+			  structured	=> $structured,
+			  builtin		=> $builtin,
+			  name			=> $name};
 
   bless $self, $class;
   $self->refreshCache();
   $self->refreshFieldCache();
 
   return $self;
+}
+
+sub isStructured {
+  my ($self) = @_;
+  return !!$self->{structured};
 }
 
 
@@ -2834,6 +2858,22 @@ sub macro_suboper {
 
 
 # ---------------------------------------------------------------------------
+
+# Define a builtin class.
+sub class ($$$) {
+  my ($name, $superclass, $methods) = @_;
+
+  my $sc = ($superclass eq '') ? NIL : $Globals->lookup($superclass);
+
+  my $class = LL::Class->new([], $methods, $sc, $name eq 'Struct', 1, $name);
+  $Globals->defset($name, $class);
+
+  return $class;
+}
+
+
+
+# ---------------------------------------------------------------------------
 sub initGlobals {
   my ($args) = @_;
 
@@ -3002,6 +3042,40 @@ sub initGlobals {
   macro '&&',			\&macro_logand;
   macro '||',			\&macro_logor;
   macro '=>',			\&macro_suboper;
+
+  # Define the built-in classes.
+  class 'Object', '',
+	{class_get  => sub {my ($self) = @_; return $self->class()},
+	};
+
+  class 'Class',		'Object',
+	{new		=> sub {
+	   my ($self, @argv) = @_;
+	   die "'new' only works on Struct-derived classes.\n"
+		 unless $self->isStructured();
+	   return builtin_new($self, @argv);
+	 },
+	 name_get	=> sub {my ($self) = @_; decktype($self->{name})},
+
+	};
+
+  class 'Number',		'Object', {};
+  class 'String',		'Object', {};
+  class 'List',			'Object', {};
+  class 'Nil',			'Object', {};
+  class 'Quote',		'Object', {};
+  class 'Macro',		'Object', {};
+  class 'Function',		'Object', {};
+  class 'Method',		'Object', {};
+  class 'MethodCall',	'Object', {};
+  class 'PerlObj',		'Object', {};
+
+  class 'Struct',		'Object', {};
+
+
+
+
+
 
   # The external 'Lang' module
   if (!$noLib) {
@@ -3612,7 +3686,7 @@ sub builtin_intern {
 sub doMethodLookup {
   my ($object, $methodName, $super) = @_;
 
-  $object->checkStruct(" in method call.");
+#  $object->checkStruct(" in method call.");
   $methodName->checkSymbol();
 
   my $class = $object->class();
@@ -3805,7 +3879,7 @@ sub builtin_class {
   my $methods = class_methods($body, $fields);
   class_attributes ($attribNames, $body, $fields, $methods);
 
-  my $class = LL::Class->new([keys %{$fields}], $methods, $superclass);
+  my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,0,"");
 
   return $class;
 }
