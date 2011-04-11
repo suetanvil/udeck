@@ -148,7 +148,7 @@ X	-private methods
 
 =head2 Promoting Builtin Types
 
-	1) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
+X	1) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
 	2) Add Deck classes for the builtins.
 	3) Add method 'class' to all Deck types to retrieve
 	   the class.  For Objects, it returns the ' class' field; for

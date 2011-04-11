@@ -260,7 +260,7 @@ sub isLegallyAccessible {
 
 # ---------------------------------------------------------------------------
 
-package LL::Datum;
+package LL::Object;
 
 sub new {
   my ($class, $ref, $xxx) = @_;
@@ -362,7 +362,7 @@ sub checkIndexable {
 
 
 package LL::Number;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub checkNumber {}
 sub checkByte {
   my ($self) = @_;
@@ -380,7 +380,7 @@ sub perlForm {my ($self) = @_; return ${$self}}
 
 
 package LL::Stringlike;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub equals {my ($self, $other) = @_;
 			return LL::Main::boolObj(${$self} eq ${$other})}
 sub printStr {my ($self) = @_; return $ {$self} }
@@ -592,7 +592,7 @@ sub atPut {die "Attempted to alter a symbol.\n"}
 
 
 package LL::List;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub checkList {}
 sub isEmptyList {my ($self) = @_; return scalar @{$self} == 0}
 sub isTrue {my ($self) = @_; return ! $self->isEmptyList()}
@@ -887,7 +887,7 @@ sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 }
 
 package LL::Nil;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub new {my ($class) = @_; my $x = ''; return bless \$x, $class}
 sub isAtom {return 1}
 sub isNil {return 1}
@@ -899,21 +899,21 @@ sub perlForm {my ($self) = @_; return undef}
 use constant NIL => LL::Nil->new();	# The only instance you should use
 
 package LL::Eol;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isEol {return 1}
 sub isTrue {return 0}	# Maybe not necessary
 sub storeStr {"<EOL>"}
 sub isExplicitEol {my ($self) = @_; return ${$self} eq ';'}
 
 package LL::Eof;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isEof {return 1}
 sub isTrue {return 0}	# Maybe not necessary
 sub storeStr {"<EOF>"}
 
 
 package LL::Paren;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isParen {return 1}
 sub isOpen {local $_ = ${ shift() }; return /^( \[ | \( |\{)$/x }
 sub isClose {local $_ = ${ shift() }; return /^( \) | \) |\})$/x }
@@ -935,12 +935,12 @@ sub matchesOpen {
 
 
 package LL::Quote;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub new {
   my ($class, $ref) = @_;
 
-  die "Trying to quote a non-Datum.\n"
-	unless $ref->isa("LL::Datum");
+  die "Trying to quote a non-Object.\n"
+	unless $ref->isa("LL::Object");
 
   return bless [$ref], $class;
 }
@@ -976,13 +976,13 @@ sub equals {
 
 
 package LL::Macro;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isMacro {return 1}
 sub storeStr {return "<macro>"}
 
 
 package LL::Function;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isAtom {return 1}
 sub isFunction {return 1}
 sub checkFun {}
@@ -998,7 +998,7 @@ use base 'LL::Function';
 sub storeStr {return "<method call>"}
 
 package LL::PerlObj;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub new {
   my ($class, $obj) = @_;
   die "Expecting a ref.\n" unless ref($obj);
@@ -1010,7 +1010,7 @@ sub perlForm {my ($self) = @_; return $self->[0];}
 
 
 package LL::Struct;
-use base qw{LL::Datum LL::Context};
+use base qw{LL::Object LL::Context};
 
 sub isStruct {return 1}
 sub checkStruct {}
@@ -1057,7 +1057,7 @@ sub size        {my ($self) = @_;
 
 
 package LL::Class;
-use base 'LL::Datum';
+use base 'LL::Object';
 sub isClass {return 1}
 sub checkClass {}
 sub storeStr {return "<class>"}
@@ -1143,7 +1143,7 @@ package LL::Main;
 
 use Term::ReadLine;
 use Scalar::Util qw(looks_like_number blessed);
-use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Datums
+use UNIVERSAL 'isa';		# Deprecated but I need it to identify LL::Objects
 use Cwd qw{abs_path getcwd};
 use File::Basename;
 
@@ -2910,7 +2910,7 @@ sub initGlobals {
   prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
 
   # Other simple primitives
-  prim 'Symbol', 'typeof', "Datum", sub { local $_=ref($_[0]); s/^LL:://; $_};
+  prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
   prim2 '===',			sub { checkNargs(\@_, 2); return boolObj($_[0] == $_[1])};
@@ -3040,7 +3040,7 @@ sub mkModPath {
 sub builtin_println {
   for my $obj (@_) {
 	die "Not an object: '$obj'\n"
-	  unless (ref($obj) && isa($obj, 'LL::Datum'));
+	  unless (ref($obj) && isa($obj, 'LL::Object'));
 	print $obj->printStr();
   }
   print "\n";
@@ -3051,7 +3051,7 @@ sub builtin_println {
 sub builtin_say {
   for my $obj (@_) {
 	die "Not an object: '$obj'\n"
-	  unless (ref($obj) && isa($obj, 'LL::Datum'));
+	  unless (ref($obj) && isa($obj, 'LL::Object'));
 	print $obj->printStr();
   }
 
@@ -3065,7 +3065,7 @@ sub builtin_storestr {
 
   for my $obj (@_) {
 	die "Not an object: '$obj'\n"
-	  unless (ref($obj) && isa($obj, 'LL::Datum'));
+	  unless (ref($obj) && isa($obj, 'LL::Object'));
 	$result .= $obj->storeStr();
   }
 
