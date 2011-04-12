@@ -1103,6 +1103,15 @@ sub isStructured {
 }
 
 
+sub addMethods {
+  my ($self, $methods) = @_;
+
+  $self->{methods} = { %{$self->{methods}}, %{$methods} };
+  $self->refreshCache();
+}
+
+
+
 sub refreshFieldCache {
   my ($self) = @_;
 
@@ -2779,6 +2788,25 @@ sub macro_class {
 }
 
 
+sub macro_class_ext {
+  my ($classExt, $name, $body) = @_;
+  checkNargs(\@_, 3, 4);
+
+  $name->checkSymbol(" in class definition.");
+  $body->checkQtLoL(" in class definition.");
+
+  die "Undefined (class) name '${$name}'\n"
+	if (!$Globals->present(${$name}));
+
+  return LL::List->new([LL::Symbol->new('_::class_ext'),
+								$name,
+								$body]);
+}
+
+
+
+
+
 # The -> operator
 sub macro_methodLookupOp {
   my ($arrow, $object, $method) = @_;
@@ -2930,6 +2958,7 @@ sub initGlobals {
 				   ['apply',			\&builtin_apply],
 				   ['intern',			\&builtin_intern],
 				   ['_::class',			\&builtin_class],
+				   ['_::class_ext',		\&builtin_class_ext],
 				   ['_::getMethod',		\&builtin_getMethod],
 				   ['getMethod',		\&builtin_getMethod],
 				   ['_::getSuperMethod',\&builtin_getSuperMethod],
@@ -3037,6 +3066,7 @@ sub initGlobals {
   macro 'perlproc',		\&macro_perlproc;
   macro 'perluse',		\&macro_perluse;
   macro 'class',		\&macro_class;
+  macro '_class_ext',	\&macro_class_ext;
   macro '->',			\&macro_methodLookupOp;
   macro '.',			\&macro_fieldget;
   macro '&&',			\&macro_logand;
@@ -3071,10 +3101,6 @@ sub initGlobals {
   class 'PerlObj',		'Object', {};
 
   class 'Struct',		'Object', {};
-
-
-
-
 
 
   # The external 'Lang' module
@@ -3876,10 +3902,25 @@ sub builtin_class {
 	unless $superclass->isNil();		# tolerated for now.  XXX
 
   my ($fields, $attribNames) = class_fields($body);
+#$DB::single = 1 unless (scalar keys %{$fields} > 0 || $superclass->class()->isStruct());
+  die "Attempted to create fields in non-struct class.\n"
+	unless (scalar keys %{$fields} > 0 ||$superclass->class()->isStructured());
+
   my $methods = class_methods($body, $fields);
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,0,"");
+
+  return $class;
+}
+
+
+sub builtin_class_ext {
+  my ($class, $body) = @_;
+
+  $class->checkClass();
+  my $methods = class_methods($body, {});
+  $class->addMethods ($methods);
 
   return $class;
 }

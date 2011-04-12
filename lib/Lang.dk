@@ -38,7 +38,7 @@ proc last {aList} {
 
 
 # Base class for all traditional structured objects
-class Struct {
+_class_ext Struct {
 	method doesNotUnderstand {name args} {
 		die "Unknown method '$name'"
 	}

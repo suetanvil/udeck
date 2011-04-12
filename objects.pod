@@ -150,9 +150,9 @@ X	-private methods
 
 X	1) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
 X	2) Add Deck classes for the builtins.
-	3) Add method 'class' to all Deck types to retrieve
-	   the class.  For Objects, it returns the ' class' field; for
-	   everything else, it's the builtin Deck class.
+X	3) Add method 'class' to all Deck types to retrieve
+X	   the class.  For Objects, it returns the ' class' field; for
+X	   everything else, it's the builtin Deck class.
 X			-replace all accesses of the field with method calls.
 X			-implement minimal classes for all built-in types.
 				-fill them in in Lang.dk
@@ -162,8 +162,10 @@ X			-Implement 'new' for Struct subclasses only.
 X	4) replace all uses of ' class' with calls to 'deckClass'.
 		-make class() store classes externally to the namespace.
 	5) Move relevant stuff into Object
-	6) Let declarations in Lang.dk modify base class definitions.
 
+	6) Let declarations in Lang.dk modify base class definitions.
+		-implement _::sys_class to represent the exact semantics
+		 of modifying an existing builtin class.
 
 
 =head2 Traits
