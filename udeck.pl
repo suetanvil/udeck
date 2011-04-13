@@ -1097,7 +1097,7 @@ sub new {
   return $self;
 }
 
-sub isStructured {
+sub isStructuredClass {
   my ($self) = @_;
   return !!$self->{structured};
 }
@@ -2774,13 +2774,10 @@ sub macro_class {
   $superclass->checkSymbol(" in class definition");
   $body->checkQtLoL(" in class definition.");
 
-  if (${$name} eq 'Struct') {
-	$superclass = LL::Symbol->new('nil');
-  }
-
   my $classDef = LL::List->new([LL::Symbol->new('_::class'),
 								$superclass,
-								$body]);
+								$body,
+								LL::String->new(${$name})]);
 
   return LL::List->new([LL::Symbol->new('_::var'),
 						LL::Quote->new($name),
@@ -2888,7 +2885,7 @@ sub macro_suboper {
 # ---------------------------------------------------------------------------
 
 # Define a builtin class.
-sub class ($$$) {
+sub defclass ($$$) {
   my ($name, $superclass, $methods) = @_;
 
   my $sc = ($superclass eq '') ? NIL : $Globals->lookup($superclass);
@@ -3074,33 +3071,34 @@ sub initGlobals {
   macro '=>',			\&macro_suboper;
 
   # Define the built-in classes.
-  class 'Object', '',
+  defclass 'Object', '',
 	{class_get  => sub {my ($self) = @_; return $self->class()},
 	};
 
-  class 'Class',		'Object',
+  defclass 'Class',		'Object',
 	{new		=> sub {
 	   my ($self, @argv) = @_;
 	   die "'new' only works on Struct-derived classes.\n"
-		 unless $self->isStructured();
+		 unless $self->isStructuredClass();
 	   return builtin_new($self, @argv);
 	 },
 	 name_get	=> sub {my ($self) = @_; decktype($self->{name})},
 
 	};
 
-  class 'Number',		'Object', {};
-  class 'String',		'Object', {};
-  class 'List',			'Object', {};
-  class 'Nil',			'Object', {};
-  class 'Quote',		'Object', {};
-  class 'Macro',		'Object', {};
-  class 'Function',		'Object', {};
-  class 'Method',		'Object', {};
-  class 'MethodCall',	'Object', {};
-  class 'PerlObj',		'Object', {};
+  defclass 'Number',		'Object', {};
+  defclass 'String',		'Object', {};
+  defclass 'List',			'Object', {};
+  defclass 'Nil',			'Object', {};
+  defclass 'Quote',		'Object', {};
+  defclass 'Macro',		'Object', {};
+  defclass 'Function',		'Object', {};
+  defclass 'Method',		'Object', {};
+  defclass 'MethodCall',	'Object', {};
+  defclass 'PerlObj',		'Object', {};
 
-  class 'Struct',		'Object', {};
+  defclass 'Struct',		'Object', {};
+
 
 
   # The external 'Lang' module
@@ -3896,15 +3894,15 @@ sub class_attributes {
 
 
 sub builtin_class {
-  my ($superclass, $body) = @_;
+  my ($superclass, $body, $name) = @_;
 
-  $superclass->checkClass()
-	unless $superclass->isNil();		# tolerated for now.  XXX
+  $superclass->checkClass(" in superclass for class declaration.");
+  $name->checkString(" in _::class name argument.");
 
   my ($fields, $attribNames) = class_fields($body);
-#$DB::single = 1 unless (scalar keys %{$fields} > 0 || $superclass->class()->isStruct());
   die "Attempted to create fields in non-struct class.\n"
-	unless (scalar keys %{$fields} > 0 ||$superclass->class()->isStructured());
+	if (scalar keys %{$fields} > 0 &&
+		!$superclass->isStructuredClass());
 
   my $methods = class_methods($body, $fields);
   class_attributes ($attribNames, $body, $fields, $methods);
