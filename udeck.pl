@@ -362,16 +362,28 @@ sub checkIndexable {
 
 # Return the corresponding Deck class for $self.  This won't work
 # until initGlobals has been called.
-sub class {
-  my ($self) = @_;
+{
+  my %builtinClasses;		# Registry of built-in classes
 
-  my $name = ref($self);
-  $name =~ s/^LL:://
-	or die "Invalid class name '$name'\n";
+  sub class {
+	my ($self) = @_;
 
-  return $LL::Main::Globals->{"Lang::$name"};
+	my $name = ref($self);
+	$name =~ s/^LL:://
+	  or die "Invalid class name '$name'\n";
+
+	return $builtinClasses{$name};
+  }
+
+  # Register $deckClass as a builtin class so that 'class' can find
+  # it.
+  sub registerBuiltin {
+	my ($class, $name, $deckClass) = @_;
+
+	$builtinClasses{$name} = $deckClass;
+  }
+
 }
-
 
 
 package LL::Number;
@@ -2892,6 +2904,7 @@ sub defclass ($$$) {
 
   my $class = LL::Class->new([], $methods, $sc, $name eq 'Struct', 1, $name);
   $Globals->defset($name, $class);
+  LL::Class->registerBuiltin($name, $class);
 
   return $class;
 }

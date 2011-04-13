@@ -160,7 +160,7 @@ X			-Implement 'new' for Struct subclasses only.
 
 
 X	4) replace all uses of ' class' with calls to 'deckClass'.
-		-make class() store classes externally to the namespace.
+X		-make class() store classes externally to the namespace.
 	5) Move relevant stuff into Object
 
 	6) Let declarations in Lang.dk modify base class definitions.
