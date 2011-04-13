@@ -383,6 +383,15 @@ sub checkIndexable {
 	$builtinClasses{$name} = $deckClass;
   }
 
+  # Force a method cache refresh of all classes.
+  sub refreshAllBuiltinClassMethodCaches {
+	my ($class) = @_;
+
+	for my $cl (values %builtinClasses) {
+	  $cl->refreshCache();
+	}
+  }
+
 }
 
 
@@ -1145,6 +1154,7 @@ sub refreshCache {
 
   $self->{methodCache} = {};
   if (!$self->{superclass}->isNil()) {
+	$self->{superclass}->refreshCache();
 	$self->{methodCache} = { %{ $self->{superclass}->{methodCache} } };
   }
 
@@ -3095,13 +3105,31 @@ sub initGlobals {
 		 unless $self->isStructuredClass();
 	   return builtin_new($self, @argv);
 	 },
-	 name_get	=> sub {my ($self) = @_; decktype($self->{name})},
+	 name_get	=> sub {my ($self) = @_; checkNargs(\@_, 0);
+						decktype($self->{name})},
+
+	 name_set	=> sub {my ($self, $value) = @_; checkNargs(\@_, 1);
+						$value->checkString (" in 'name' class attribute.");
+						$self->{name} = $value;
+						return $value},
+
+	 selectors_get => sub {
+	   my ($self) = @_; checkNargs(\@_, 1);
+	   my @names =
+		 map { LL::Symbol->new($_) }
+		   sort keys %{ $self->{methodCache} };
+	   return LL::List->new(\@names);
+	 },
 
 	};
 
   defclass 'Number',		'Object', {};
   defclass 'String',		'Object', {};
-  defclass 'List',			'Object', {};
+  defclass 'List',			'Object',
+	{
+	 
+	};
+
   defclass 'Nil',			'Object', {};
   defclass 'Quote',		'Object', {};
   defclass 'Macro',		'Object', {};
@@ -3932,6 +3960,8 @@ sub builtin_class_ext {
   $class->checkClass();
   my $methods = class_methods($body, {});
   $class->addMethods ($methods);
+
+  LL::Class->refreshAllBuiltinClassMethodCaches();
 
   return $class;
 }

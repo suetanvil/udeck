@@ -163,10 +163,17 @@ X	4) replace all uses of ' class' with calls to 'deckClass'.
 X		-make class() store classes externally to the namespace.
 	5) Move relevant stuff into Object
 
-	6) Let declarations in Lang.dk modify base class definitions.
-		-implement _::sys_class to represent the exact semantics
-		 of modifying an existing builtin class.
+X	6) Let declarations in Lang.dk modify base class definitions.
+X		-implement _::sys_class to represent the exact semantics
+X		 of modifying an existing builtin class.
+X		-actually, went with _class_ext to do it.
 
+	7) Move to an object-oriented implementation
+		-isIndexable, size should become attributes
+		-isNil
+		-operators should become method calls.
+			-need a builtin for that.
+		-pass name to struct via class macro.
 
 =head2 Traits
 
