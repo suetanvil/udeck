@@ -26,6 +26,6 @@ var x = [(z->puta)]
 puts x ", " z
 puts (x === z)
 
-puts "Is z indexable? " [(z->isIndexable)]
+puts "Is z indexable? " z.isIndexable
 
 

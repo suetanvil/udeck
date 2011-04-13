@@ -1,7 +1,7 @@
 Foo
 bar
-[at atPut bar class_get doesNotUnderstand init isIndexable isNil_get isTrue_get size]
-[at atPut class_get doesNotUnderstand init isIndexable isNil_get isTrue_get name_get name_set new selectors_get size]
+[at atPut bar class_get doesNotUnderstand init isIndexable_get isNil_get isTrue_get size]
+[at atPut class_get doesNotUnderstand init isIndexable_get isNil_get isTrue_get name_get name_set new selectors_get size]
  --- 
 nil
 1
@@ -13,3 +13,4 @@ nil
 nil
 nil
 1
+ --- 

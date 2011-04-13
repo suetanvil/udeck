@@ -170,7 +170,7 @@ X		-actually, went with _class_ext to do it.
 
 	7) Move to an object-oriented implementation
 		-isIndexable, size should become attributes
-		-isNil
+X		-isNil
 		-operators should become method calls.
 			-need a builtin for that.
 		-pass name to struct via class macro.

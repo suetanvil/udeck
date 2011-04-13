@@ -26,3 +26,6 @@ puts nil.isTrue
 
 puts :[].isTrue
 puts :[1 2 3].isTrue
+puts " --- "
+
+puts "test78 needs more work."
