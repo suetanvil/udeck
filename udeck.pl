@@ -3105,10 +3105,10 @@ sub initGlobals {
 		 unless $self->isStructuredClass();
 	   return builtin_new($self, @argv);
 	 },
-	 name_get	=> sub {my ($self) = @_; checkNargs(\@_, 0);
+	 name_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
 						decktype($self->{name})},
 
-	 name_set	=> sub {my ($self, $value) = @_; checkNargs(\@_, 1);
+	 name_set	=> sub {my ($self, $value) = @_; checkNargs(\@_, 2);
 						$value->checkString (" in 'name' class attribute.");
 						$self->{name} = $value;
 						return $value},
@@ -3948,7 +3948,8 @@ sub builtin_class {
   my $methods = class_methods($body, $fields);
   class_attributes ($attribNames, $body, $fields, $methods);
 
-  my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,0,"");
+  my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,
+							 0, $name);
 
   return $class;
 }

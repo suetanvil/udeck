@@ -1,0 +1,11 @@
+# Tests for methods of built-in classes.
+
+class Foo {
+	var a b c
+	method bar {n} {puts n}
+}
+
+puts Foo.name
+Foo.name = "bar"
+puts Foo.name
+
