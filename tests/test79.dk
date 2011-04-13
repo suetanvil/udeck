@@ -8,4 +8,21 @@ class Foo {
 puts Foo.name
 Foo.name = "bar"
 puts Foo.name
+puts Foo.selectors
+puts Foo.class.selectors
 
+puts " --- "
+puts Foo.isNil
+puts nil.isNil
+
+
+puts " --- "
+puts 42.isTrue
+puts 0.isTrue
+
+puts "hello, world".isTrue
+puts "".isTrue
+puts nil.isTrue
+
+puts :[].isTrue
+puts :[1 2 3].isTrue

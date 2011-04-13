@@ -106,7 +106,6 @@ sub defsetconst {
 
 sub lookup {
   my ($self, $name) = @_;
-
   $name = $self->normalizeName($name);
 
   exists($self->{$name})      and return $self->{$name};
@@ -2219,10 +2218,13 @@ sub compile {
 	if $dumpExpr;
 
   my $fn = sub {
-
 	my $context;
+
 	if ($isMethod) {
-	  $context = LL::Context->new($_[0]);
+	  my $mthSelf = $_[0];
+	  $context = $mthSelf->class()->isStructuredClass() ?
+		LL::Context->new($mthSelf):
+		LL::Context->new($outerContext);
 	} elsif ($isTop) {
 	  $context = $Globals;
 	} else {
@@ -3096,6 +3098,11 @@ sub initGlobals {
   # Define the built-in classes.
   defclass 'Object', '',
 	{class_get  => sub {my ($self) = @_; return $self->class()},
+	 isTrue_get => sub {
+	   my ($self) = @_; checkNargs(\@_, 1);
+	   return $self->isTrue() ? decktype(1) : NIL;
+	 },
+
 	};
 
   defclass 'Class',		'Object',
@@ -3127,12 +3134,12 @@ sub initGlobals {
   defclass 'String',		'Object', {};
   defclass 'List',			'Object',
 	{
-	 
+	
 	};
 
   defclass 'Nil',			'Object', {};
-  defclass 'Quote',		'Object', {};
-  defclass 'Macro',		'Object', {};
+  defclass 'Quote',			'Object', {};
+  defclass 'Macro',			'Object', {};
   defclass 'Function',		'Object', {};
   defclass 'Method',		'Object', {};
   defclass 'MethodCall',	'Object', {};

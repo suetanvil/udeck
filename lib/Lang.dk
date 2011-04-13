@@ -50,18 +50,14 @@ _class_ext Object {
 	method size {} {die "Not indexable."}
 	method isIndexable {} {return nil}
 
-	method isTrue {} {
-		if {self->isIndexable} {
-			return (self->size > 0)
-		} else {
-			return nil
-		}
-	}
-
-#	method printStr {} {
-#		return [mkstr "[new " [typeof self] "]"]
-#	}
+	method isNil_get {} {return nil}
 }
+
+
+_class_ext Nil {
+	method isNil_get {} {return 1}
+}
+
 
 
 

@@ -174,6 +174,7 @@ X		-actually, went with _class_ext to do it.
 		-operators should become method calls.
 			-need a builtin for that.
 		-pass name to struct via class macro.
+		-replace at and atPut functions with method calls.
 
 =head2 Traits
 
