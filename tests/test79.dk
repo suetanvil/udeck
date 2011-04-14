@@ -8,8 +8,8 @@ class Foo {
 puts Foo.name
 Foo.name = "bar"
 puts Foo.name
-puts Foo.selectors
-puts Foo.class.selectors
+#puts Foo.selectors
+#puts Foo.class.selectors
 
 puts " --- "
 puts Foo.isNil
@@ -37,5 +37,27 @@ puts [byteArray 1 2 3 4 5].isIndexable
 puts :Foo.isIndexable
 puts " --- "
 
-# to do: isNil
+puts "".size
+puts "hello".size
+
+puts [byteArray].size
+puts [byteArray 1 2 3 4 5].size
+
+puts :foobar.size
+
+puts :[1 2 3].size
+puts :[].size
+puts " --- "
+
+puts 1.isNil
+puts "xxx".isNil
+puts "".isNil
+puts :[].isNil
+puts :[1 2].isNil
+puts ::1.isNil
+puts [byteArray].isNil
+puts [byteArray 1 2 3].isNil
+puts :foo.isNil
+puts nil.isNil
+
 

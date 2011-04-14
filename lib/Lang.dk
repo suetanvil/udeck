@@ -47,7 +47,7 @@ _class_ext Object {
 
 	method at {index} {die "Not indexable."}
 	method atPut {index value} {die "Not indexable."}
-	method size {} {die "Not indexable."}
+	method size_get {} {die self.class " is not indexable."}
 	method isIndexable_get {} {return nil}
 
 	method isNil_get {} {return nil}

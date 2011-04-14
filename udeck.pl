@@ -3136,7 +3136,7 @@ sub initGlobals {
 						return $self->at($index)},
 	 atPut		=> sub {my ($self, $index, $value) = @_; checkNargs(\@_, 3);
 						return $self->atPut($index, $value)},
-	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 2);
+	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
 						return decktype($self->size());},
 	};
 
@@ -3146,7 +3146,7 @@ sub initGlobals {
 						return $self->at($index)},
 	 atPut		=> sub {my ($self, $index, $value) = @_; checkNargs(\@_, 3);
 						return $self->atPut($index, $value)},
-	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 2);
+	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
 						return decktype($self->size());},
 	};
 
