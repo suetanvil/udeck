@@ -28,4 +28,14 @@ puts :[].isTrue
 puts :[1 2 3].isTrue
 puts " --- "
 
-puts "test78 needs more work."
+
+puts 42.isIndexable
+puts nil.isIndexable
+puts :[1 2 3].isIndexable
+puts "foo".isIndexable
+puts [byteArray 1 2 3 4 5].isIndexable
+puts :Foo.isIndexable
+puts " --- "
+
+# to do: isNil
+

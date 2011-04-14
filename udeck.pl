@@ -3131,7 +3131,6 @@ sub initGlobals {
 	};
 
   defclass 'Number',		'Object', {};
-  defclass 'String',		'Object', {};
   defclass 'List',			'Object',
 	{at			=> sub {my ($self, $index) = @_; checkNargs(\@_, 2);
 						return $self->at($index)},
@@ -3140,6 +3139,20 @@ sub initGlobals {
 	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 2);
 						return decktype($self->size());},
 	};
+
+
+  defclass 'Stringlike',	'Object',
+	{at			=> sub {my ($self, $index) = @_; checkNargs(\@_, 2);
+						return $self->at($index)},
+	 atPut		=> sub {my ($self, $index, $value) = @_; checkNargs(\@_, 3);
+						return $self->atPut($index, $value)},
+	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 2);
+						return decktype($self->size());},
+	};
+
+  defclass 'String',		'Stringlike', {};
+  defclass 'Symbol',		'Stringlike', {};
+  defclass 'ByteArray',		'Stringlike', {};
 
   defclass 'Nil',			'Object', {};
   defclass 'Quote',			'Object', {};

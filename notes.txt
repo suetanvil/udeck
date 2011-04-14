@@ -183,6 +183,7 @@ X				-no.  Because only CF expressions wrap things in subs.
 X	- => operator creates closures
 X		-lhs is arguments, rhs body.  Both must be QtLoLs.
 X		-auto-paren'd like '.' and '->'
+X	-class fn should take an optional intrinsic name.
 
 	- make everything an object
 		- traits
@@ -221,8 +222,9 @@ X	-bug: implement '||' and '&&'
 		-maybe.	
 	-mprocs should be able to select the argument name(s) of their
 	 blocks.  (e.g. foreach)
-	-class fn should take an optional intrinsic name.
-
+	-quote should be a macro that expands into a function, just like
+	 everything else.
+	
 
 
 		

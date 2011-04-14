@@ -59,7 +59,11 @@ _class_ext Nil {
 }
 
 _class_ext List {
-	method get_isIndexable {} {return 1}
+	method isIndexable_get {} {return 1}
+}
+
+_class_ext Stringlike {
+	method isIndexable_get {} {return 1}
 }
 
 
