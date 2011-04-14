@@ -6,36 +6,11 @@
 var Version = '0.01';
 
 
-# Return the absolute value of a number
-proc abs {n} {
-	if (n < 0) {
-		return [-n]
-	}
-	return n
+_class_ext Number {
+
+	# Double-dispatch methods
+	method op_Add {obj} {return [obj->addNumber self]}
 }
-
-# The not-equal operator
-proc != {l r} {
-	return [not (l == r)]
-}
-
-
-# Return the last index in 'aList'
-proc last {aList} {
-	return ([size aList] - 1)
-}
-
-
-# Insert spacer between all elements in aList
-# proc withSpacer {aList spacer} {
-
-# 	var rs = [size aList] * 2
-# 	if ([size aList] % 2
-# 	var result = [listSized 
-
-
-# }
-
 
 # Base class for all traditional structured objects
 _class_ext Object {
@@ -66,6 +41,37 @@ _class_ext Stringlike {
 	method isIndexable_get {} {return 1}
 }
 
+
+
+# Return the absolute value of a number
+proc abs {n} {
+	if (n < 0) {
+		return [-n]
+	}
+	return n
+}
+
+# The not-equal operator
+proc != {l r} {
+	return [not (l == r)]
+}
+
+
+# Return the last index in 'aList'
+proc last {aList} {
+	return ([size aList] - 1)
+}
+
+
+# Insert spacer between all elements in aList
+# proc withSpacer {aList spacer} {
+
+# 	var rs = [size aList] * 2
+# 	if ([size aList] % 2
+# 	var result = [listSized 
+
+
+# }
 
 
 

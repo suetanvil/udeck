@@ -224,7 +224,7 @@ X	-bug: implement '||' and '&&'
 	 blocks.  (e.g. foreach)
 	-quote should be a macro that expands into a function, just like
 	 everything else.
-	
+
 
 
 		

@@ -1,7 +1,5 @@
 # Tests for the 'apply' function
 
-puts [apply + :[1 2]]
-
 proc f1 {a b c} {
 	puts "a = " a " b = " b " c = " c
 }

@@ -1,13 +1,13 @@
 # Test proper handling of escaped operators.
 
-puts \+
-puts +
-puts (\+ == \-)
+puts \==
+puts ==
+puts (\== == \-)
 
 var n
 
-n = \+ == \-
+n = \== == \-
 puts n
 
-n = \+ == \+
+n = \== == \==
 puts n

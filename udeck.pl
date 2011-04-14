@@ -2331,17 +2331,26 @@ sub validateArgs {
 }
 
 # Ensure that the number of elements in $args is one of the numbers
-# give in @counts.
+# give in @counts.  If the first element of @counts (i.e. the second
+# argument) is the string '-', ignore the first argument in
+# $args--it's 'self'.
 sub checkNargs {
   my ($args, @counts) = @_;
 
+  my $offset = 0;
+  if ($counts[0] eq '-') {
+	$offset = 1;
+	shift @counts;
+  }
+
   for my $count (@counts) {
-	return if scalar @{$args} == $count;
+	return if scalar @{$args} == $count + $offset;
   }
 
   die "Expecting @{[join (' or ', @counts)]} arguments; "
-	. "got @{[scalar @_]}.\n";
+	. "got @{[scalar @{$args} - $offset]}.\n";
 }
+
 
 
 sub prim2 ( $$ ) {
@@ -2922,6 +2931,26 @@ sub defclass ($$$) {
 }
 
 
+# Given an operator and a method name, create a macro with the
+# operator's name that calls the method on the LHS with the RHS as
+# argument.
+sub op_method ($$) {
+  my ($operator, $method) = @_;
+
+  macro $operator, sub {
+	my ($name, $left, $right) = @_;
+	checkNargs(\@_, 3);
+
+	my $lookup = LL::List->new([LL::Symbol->new('->'),
+								$left,
+								LL::Symbol->new($method)]);
+
+	return LL::List->new([$lookup, $right]);
+  };
+}
+
+
+
 
 # ---------------------------------------------------------------------------
 sub initGlobals {
@@ -2992,6 +3021,10 @@ sub initGlobals {
 
   # Simple numeric primitive functions
   prim 'Number', '+',  "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
+  op_method '+', 'op_Add';
+#  op_method '%', 'op_Mod';
+
+
 #  prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
   prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
   prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
@@ -3130,7 +3163,6 @@ sub initGlobals {
 
 	};
 
-  defclass 'Number',		'Object', {};
   defclass 'List',			'Object',
 	{at			=> sub {my ($self, $index) = @_; checkNargs(\@_, 2);
 						return $self->at($index)},
@@ -3153,6 +3185,17 @@ sub initGlobals {
   defclass 'String',		'Stringlike', {};
   defclass 'Symbol',		'Stringlike', {};
   defclass 'ByteArray',		'Stringlike', {};
+
+  defclass 'Number',		'Object',
+	{addNumber	=> sub {my ($self, $other) = @_; checkNargs(\@_, 2);
+						$other->checkNumber(" in addNumber");
+						return LL::Number->new(${$self} + ${$other})},
+						
+#	 modNumber	=> 
+
+	};
+
+
 
   defclass 'Nil',			'Object', {};
   defclass 'Quote',			'Object', {};
