@@ -3020,12 +3020,7 @@ sub initGlobals {
   }
 
   # Simple numeric primitive functions
-  prim 'Number', '+',  "Number Number", sub { return $ {$_[0]} +  ${$_[1]} };
-  op_method '+', 'op_Add';
-#  op_method '%', 'op_Mod';
 
-
-#  prim 'Number', '-',  "Number Number", sub { return $ {$_[0]} -  ${$_[1]} };
   prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
   prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
   prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
@@ -3128,6 +3123,12 @@ sub initGlobals {
   macro '||',			\&macro_logor;
   macro '=>',			\&macro_suboper;
 
+
+  # Operator-to-method mappings
+  op_method '+', 'op_Add';
+  op_method '%', 'op_Mod';
+
+
   # Define the built-in classes.
   defclass 'Object', '',
 	{class_get  => sub {my ($self) = @_; return $self->class()},
@@ -3187,11 +3188,13 @@ sub initGlobals {
   defclass 'ByteArray',		'Stringlike', {};
 
   defclass 'Number',		'Object',
-	{addNumber	=> sub {my ($self, $other) = @_; checkNargs(\@_, 2);
-						$other->checkNumber(" in addNumber");
+	{addNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in modNumber");
 						return LL::Number->new(${$self} + ${$other})},
-						
-#	 modNumber	=> 
+					
+	 modNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in modNumber");
+						return decktype(int(${$other}) % int(${$self}))},
 
 	};
 

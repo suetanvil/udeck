@@ -10,12 +10,13 @@ _class_ext Number {
 
 	# Double-dispatch methods
 	method op_Add {obj} {return [obj->addNumber self]}
+	method op_Mod {obj} {return [obj->modNumber self]}
 }
 
 # Base class for all traditional structured objects
 _class_ext Object {
 	method doesNotUnderstand {name args} {
-		die "Unknown method '$name'"
+		die "Unknown method '$name' in class '" self.class.name "'"
 	}
 
 	method init {args} {}

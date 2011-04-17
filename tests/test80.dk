@@ -1,0 +1,9 @@
+# Test OO arithmetic
+
+# Modulo:
+
+var {a = 5; b = 3; c = 2}
+puts (a%3)
+puts (a%b)
+puts (4%b)
+

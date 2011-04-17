@@ -1,0 +1,4 @@
+# Modulo by zero
+var {a = 5; b = 0}
+puts (a%b)
+
