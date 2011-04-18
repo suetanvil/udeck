@@ -3021,7 +3021,6 @@ sub initGlobals {
 
   # Simple numeric primitive functions
 
-  prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
   prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
   prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
   prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
@@ -3127,6 +3126,7 @@ sub initGlobals {
   op_method '+', 'op_Add';
   op_method '%', 'op_Mod';
   op_method '*', 'op_Mult';
+  op_method '/', 'op_Div';
 
 
   # Define the built-in classes.
@@ -3188,7 +3188,10 @@ sub initGlobals {
   defclass 'ByteArray',		'Stringlike', {};
 
   defclass 'Number',		'Object',
-	{addNumber	=> sub {my ($self, $other) = @_;
+	{
+	 # Double-dispatched methods.  Remember, the arguments are
+	 # reversed, so $self is the RHS and $other is the LHS.
+	 addNumber	=> sub {my ($self, $other) = @_;
 						$other->checkNumber(" in modNumber");
 						return LL::Number->new(${$self} + ${$other})},
 					
@@ -3200,6 +3203,11 @@ sub initGlobals {
 	 multNumber => sub {my ($self, $other) = @_;
 						$other->checkNumber(" in multNumber");
 						return decktype(${$other} * ${$self})},
+
+	 divNumber  => sub {my ($self, $other) = @_;
+						$other->checkNumber(" in divNumber");
+						die "Division by zero error\n" if ${$self} == 0;
+						return decktype(${$other} / ${$self})},
 
 	};
 

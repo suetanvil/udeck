@@ -12,6 +12,7 @@ _class_ext Number {
 	method op_Add  {obj} {return [obj->addNumber self]}
 	method op_Mod  {obj} {return [obj->modNumber self]}
 	method op_Mult {obj} {return [obj->multNumber self]}
+	method op_Div  {obj} {return [obj->divNumber self]}
 }
 
 # Base class for all traditional structured objects

@@ -2,7 +2,7 @@
 
 # Modulo:
 
-var {a = 5; b = 3; c = 2}
+var {a = 5; b = 3.0; c = 2}
 puts " --- %"
 puts (a%3)
 puts (a%b)
@@ -16,3 +16,9 @@ puts (2*c)
 puts (c*4)
 puts (a*0)
 puts (0*a)
+
+# division
+puts " ---  /"
+puts (a/b)
+puts (b/a)
+puts (c/2)
