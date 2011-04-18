@@ -15,10 +15,10 @@ _class_ext Number {
 	method op_Div      {obj} {return [obj->divNumber self]}
 	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
 	method op_Lt       {obj} {return [obj->ltNumber self]}
-
-	method op_Lte       {obj} {return [obj->lteNumber self]}
-	method op_Gt        {obj} {return [obj->gtNumber self]}
-	method op_Gte       {obj} {return [obj->gteNumber self]}
+	method op_Lte      {obj} {return [obj->lteNumber self]}
+	method op_Gt       {obj} {return [obj->gtNumber self]}
+	method op_Gte      {obj} {return [obj->gteNumber self]}
+	method op_Pow	   {obj} {return [obj->powNumber self]}
 }
 
 # Base class for all traditional structured objects

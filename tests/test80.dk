@@ -35,3 +35,10 @@ puts (a < b)
 puts (b < a)
 puts (a < a)
 puts (a < 5)
+
+# power
+puts " --- **"
+puts (2**a)
+puts (c**a)
+puts (4**4)
+

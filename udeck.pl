@@ -3127,6 +3127,7 @@ sub initGlobals {
   op_method '<=', 'op_Lte';
   op_method '>',  'op_Gt';
   op_method '>=', 'op_Gte';
+  op_method '**', 'op_Pow';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -3229,6 +3230,10 @@ sub initGlobals {
 						$other->checkNumber(" in gteNumber");
 						return boolObj(${$other} >= ${$self})},
 
+	 powNumber  => sub {my ($self, $other) = @_;
+						$other->checkNumber(" in powNumber");
+						die "Division by zero error\n" if ${$self} == 0;
+						return decktype(${$other} ** ${$self})},
 
 	};
 
