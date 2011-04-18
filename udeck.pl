@@ -3021,10 +3021,6 @@ sub initGlobals {
 
   # Simple numeric primitive functions
 
-  prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
-  prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
-  prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
-
   # Other simple primitives
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
@@ -3128,6 +3124,9 @@ sub initGlobals {
   op_method '/',  'op_Div';
   op_method '//', 'op_DivTrunc';
   op_method '<',  'op_Lt';
+  op_method '<=', 'op_Lte';
+  op_method '>',  'op_Gt';
+  op_method '>=', 'op_Gte';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -3217,6 +3216,18 @@ sub initGlobals {
 	 ltNumber	=> sub {my ($self, $other) = @_;
 						$other->checkNumber(" in ltNumber");
 						return boolObj(${$other} < ${$self})},
+
+	 lteNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in lteNumber");
+						return boolObj(${$other} <= ${$self})},
+
+	 gtNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in gtNumber");
+						return boolObj(${$other} > ${$self})},
+
+	 gteNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in gteNumber");
+						return boolObj(${$other} >= ${$self})},
 
 
 	};
