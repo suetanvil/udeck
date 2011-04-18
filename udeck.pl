@@ -3021,7 +3021,6 @@ sub initGlobals {
 
   # Simple numeric primitive functions
 
-  prim 'Number', '*',  "Number Number", sub { return $ {$_[0]} *  ${$_[1]} };
   prim 'Number', '/',  "Number Number", sub { return $ {$_[0]} /  ${$_[1]} };
   prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
   prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
@@ -3127,6 +3126,7 @@ sub initGlobals {
   # Operator-to-method mappings
   op_method '+', 'op_Add';
   op_method '%', 'op_Mod';
+  op_method '*', 'op_Mult';
 
 
   # Define the built-in classes.
@@ -3194,7 +3194,12 @@ sub initGlobals {
 					
 	 modNumber	=> sub {my ($self, $other) = @_;
 						$other->checkNumber(" in modNumber");
+						die "Modulo by zero error\n" if ${$self} == 0;
 						return decktype(int(${$other}) % int(${$self}))},
+
+	 multNumber => sub {my ($self, $other) = @_;
+						$other->checkNumber(" in multNumber");
+						return decktype(${$other} * ${$self})},
 
 	};
 
