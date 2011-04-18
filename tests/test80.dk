@@ -42,3 +42,25 @@ puts (2**a)
 puts (c**a)
 puts (4**4)
 
+# Bitwise &
+puts " --- &"
+puts (b&c)
+puts (b&b)
+puts (c&1)
+
+# Bitwise |
+puts " --- |"
+puts (b|c)
+puts (b|b)
+puts (a|b)
+puts (a|0)
+
+# bitwise ^
+puts " --- ^"
+puts (a^a)
+puts (b^b)
+puts (b^c)
+
+
+
+

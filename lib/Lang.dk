@@ -19,6 +19,9 @@ _class_ext Number {
 	method op_Gt       {obj} {return [obj->gtNumber self]}
 	method op_Gte      {obj} {return [obj->gteNumber self]}
 	method op_Pow	   {obj} {return [obj->powNumber self]}
+	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
+	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
+	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
 }
 
 # Base class for all traditional structured objects

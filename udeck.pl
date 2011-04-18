@@ -3128,6 +3128,11 @@ sub initGlobals {
   op_method '>',  'op_Gt';
   op_method '>=', 'op_Gte';
   op_method '**', 'op_Pow';
+  op_method '|',  'op_BitOr';
+  op_method '&',  'op_BitAnd';
+  op_method '^',  'op_BitXor';
+
+
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -3232,8 +3237,19 @@ sub initGlobals {
 
 	 powNumber  => sub {my ($self, $other) = @_;
 						$other->checkNumber(" in powNumber");
-						die "Division by zero error\n" if ${$self} == 0;
 						return decktype(${$other} ** ${$self})},
+
+	 bitOrNumber=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in bitOrNumber");
+						return decktype(int(${$other}) | int(${$self}))},
+
+	 bitXorNumber=>sub {my ($self, $other) = @_;
+						$other->checkNumber(" in bitXorNumber");
+						return decktype(int(${$other}) ^ int(${$self}))},
+
+	 bitAndNumber=>sub {my ($self, $other) = @_;
+						$other->checkNumber(" in bitAndNumber");
+						return decktype(int(${$other}) & int(${$self}))},
 
 	};
 
