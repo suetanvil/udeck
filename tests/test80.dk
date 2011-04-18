@@ -22,3 +22,9 @@ puts " ---  /"
 puts (a/b)
 puts (b/a)
 puts (c/2)
+
+# truncated division
+puts " --- //"
+puts (a // b)
+puts (b // a)
+puts (c // 2)

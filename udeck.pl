@@ -3123,10 +3123,11 @@ sub initGlobals {
 
 
   # Operator-to-method mappings
-  op_method '+', 'op_Add';
-  op_method '%', 'op_Mod';
-  op_method '*', 'op_Mult';
-  op_method '/', 'op_Div';
+  op_method '+',  'op_Add';
+  op_method '%',  'op_Mod';
+  op_method '*',  'op_Mult';
+  op_method '/',  'op_Div';
+  op_method '//', 'op_DivTrunc';
 
 
   # Define the built-in classes.
@@ -3208,6 +3209,11 @@ sub initGlobals {
 						$other->checkNumber(" in divNumber");
 						die "Division by zero error\n" if ${$self} == 0;
 						return decktype(${$other} / ${$self})},
+
+	 divTruncNumber => sub {my ($self, $other) = @_;
+						$other->checkNumber(" in divNumber");
+						die "Division by zero error\n" if ${$self} == 0;
+						return decktype(int(${$other} / ${$self}))},
 
 	};
 
