@@ -28,3 +28,10 @@ puts " --- //"
 puts (a // b)
 puts (b // a)
 puts (c // 2)
+
+# less than
+puts " --- <"
+puts (a < b)
+puts (b < a)
+puts (a < a)
+puts (a < 5)

@@ -3021,7 +3021,6 @@ sub initGlobals {
 
   # Simple numeric primitive functions
 
-  prim 'Number', '<',  "Number Number", sub { return $ {$_[0]} <  ${$_[1]} };
   prim 'Number', '<=', "Number Number", sub { return $ {$_[0]} <= ${$_[1]} };
   prim 'Number', '>',  "Number Number", sub { return $ {$_[0]} >  ${$_[1]} };
   prim 'Number', '>=', "Number Number", sub { return $ {$_[0]} >= ${$_[1]} };
@@ -3128,7 +3127,7 @@ sub initGlobals {
   op_method '*',  'op_Mult';
   op_method '/',  'op_Div';
   op_method '//', 'op_DivTrunc';
-
+  op_method '<',  'op_Lt';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -3214,6 +3213,11 @@ sub initGlobals {
 						$other->checkNumber(" in divNumber");
 						die "Division by zero error\n" if ${$self} == 0;
 						return decktype(int(${$other} / ${$self}))},
+
+	 ltNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in ltNumber");
+						return boolObj(${$other} < ${$self})},
+
 
 	};
 

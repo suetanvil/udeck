@@ -14,6 +14,7 @@ _class_ext Number {
 	method op_Mult     {obj} {return [obj->multNumber self]}
 	method op_Div      {obj} {return [obj->divNumber self]}
 	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
+	method op_Lt       {obj} {return [obj->ltNumber self]}
 }
 
 # Base class for all traditional structured objects
