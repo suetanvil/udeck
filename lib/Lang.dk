@@ -39,6 +39,9 @@ _class_ext Object {
 	method isIndexable_get {} {return nil}
 
 	method isNil_get {} {return nil}
+
+#	method printable_get {} {
+#		return [
 }
 
 
