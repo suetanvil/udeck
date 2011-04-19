@@ -185,7 +185,7 @@ X		-lhs is arguments, rhs body.  Both must be QtLoLs.
 X		-auto-paren'd like '.' and '->'
 X	-class fn should take an optional intrinsic name.
 
-	- make everything an object
+X	- make everything an object
 		- traits
 
 

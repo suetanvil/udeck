@@ -171,10 +171,11 @@ X		-actually, went with _class_ext to do it.
 	7) Move to an object-oriented implementation
 		-isIndexable, size should become attributes
 X		-isNil
-		-operators should become method calls.
-			-need a builtin for that.
-		-pass name to struct via class macro.
+X		-operators should become method calls.
+X			-need a builtin for that.
+X		-pass name to struct via class macro.
 		-replace at and atPut functions with method calls.
+		-make printStr/storeStr into Deck methods
 
 =head2 Traits
 
