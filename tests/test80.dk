@@ -61,6 +61,12 @@ puts (a^a)
 puts (b^b)
 puts (b^c)
 
+# subtract and negate
+puts " --- -"
+puts [- a]
+puts (b - a)
+puts (a - b)
+
 
 
 

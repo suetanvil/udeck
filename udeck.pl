@@ -2915,6 +2915,26 @@ sub macro_suboper {
 }
 
 
+# Implement the '-' operator.  This is tricky because '-' can be both
+# unary and binary.
+sub macro_minus {
+  my ($minus, $left, $maybeRight) = @_;
+  die "Expecting 1 or 2 arguments for macro '-', got @{[scalar @_]}\n"
+	unless (scalar @_ == 2 || scalar @_ == 3);
+
+  # If there's only one argument, this is a negation.
+  return LL::List->new([LL::Symbol->new('Lang::neg'), $left])
+	if (scalar @_ == 2);
+
+  # If there are two arguments, this is a call of op_Minus
+  my $lookup = LL::List->new([LL::Symbol->new('->'),
+							  $left,
+							  LL::Symbol->new('op_Sub')]);
+
+  return LL::List->new([$lookup, $maybeRight]);
+}
+
+
 # ---------------------------------------------------------------------------
 
 # Define a builtin class.
@@ -3019,8 +3039,6 @@ sub initGlobals {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
 
-  # Simple numeric primitive functions
-
   # Other simple primitives
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
@@ -3069,9 +3087,9 @@ sub initGlobals {
 							  $arg->checkNumber(" in 'int'");
 							  return LL::Number->new(int(${$arg}));
 							};
-  prim2 '-',			sub { my ($l, $r) = @_; checkNargs(\@_, 1, 2);
-							  return LL::Number->new(-${$l}) if scalar @_ == 1;
-							  return decktype(${$l} - ${$r});
+  prim2 'neg',			sub { my ($l) = @_; checkNargs(\@_, 1);
+							  $l->checkNumber(" in 'Lang::neg'");
+							  return LL::Number->new(-${$l});
 							};
   prim2 'str2num',		sub { my ($str) = @_; checkNargs(\@_, 1);
 							  $str->checkString(" in 'num'");
@@ -3115,7 +3133,7 @@ sub initGlobals {
   macro '&&',			\&macro_logand;
   macro '||',			\&macro_logor;
   macro '=>',			\&macro_suboper;
-
+  macro '-',			\&macro_minus;
 
   # Operator-to-method mappings
   op_method '+',  'op_Add';
@@ -3197,8 +3215,12 @@ sub initGlobals {
 	 # Double-dispatched methods.  Remember, the arguments are
 	 # reversed, so $self is the RHS and $other is the LHS.
 	 addNumber	=> sub {my ($self, $other) = @_;
-						$other->checkNumber(" in modNumber");
+						$other->checkNumber(" in addNumber");
 						return LL::Number->new(${$self} + ${$other})},
+					
+	 subNumber	=> sub {my ($self, $other) = @_;
+						$other->checkNumber(" in addNumber");
+						return LL::Number->new(${$other} - ${$self})},
 					
 	 modNumber	=> sub {my ($self, $other) = @_;
 						$other->checkNumber(" in modNumber");
@@ -3215,7 +3237,7 @@ sub initGlobals {
 						return decktype(${$other} / ${$self})},
 
 	 divTruncNumber => sub {my ($self, $other) = @_;
-						$other->checkNumber(" in divNumber");
+						$other->checkNumber(" in divTruncNumber");
 						die "Division by zero error\n" if ${$self} == 0;
 						return decktype(int(${$other} / ${$self}))},
 
@@ -3252,7 +3274,6 @@ sub initGlobals {
 						return decktype(int(${$other}) & int(${$self}))},
 
 	};
-
 
 
   defclass 'Nil',			'Object', {};

@@ -194,7 +194,7 @@ X	-class fn should take an optional intrinsic name.
 		-mprocs should also work this way
 	-need canary to catch broken infix expressions		
 X	-bug: implement '||' and '&&'
-		-also, & and | (bitwise ops)
+X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
 
 	- merge symbol class-level qualified checks with namespace-level
@@ -224,6 +224,7 @@ X	-bug: implement '||' and '&&'
 	 blocks.  (e.g. foreach)
 	-quote should be a macro that expands into a function, just like
 	 everything else.
+	-can we make '-x' syntactic sugar for '[- x]'?
 
 
 

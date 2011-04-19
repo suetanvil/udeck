@@ -10,6 +10,7 @@ _class_ext Number {
 
 	# Double-dispatch methods
 	method op_Add      {obj} {return [obj->addNumber self]}
+	method op_Sub      {obj} {return [obj->subNumber self]}
 	method op_Mod      {obj} {return [obj->modNumber self]}
 	method op_Mult     {obj} {return [obj->multNumber self]}
 	method op_Div      {obj} {return [obj->divNumber self]}
