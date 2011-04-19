@@ -41,7 +41,9 @@ _class_ext Object {
 	method isNil_get {} {return nil}
 
 #	method printable_get {} {
-#		return [
+#		var cl = self.class.name
+		# XXX
+#	}
 }
 
 
@@ -57,6 +59,23 @@ _class_ext Stringlike {
 	method isIndexable_get {} {return 1}
 }
 
+#perlproc downcase {
+
+_class_ext String {
+	method isVowel_get {} {
+		self.size == 1 || [return nil]
+		var lc = self.lowerCase
+		for v in [list "a" "e" "i" "o" "u"] {
+			lc == v && [return 1]
+		}
+		return 0
+	}
+
+	method lowerCase_get {} {
+
+	}
+
+}
 
 
 # Return the absolute value of a number
