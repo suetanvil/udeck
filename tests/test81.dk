@@ -1,0 +1,6 @@
+use Test::Util
+
+#var x = [Baz->new]
+#puts x.msg
+
+blatt

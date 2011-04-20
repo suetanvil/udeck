@@ -59,7 +59,8 @@ _class_ext Stringlike {
 	method isIndexable_get {} {return 1}
 }
 
-#perlproc downcase {
+
+perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 
 _class_ext String {
 	method isVowel_get {} {
@@ -71,9 +72,7 @@ _class_ext String {
 		return 0
 	}
 
-	method lowerCase_get {} {
-
-	}
+	method lowercase_get {} {return [_downcase self]}
 
 }
 

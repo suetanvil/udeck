@@ -188,6 +188,10 @@ X	-class fn should take an optional intrinsic name.
 X	- make everything an object
 		- traits
 
+	- bug: function calls fail to capture their namespace.
+		-normalize all names at compile time?
+		-expand ensureVarsDeclared() to do this.
+
 
 	- forward declaration of functions
 		-var works but should be a bonk/oif pairing that ensures it.

@@ -18,6 +18,14 @@ proc blort {n} {
 	puts "Blort! " n
 }
 
+proc blatt {} {
+	puts _foo
+}
+
+class Baz {
+	method msg_get {} {return _foo}
+}
+
 
 
 
