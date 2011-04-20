@@ -34,6 +34,12 @@ sub isQualified {
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
 sub normalizeName {my ($self, $name) = @_; return $name}
 
+# Defer to the master list of namespaces in $Globals
+sub _chkns {
+  my ($self, $ns) = @_;
+  $self->{' parent'}->_chkns($ns);
+}
+
 # Set default namespace.  This overrides the parent's.
 sub setNamespace {
   my ($self, $ns) = @_;
@@ -1084,6 +1090,8 @@ sub new {
   my $self = $class->LL::Context::new($LL::Main::Globals);
   $self->{' class'}	= $deckClass;
 
+  $self->setNamespace($deckClass->{namespace});
+
   for my $field (keys %{$deckClass->{fieldCache}}) {
 	$self->defset($field, main::NIL);
   }
@@ -1117,7 +1125,8 @@ sub new {
 			  superclass	=> $superclass,
 			  structured	=> $structured,
 			  builtin		=> $builtin,
-			  name			=> $name};
+			  name			=> $name,
+			  namespace		=> $LL::Main::Globals->getNamespace()};
 
   bless $self, $class;
   $self->refreshCache();
