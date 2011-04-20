@@ -190,7 +190,9 @@ X	- make everything an object
 
 	- bug: function calls fail to capture their namespace.
 		-normalize all names at compile time?
-		-expand ensureVarsDeclared() to do this.
+			-no.  sub at runtime needs the module name.
+		-so namespace needs to be in each Context.
+			-function, objects need it; subs, methods don't.
 
 
 	- forward declaration of functions

@@ -20,7 +20,8 @@ sub new {
   return bless {
 				# Reserved fields:
 				' parent'		=> $parent,
-				' consts'		=> {},	# <- list of const names
+				' consts'		=> {},		# <- list of const names
+				' namespace'    => undef,	# The current namespace
 			   }, $class;
 }
 
@@ -32,6 +33,25 @@ sub isQualified {
 
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
 sub normalizeName {my ($self, $name) = @_; return $name}
+
+# Set default namespace.  This overrides the parent's.
+sub setNamespace {
+  my ($self, $ns) = @_;
+  $self->_chkns($ns);
+  $self->{' namespace'} = $ns;
+  return;
+}
+
+# Get the namespace $self was defined in.  This may be inherited from
+# the parent.
+sub getNamespace {
+  my ($self) = @_;
+  return $self->{' namespace'}
+	if defined($self->{' namespace'});
+
+  return $self->{' parent'}->getNamespace();
+}
+
 
 sub checkScopeFor {
   my ($self, $name) = @_;
@@ -132,7 +152,6 @@ use base 'LL::Context';
 
 sub new {
   my $self = LL::Context::new(@_);
-  $self->{' namespace'} = '';			# The current namespace
   $self->{' namespaces'} = {};			# The set of declared namespaces
   $self->{' imported symbols'} = {};	# The set of names that are imports
 
@@ -145,15 +164,6 @@ sub _chkns {
 	unless defined($self->{' namespaces'}->{$ns});
 }
 
-# Set default namespace
-sub setNamespace {
-  my ($self, $ns) = @_;
-  $self->_chkns($ns);
-  $self->{' namespace'} = $ns;
-  return;
-}
-
-sub getNamespace {my ($self) = @_; return $self->{' namespace'}}
 
 sub defNamespace {
   my ($self, $ns) = @_;
