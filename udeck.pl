@@ -2214,6 +2214,9 @@ sub compile {
 	--$nargs;
   }
 
+  # Determine the default namespace if needed.
+  my $namespace = $isProc ? $Globals->getNamespace : undef;
+
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
@@ -2249,6 +2252,9 @@ sub compile {
 	  $context = LL::Context->new($outerContext);
 	  die "WTF? null outerContext!\n" if !defined($outerContext);
 	}
+
+	# Set the namespace for the current context if required.
+	$context->setNamespace($namespace) if $namespace;
 
 	#  Check for argument mismatch
 	if (scalar @_ != $nargs && !($isVararg && scalar @_ > $nargs)) {
