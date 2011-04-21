@@ -23,6 +23,11 @@ proc blatt {} {
 }
 
 class Baz {
+	var n
+	method _init {} {n = "Baz instance variable"}
+	method n_get {} {return n}
+	method nfn_get {} {return ({} => {val n})}
+	method fn_get {} {return ({} => {val _foo})}
 	method msg_get {} {return _foo}
 }
 

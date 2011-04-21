@@ -1,0 +1,6 @@
+bar
+Baz instance variable
+bar
+Baz instance variable
+Baz instance variable
+bar

@@ -1,6 +1,24 @@
+# Test global name lookup across namespaces.
+
 use Test::Util
 
-#var x = [Baz->new]
-#puts x.msg
+# x.msg accesses a global in 'Test::Util'
+var x = [Baz->new]
+puts x.msg
+puts x.n
 
+# Sub defined in a method reading a global
+var s = x.fn
+puts [s]
+
+# Sub defined in a method reading an instance variable
+s = x.nfn
+puts [s]
+
+# Reclaim the instance and print it again.
+x = nil
+puts [s]
+
+
+# Ditto for 'blatt'.
 blatt
