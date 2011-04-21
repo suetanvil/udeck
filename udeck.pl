@@ -88,6 +88,9 @@ sub set {
   my ($self, $name, $value) = @_;
 
   die "Expecting string, not reference!\n" unless ref($name) eq '';
+
+  $name = $self->findFullNameOrDie($name);
+
   die "Attempted to modify a const: $name.\n"
 	if defined($self->{' consts'}->{$name});
 
@@ -98,7 +101,7 @@ sub set {
 
   defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
 
-  die "Unknown variable: '$name'\n";
+  die "Unknown variable: '$name'\n";	# not reached
 }
 
 sub defset {
@@ -119,6 +122,34 @@ sub defsetconst {
   return $value;
 }
 
+sub lookup {
+  my ($self, $name) = @_;
+
+  $name = $self->findFullNameOrDie($name);
+
+  exists($self->{$name})      and return $self->{$name};
+  defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
+
+  die "Unknown variable: '$name'\n";	# not reached.
+}
+
+sub present {
+  my ($self, $name) = @_;
+
+  return !! $self->findFullName($name);
+}
+
+
+# Test for the presence of $name without qualifying the name
+sub presentAsIs {
+  my ($self, $name) = @_;
+
+  exists($self->{$name}) and return 1;
+  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
+
+  return 0;
+}
+
 
 # Return the most qualified form of $name, as defined.  If $name is
 # undefined, returns undef.
@@ -128,7 +159,7 @@ sub findFullName {
   # Case 1: it's already qualified.  In this case, just check that
   # it's defined somewhere.
   if ($self->isQualified($name)) {
-	return unless $self->present($name);
+	return unless $self->presentAsIs($name);
 	return $name;
   }
 
@@ -143,35 +174,17 @@ sub findFullName {
   return;
 }
 
-
-sub lookup {
+# Perform findFullName on $name and die if it is undefined.
+sub findFullNameOrDie {
   my ($self, $name) = @_;
 
-  exists($self->{$name})      and return $self->{$name};
-  defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
+  my $fullName = $self->findFullName($name);
+  die "Unknown variable: '$name'\n"
+	unless defined($fullName);
 
-  die "Unknown variable: '$name'\n";
+  return $fullName;
 }
 
-sub present {
-  my ($self, $name) = @_;
-
-  exists($self->{$name}) and return 1;
-  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
-
-  return 0;
-}
-
-
-# Test for the presence of $name without qualifying the name
-sub presentAsIs {
-  my ($self, $name) = @_;
-
-  exists($self->{$name}) and return 1;
-  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
-
-  return 0;
-}
 
 
 

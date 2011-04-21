@@ -200,6 +200,8 @@ X			3. Make compile() set the namespaces on procs and objects.
 			   namespace instead of the global one.
 					-replace polymorphic normalizeName() with
 				     overridden def, set, etc.
+					-make Context accessors use findFullName to
+					 qualify everything correctly.
 
 			5. Fix (uses of):
 				isLegallyAccessible
