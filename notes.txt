@@ -198,6 +198,12 @@ X			2. Put the namespace into classes.
 X			3. Make compile() set the namespaces on procs and objects.
 			4. Make sure normalizeName et. al. use the local
 			   namespace instead of the global one.
+					-replace polymorphic normalizeName() with
+				     overridden def, set, etc.
+
+			5. Fix (uses of):
+				isLegallyAccessible
+
 
 
 	- forward declaration of functions

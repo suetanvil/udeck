@@ -32,7 +32,6 @@ sub isQualified {
 }
 
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
-sub normalizeName {my ($self, $name) = @_; return $name}
 
 # Defer to the master list of namespaces in $Globals
 sub _chkns {
@@ -77,8 +76,8 @@ sub checkName {
 sub def {
   my ($self, $name) = @_;
 
-  $name = $self->normalizeName($name);
   die "Expecting string, not reference!\n" unless ref($name) eq '';
+
   $self->checkName($name);
   $self->checkScopeFor($name);
 
@@ -88,7 +87,6 @@ sub def {
 sub set {
   my ($self, $name, $value) = @_;
 
-  $name = $self->normalizeName($name);
   die "Expecting string, not reference!\n" unless ref($name) eq '';
   die "Attempted to modify a const: $name.\n"
 	if defined($self->{' consts'}->{$name});
@@ -106,10 +104,6 @@ sub set {
 sub defset {
   my ($self, $name, $value) = @_;
 
-  $name = $self->normalizeName($name);
-  $self->checkName($name);
-  $self->checkScopeFor($name);
-
   $self->def($name);
   $self->set($name, $value);
 
@@ -119,10 +113,6 @@ sub defset {
 sub defsetconst {
   my ($self, $name, $value) = @_;
 
-  $name = $self->normalizeName($name);
-  $self->checkName($name);
-  $self->checkScopeFor($name);
-
   $self->defset($name, $value);
   $self->{' consts'}->{$name} = 1;
 
@@ -130,9 +120,32 @@ sub defsetconst {
 }
 
 
+# Return the most qualified form of $name, as defined.  If $name is
+# undefined, returns undef.
+sub findFullName {
+  my ($self, $name) = @_;
+
+  # Case 1: it's already qualified.  In this case, just check that
+  # it's defined somewhere.
+  if ($self->isQualified($name)) {
+	return unless $self->present($name);
+	return $name;
+  }
+
+  # Case 2: It's stored in a non-global scope.
+  return $name if $self->presentAsIs($name);
+
+  # Case 3: It's a global
+  $name = $self->getNamespace() . '::' . $name;
+  return $name if $self->present($name);
+
+  # Otherwise, it's undefined.
+  return;
+}
+
+
 sub lookup {
   my ($self, $name) = @_;
-  $name = $self->normalizeName($name);
 
   exists($self->{$name})      and return $self->{$name};
   defined($self->{' parent'}) and return $self->{' parent'}->lookup($name);
@@ -143,7 +156,16 @@ sub lookup {
 sub present {
   my ($self, $name) = @_;
 
-  $name = $self->normalizeName($name);
+  exists($self->{$name}) and return 1;
+  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
+
+  return 0;
+}
+
+
+# Test for the presence of $name without qualifying the name
+sub presentAsIs {
+  my ($self, $name) = @_;
 
   exists($self->{$name}) and return 1;
   defined($self->{' parent'}) and return $self->{' parent'}->present($name);
@@ -183,12 +205,47 @@ sub hasNamespace {
 }
 
 
-sub normalizeName {
+sub _normalizeName {
   my ($self, $name) = @_;
 
+  die "Expecting string, not reference!\n" unless ref($name) eq '';
   return $name if $self->isQualified($name);
   return $self->getNamespace() . '::' . $name;
 }
+
+
+# Overridden access: ensure all names are normalized.
+sub def {
+  my ($self, $name) = @_;
+  return $self->SUPER::def($self->_normalizeName($name));
+}
+
+sub set {
+  my ($self, $name, $value) = @_;
+  return $self->SUPER::set($self->_normalizeName($name), $value);
+}
+
+sub defset {
+  my ($self, $name, $value) = @_;
+  return $self->SUPER::defset($self->_normalizeName($name), $value);
+}
+
+sub defsetconst {
+  my ($self, $name, $value) = @_;
+  return $self->SUPER::defsetconst($self->_normalizeName($name), $value);
+}
+
+sub lookup {
+  my ($self, $name) = @_;
+  return $self->SUPER::lookup($self->_normalizeName($name));
+}
+
+sub present {
+  my ($self, $name) = @_;
+  return $self->SUPER::present($self->_normalizeName($name));
+}
+
+
 
 # Split a name into ($namespace, $name) pairs
 sub _splitName {
