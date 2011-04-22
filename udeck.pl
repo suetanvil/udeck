@@ -1297,6 +1297,8 @@ use constant TRUE => LL::Number->new(1);
 our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
 our $Globals = LL::GlobalContext->new();
+my %fnNeedsContext;		# Hash of functions that get the parent's context
+
 
 # ---------------------------------------------------------------------------
 
@@ -2039,14 +2041,14 @@ sub evalFuncCall {
   my @args = map { evalExpr($_, $context) } @{$expr};
   my $fn = shift @args;
 
-  # _::set, _::sub and _::var are special cases and get access to the
-  # context.
-  my $fname = $expr->[0]->isSymbol() ? ${$expr->[0]} : '';
-  if ($fname =~ /^_::(set|var|sub|const)$/) {
+  # Functions listed in %fnNeedsContext are special cases and get
+  # access to the context.
+  if (defined($fnNeedsContext{$fn})) {
 	unshift @args, $context;
   }
 
   if (!$fn->isCallable()) {
+	my $fname = $expr->[0]->isSymbol() ? ${$expr->[0]} : '';
 	my $nm = $fname ? $fname : $fn->storeStr();
 
 	# Give a more useful error message.
@@ -3162,17 +3164,19 @@ sub initGlobals {
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
 							};
-  prim2 'defined',		sub { my ($name) = @_;  checkNargs(\@_, 1);
+  prim2 'defined',		sub { my ($context, $name) = @_;  checkNargs(\@_, 2);
 							  $name->checkSymbol(" in 'defined'");
+							  my $nm = $context->findFullName(${$name});
 							  return NIL
-								unless $Globals->isLegallyAccessible(${$name});
-							  return $Globals->present(${$name}) ? TRUE:NIL;
+								if !$nm || !$context->isLegallyAccessible($nm);
+							  return $Globals->present($nm) ? TRUE:NIL;
 							};
-  prim2 'lookup',		sub { my ($name) = @_;  checkNargs(\@_, 1);
+  prim2 'lookup',		sub { my ($context, $name) = @_;  checkNargs(\@_, 2);
 							  $name->checkSymbol(" in 'lookup'");
-							  die "Unknown or inaccessable symbol: ${$name}\n"
-								unless $Globals->isLegallyAccessible(${$name});
-							  return $Globals->lookup(${$name});
+							  my $nm = $context->findFullName(${$name});
+							  die "Unknown or inaccessable symbol: $nm\n"
+								if !$nm || !$context->isLegallyAccessible($nm);
+							  return $context->lookup($nm);
 							};
   prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
 							  return boolObj(!$arg->isTrue());
@@ -3200,6 +3204,13 @@ sub initGlobals {
 
   prim2 '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
   $Globals->defset('val', $Globals->{'_::val'});
+
+
+  # Create the hash of functions that take the context as arg. 0.
+  for my $name (qw{_::set _::var _::sub _::const lookup defined}) {
+	my $fn = $Globals->lookup($name);
+	$fnNeedsContext{$fn} = 1;
+  }
 
   # Macros
   macro 'var',			\&macro_varconst;
@@ -3243,7 +3254,6 @@ sub initGlobals {
   op_method '|',  'op_BitOr';
   op_method '&',  'op_BitAnd';
   op_method '^',  'op_BitXor';
-
 
 
   # Define the built-in classes.
@@ -3379,7 +3389,6 @@ sub initGlobals {
   defclass 'PerlObj',		'Object', {};
 
   defclass 'Struct',		'Object', {};
-
 
 
   # The external 'Lang' module

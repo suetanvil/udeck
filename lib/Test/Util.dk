@@ -31,7 +31,14 @@ class Baz {
 	method msg_get {} {return _foo}
 }
 
-
+# Perform a 'defined' and 'lookup'
+proc defAndVal {name} {
+	if [defined name] {
+		puts name " defined as " [lookup name]
+	} else {
+		puts name " undefined."
+	}
+}
 
 
 

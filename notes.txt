@@ -188,23 +188,29 @@ X	-class fn should take an optional intrinsic name.
 X	- make everything an object
 		- traits
 
-	- bug: function calls fail to capture their namespace.
-		-normalize all names at compile time?
-			-no.  sub at runtime needs the module name.
-		-so namespace needs to be in each Context.
-			-function, objects need it; subs, methods don't.
+X	- bug: function calls fail to capture their namespace.
+X		-normalize all names at compile time?
+X			-no.  sub at runtime needs the module name.
+X		-so namespace needs to be in each Context.
+X			-function, objects need it; subs, methods don't.
 X			1. Add namespace support to contexts.
 X			2. Put the namespace into classes.
 X			3. Make compile() set the namespaces on procs and objects.
-			4. Make sure normalizeName et. al. use the local
-			   namespace instead of the global one.
-					-replace polymorphic normalizeName() with
-				     overridden def, set, etc.
-					-make Context accessors use findFullName to
-					 qualify everything correctly.
-
+X			4. Make sure normalizeName et. al. use the local
+X			   namespace instead of the global one.
+X					-replace polymorphic normalizeName() with
+X				     overridden def, set, etc.
+X					-make Context accessors use findFullName to
+X					 qualify everything correctly.
 			5. Fix (uses of):
 				isLegallyAccessible
+X					-make lookup and defined take the context as arg.
+X					-add a hash of fn's that take the context and use
+X					 that instead of the regexp on the name
+					-figure out if we should support the local context
+					-add fullname.  Should support local--good for testing
+					-make isLegallyAccessible do the right thing.
+
 
 
 
