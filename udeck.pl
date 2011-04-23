@@ -1910,7 +1910,8 @@ sub parseSymbol {
 # ---------------------------------------------------------------------------
 
 # Return the canonical Deck true or false value given a Perl true or
-# false.
+# false.  Note that NIL and other Deck false values are Perl true
+# values.
 sub boolObj {
   my ($trueOrFalse) = @_;
 
@@ -3131,6 +3132,8 @@ sub initGlobals {
 				   ['_::getSuperMethod',\&builtin_getSuperMethod],
 				   ['getSuperMethod',	\&builtin_getSuperMethod],
 				   ['new',				\&builtin_new],
+				   ['defined',			\&builtin_definedfn],
+				   ['lookup',			\&builtin_lookup],
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
@@ -3163,20 +3166,6 @@ sub initGlobals {
   prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs(\@_, 1);
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
-							};
-  prim2 'defined',		sub { my ($context, $name) = @_;  checkNargs(\@_, 2);
-							  $name->checkSymbol(" in 'defined'");
-							  my $nm = $context->findFullName(${$name});
-							  return NIL
-								if !$nm || !$context->isLegallyAccessible($nm);
-							  return $Globals->present($nm) ? TRUE:NIL;
-							};
-  prim2 'lookup',		sub { my ($context, $name) = @_;  checkNargs(\@_, 2);
-							  $name->checkSymbol(" in 'lookup'");
-							  my $nm = $context->findFullName(${$name});
-							  die "Unknown or inaccessable symbol: $nm\n"
-								if !$nm || !$context->isLegallyAccessible($nm);
-							  return $context->lookup($nm);
 							};
   prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
 							  return boolObj(!$arg->isTrue());
@@ -4230,4 +4219,33 @@ sub builtin_new {
   }
 
   return $obj;
+}
+
+
+
+
+sub basicLookup {
+  my ($context, $name) = @_;
+  checkNargs(\@_, 2);
+
+  $name->checkSymbol(" in 'defined' or 'lookup'");
+  my $nm = $context->findFullName(${$name});
+
+  return
+	if !$nm
+	  || !$context->isLegallyAccessible($nm)
+  	  || !$context->isQualified($nm);
+
+  return $context->lookup($nm);
+}
+
+
+sub builtin_definedfn {
+  return boolObj(!! basicLookup(@_));
+}
+
+sub builtin_lookup {
+  my $val = basicLookup(@_);
+  die "Undefined symbol '${$_[1]}'\n" unless $val;
+  return $val;
 }
