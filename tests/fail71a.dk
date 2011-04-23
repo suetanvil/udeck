@@ -20,6 +20,6 @@ class SuperNinja Ninja {
 }
 
 var x = [new SuperNinja]
-x._crossbow = "snap"		# failure!
+x._crossbow = "snap"		# Error!
 
 

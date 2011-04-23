@@ -176,6 +176,7 @@ X			-need a builtin for that.
 X		-pass name to struct via class macro.
 		-replace at and atPut functions with method calls.
 		-make printStr/storeStr into Deck methods
+			-move 
 
 =head2 Traits
 
