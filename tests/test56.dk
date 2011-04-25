@@ -17,19 +17,8 @@ puts [defined :_foo]
 puts [defined :Test::Util::_foo]
 
 # Lookup done from inside Test::Util
-#defAndVal :_foo  # Wrong!
-#defAndVal :Test::Util::_foo
-#defAndVal :num
-
-
-
-
-
-
-
-
-
-
-
-
+defAndVal :_foo
+defAndVal :Test::Util::_foo
+defAndVal :num
+defAndVal :hohoho
 

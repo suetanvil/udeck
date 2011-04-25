@@ -31,6 +31,23 @@ sub isQualified {
   return $name =~ /\:\:/;
 }
 
+
+# Test if $name is a qualified private symbol in any scope.
+sub nameIsQualifiedPrivate {
+  my ($self, $name) = @_;
+
+  return $name =~ /[^:]\:\:_[^:]*$/;
+}
+
+# Test if $name is legally accessible from the current scope.
+sub isLegallyAccessible {
+  my ($self, $name) = @_;
+
+  my $ns = $self->getNamespace();
+  return 1 unless $self->nameIsQualifiedPrivate($name);
+  return $name =~ m{^${ns}};
+}
+
 sub deferToGlobal {my ($self, $name) = @_; return $self->isQualified($name)}
 
 # Defer to the master list of namespaces in $Globals
@@ -145,7 +162,8 @@ sub presentAsIs {
   my ($self, $name) = @_;
 
   exists($self->{$name}) and return 1;
-  defined($self->{' parent'}) and return $self->{' parent'}->present($name);
+  defined($self->{' parent'})
+	and return $self->{' parent'}->presentAsIs($name);
 
   return 0;
 }
@@ -327,21 +345,6 @@ sub importPublic {
   return;
 }
 
-# Test if $name is a qualified private symbol in any scope.
-sub nameIsQualifiedPrivate {
-  my ($self, $name) = @_;
-
-  return $name =~ /[^:]\:\:_[^:]*$/;
-}
-
-# Test if $name is legally accessible from the current namespace.
-sub isLegallyAccessible {
-  my ($self, $name) = @_;
-
-  my $ns = $self->getNamespace();
-  return 1 unless $self->nameIsQualifiedPrivate($name);
-  return $name =~ m{^${ns}};
-}
 
 # ---------------------------------------------------------------------------
 

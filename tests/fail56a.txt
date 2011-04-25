@@ -1,1 +1,1 @@
-Unknown or inaccessable symbol: Test::Util::_foo
+Undefined symbol 'Test::Util::_foo'
