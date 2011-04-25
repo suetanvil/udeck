@@ -121,6 +121,7 @@ sub set {
   die "Unknown variable: '$name'\n";	# not reached
 }
 
+
 sub defset {
   my ($self, $name, $value) = @_;
 
@@ -213,6 +214,7 @@ sub new {
   my $self = LL::Context::new(@_);
   $self->{' namespaces'} = {};			# The set of declared namespaces
   $self->{' imported symbols'} = {};	# The set of names that are imports
+  $self->{' forward decls'} = {};		# The set of forward proc decl'ns
 
   return $self;
 }
@@ -275,6 +277,23 @@ sub present {
   my ($self, $name) = @_;
   return $self->SUPER::present($self->_normalizeName($name));
 }
+
+# Modifies a const.  Not something that user code should ever do.
+sub setGlobalConst {
+  my ($self, $name, $value) = @_;
+
+  $name = $self->_normalizeName($name);
+
+  die "setGlobalConst called on a non-const name '$name'\n"
+	unless defined($self->{' consts'}->{$name});
+
+  delete($self->{' consts'}->{$name});
+  $self->set($name, $value);
+  $self->{' consts'}->{$name} = 1;
+
+  return $value;
+}
+
 
 
 
@@ -343,6 +362,38 @@ sub importPublic {
   }
 
   return;
+}
+
+
+# Add a forward declaration to the list
+sub addForward {
+  my ($self, $name) = @_;
+
+  $name = $self->_normalizeName($name);
+
+  die "Forward declaration on undefined name '$name'\n"
+	unless defined($self->{$name});
+
+  $self->{' forward decls'}->{$name} = 1;
+}
+
+
+# Clear all decl's in the given namespace (defaults to current) and
+# return the list of deleted names.
+sub clearForwards {
+  my ($self, $nsOrNil) = @_;
+  my $namespace = $nsOrNil ? $nsOrNil : $self->getNamespace();
+
+  my @forwards = ();
+
+  for my $forward (keys %{$self->{' forward decls'}}) {
+	next unless $forward =~ /^${namespace}\:\:/;
+
+	push @forwards, $forward;
+	delete($self->{' forward decls'}->{$forward});
+  }
+
+  return @forwards;
 }
 
 
@@ -2631,11 +2682,16 @@ sub fixFormalArgs {
 
 sub macro_proc {
   my ($proc, $name, $args, $body) = @_;
-  checkNargs(\@_, 4);
+  checkNargs(\@_, 3, 4);
 
   $name->checkSymbol(" in '${$proc}' arg 1");
   $args = fixFormalArgs($args);
-  $body->checkQtLoL(" in function body of '${$proc}'.");
+
+  if (scalar @_ == 3) {
+	$body = NIL;
+  } else {
+	$body->checkQtLoL(" in function body of '${$proc}'.");
+  }
 
   my $procOrMethod = ${$proc} eq 'method' ? '_::method' : '_::proc';
 
@@ -3531,11 +3587,21 @@ sub builtin_proc {
 
   $name->checkSymbol();
   $args->checkList();
+
+  $Globals->defsetconst(${$name}, LL::UndefinedFunction->new(${$name}))
+	unless $Globals->present(${$name});
+
+  if ($body->isNil()) {
+	$Globals->addForward(${$name});
+	return;
+  }
+
   $body->checkList();
 
-  $Globals->def(${$name});
+  # XXXXXXX check existing definition.
+
   my $func = compile ($Globals, $args, $body, 'proc', ${$name});
-  $Globals->set(${$name}, $func);
+  $Globals->setGlobalConst(${$name}, $func);
 
   return $func;
 }

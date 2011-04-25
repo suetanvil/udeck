@@ -219,10 +219,10 @@ X		1) create class 'UndefinedFunction' for functions that are
 X		   declared but not defined.  If called, dies with meaningful
 X		   error message.
 
-		2) make proc const.
+X		2) make proc const.
 
-		3) make bodiless 'proc' macro declare the name as an UndefinedFunction.
-			-also add 'proc' to a per-file hash of undefined functions
+X		3) make bodiless 'proc' macro declare the name as an UndefinedFunction.
+X			-also add 'proc' to a per-namespace hash of undefined functions
 
 		4) make 'proc' with body modify the 'const' proc *only* if it
 		   is an UndefinedFunction.
@@ -266,6 +266,7 @@ X		-also, & and | (bitwise ops)
 	 everything else.
 	-can we make '-x' syntactic sugar for '[- x]'?
 
+	-use consts for the special names on Context and GlobalContext
 
 
 		
