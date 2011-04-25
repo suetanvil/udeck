@@ -1139,6 +1139,19 @@ package LL::MethodCall;
 use base 'LL::Function';
 sub storeStr {return "<method call>"}
 
+package LL::UndefinedFunction;
+use base 'LL::Function';
+sub storeStr {return "<undefined function>"}
+sub new {
+  my ($class, $name) = @_;
+  die "Expecting a simple Perl string, got @{[ref($name)]}\n"
+	if ref($name);
+
+  my $self = sub {die "Called declared proc '$name' before it was defined.\n"};
+  return bless $self, $class;
+}
+
+
 package LL::PerlObj;
 use base 'LL::Object';
 sub new {

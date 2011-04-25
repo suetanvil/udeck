@@ -208,16 +208,30 @@ X					 qualify everything correctly.
 X					-make lookup and defined take the context as arg.
 X					-add a hash of fn's that take the context and use
 X					 that instead of the regexp on the name
-					-figure out if we should support the local context
-					-add fullname.  Should support local--good for testing
-					-make isLegallyAccessible do the right thing.
-
-
+X					-figure out if we should support the local context
+X						-no.  Always 
+X					-add fullname.  Should support local--good for testing
+X					-make isLegallyAccessible do the right thing.
 
 
 	- forward declaration of functions
-		-var works but should be a bonk/oif pairing that ensures it.
-		-mprocs should also work this way
+X		1) create class 'UndefinedFunction' for functions that are
+X		   declared but not defined.  If called, dies with meaningful
+X		   error message.
+
+		2) make proc const.
+
+		3) make bodiless 'proc' macro declare the name as an UndefinedFunction.
+			-also add 'proc' to a per-file hash of undefined functions
+
+		4) make 'proc' with body modify the 'const' proc *only* if it
+		   is an UndefinedFunction.
+
+		5) make 'readfile' check for undefined declared functions at
+	       the end of loading.
+
+		6) Do the same for mproc.
+
 	-need canary to catch broken infix expressions		
 X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
