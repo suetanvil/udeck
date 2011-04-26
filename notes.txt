@@ -224,13 +224,14 @@ X		2) make proc const.
 X		3) make bodiless 'proc' macro declare the name as an UndefinedFunction.
 X			-also add 'proc' to a per-namespace hash of undefined functions
 
-		4) make 'proc' with body modify the 'const' proc *only* if it
-		   is an UndefinedFunction.
+X		4) make 'proc' with body modify the 'const' proc *only* if it
+X		   is an UndefinedFunction.
 
-		5) make 'readfile' check for undefined declared functions at
-	       the end of loading.
+X		5) make 'readfile' check for undefined declared functions at
+X	       the end of loading.
 
 		6) Do the same for mproc.
+
 
 	-need canary to catch broken infix expressions		
 X	-bug: implement '||' and '&&'

@@ -475,6 +475,7 @@ sub isLoL {return 0}	# Is an list containing only lists
 sub isPerlObj {return 0}
 sub isClass {return 0}
 sub isStruct {return 0}
+sub isUndefinedFunction {return 0}
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
@@ -1193,6 +1194,7 @@ sub storeStr {return "<method call>"}
 package LL::UndefinedFunction;
 use base 'LL::Function';
 sub storeStr {return "<undefined function>"}
+sub isUndefinedFunction {return 1}
 sub new {
   my ($class, $name) = @_;
   die "Expecting a simple Perl string, got @{[ref($name)]}\n"
@@ -1488,8 +1490,28 @@ sub readfile {
   }
 
   close $Input if $Input;
-  $Globals->setNamespace($oldNamespace) if $oldNamespace;
+
+  if ($oldNamespace) {
+	clearForwardFns();
+	$Globals->setNamespace($oldNamespace);
+  }
 }
+
+
+# Clear all forward declarations in the current namespace and ensure
+# that they all now refer to defined functions.
+sub clearForwardFns {
+
+  my $ns = $Globals->getNamespace();
+
+  my @forwards = $Globals->clearForwards();
+  for my $name (@forwards) {
+	die "Undefined forward proc declaration '$name' in $ns\n"
+	  unless $Globals->present($name) &&
+		$Globals->lookup($name)->isUndefinedFunction();
+  }
+}
+
 
 
 sub checkPkgDecl {
@@ -2682,12 +2704,17 @@ sub fixFormalArgs {
 
 sub macro_proc {
   my ($proc, $name, $args, $body) = @_;
-  checkNargs(\@_, 3, 4);
+  checkNargs(\@_, 2, 3, 4);
 
   $name->checkSymbol(" in '${$proc}' arg 1");
-  $args = fixFormalArgs($args);
 
-  if (scalar @_ == 3) {
+  if (defined($args)) {
+	$args = fixFormalArgs($args);
+  } else {
+	$args = NIL;
+  }
+
+  if (scalar @_ <= 3) {
 	$body = NIL;
   } else {
 	$body->checkQtLoL(" in function body of '${$proc}'.");
@@ -3586,7 +3613,6 @@ sub builtin_proc {
 	unless scalar @_ == 3;
 
   $name->checkSymbol();
-  $args->checkList();
 
   $Globals->defsetconst(${$name}, LL::UndefinedFunction->new(${$name}))
 	unless $Globals->present(${$name});
@@ -3596,9 +3622,11 @@ sub builtin_proc {
 	return;
   }
 
+  $args->checkList();
   $body->checkList();
 
-  # XXXXXXX check existing definition.
+  die "proc: name '${$name}' is already defined.\n"
+	unless $Globals->lookup(${$name})->isUndefinedFunction();
 
   my $func = compile ($Globals, $args, $body, 'proc', ${$name});
   $Globals->setGlobalConst(${$name}, $func);
