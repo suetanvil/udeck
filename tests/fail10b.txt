@@ -1,0 +1,4 @@
+Undefined forward proc declaration 'Main::bobo' in Main
+Undefined forward proc declaration 'Main::bar' in Main
+Undefined forward proc declaration 'Main::baz' in Main
+Done!

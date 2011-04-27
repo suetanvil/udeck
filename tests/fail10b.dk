@@ -1,0 +1,17 @@
+# Test declared but undefined proc
+
+proc foo
+proc bar
+proc baz
+proc bobo
+
+proc quux {} {
+	foo
+	bar
+}
+
+proc foo {} {
+	bar
+}
+
+puts "Done!"

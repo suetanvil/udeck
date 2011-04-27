@@ -1,0 +1,17 @@
+# Test declared but undefined proc when called before defined.
+
+proc foo
+proc bar
+
+proc quux {} {
+	foo
+	bar
+}
+
+proc foo {} {
+	bar
+}
+
+quux
+
+proc bar {} {puts "bar!"}

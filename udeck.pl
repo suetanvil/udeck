@@ -1489,10 +1489,11 @@ sub readfile {
 	  if $print;
   }
 
+  clearForwardFns() if $Input;
+
   close $Input if $Input;
 
   if ($oldNamespace) {
-	clearForwardFns();
 	$Globals->setNamespace($oldNamespace);
   }
 }
@@ -1501,15 +1502,17 @@ sub readfile {
 # Clear all forward declarations in the current namespace and ensure
 # that they all now refer to defined functions.
 sub clearForwardFns {
-
   my $ns = $Globals->getNamespace();
 
   my @forwards = $Globals->clearForwards();
+  my $missing = "";
   for my $name (@forwards) {
-	die "Undefined forward proc declaration '$name' in $ns\n"
-	  unless $Globals->present($name) &&
-		$Globals->lookup($name)->isUndefinedFunction();
+	$missing .= "Undefined forward proc declaration '$name' in $ns\n"
+	  if ($Globals->present($name) &&
+			  $Globals->lookup($name)->isUndefinedFunction());
   }
+
+  die $missing if $missing;
 }
 
 
