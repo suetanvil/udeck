@@ -2519,7 +2519,7 @@ sub validateArgs {
 # Ensure that the number of elements in $args is one of the numbers
 # give in @counts.  If the first element of @counts (i.e. the second
 # argument) is the string '-', ignore the first argument in
-# $args--it's 'self'.
+# $args--it's 'self' or the macro name.
 sub checkNargs {
   my ($fn, $args, @counts) = @_;
 
@@ -2704,7 +2704,7 @@ sub fixFormalArgs {
 
 sub macro_proc {
   my ($proc, $name, $args, $body) = @_;
-  checkNargs('proc', \@_, 2, 4);
+  checkNargs('proc', \@_, '-', 1, 3);
 
   $name->checkSymbol(" in '${$proc}' arg 1");
 
