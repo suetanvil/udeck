@@ -2521,7 +2521,7 @@ sub validateArgs {
 # argument) is the string '-', ignore the first argument in
 # $args--it's 'self'.
 sub checkNargs {
-  my ($args, @counts) = @_;
+  my ($fn, $args, @counts) = @_;
 
   my $offset = 0;
   if ($counts[0] eq '-') {
@@ -2533,7 +2533,7 @@ sub checkNargs {
 	return if scalar @{$args} == $count + $offset;
   }
 
-  die "Expecting @{[join (' or ', @counts)]} arguments; "
+  die "Expecting @{[join (' or ', @counts)]} arguments to '$fn'; "
 	. "got @{[scalar @{$args} - $offset]}.\n";
 }
 
@@ -2704,7 +2704,7 @@ sub fixFormalArgs {
 
 sub macro_proc {
   my ($proc, $name, $args, $body) = @_;
-  checkNargs(\@_, 2, 3, 4);
+  checkNargs('proc', \@_, 2, 4);
 
   $name->checkSymbol(" in '${$proc}' arg 1");
 
@@ -2714,10 +2714,10 @@ sub macro_proc {
 	$args = NIL;
   }
 
-  if (scalar @_ <= 3) {
-	$body = NIL;
-  } else {
+  if (defined($body)) {
 	$body->checkQtLoL(" in function body of '${$proc}'.");
+  } else {
+	$body = NIL;
   }
 
   my $procOrMethod = ${$proc} eq 'method' ? '_::method' : '_::proc';
@@ -2857,7 +2857,7 @@ sub macro_assign {
 
 sub macro_subfn {
   my ($sub, $args, $body) = @_;
-  checkNargs (\@_, 3, 2);
+  checkNargs ('sub', \@_, 3, 2);
 
   # If args are omitted, add them.
   if (scalar @_ == 2) {
@@ -2875,7 +2875,7 @@ sub macro_subfn {
 
 sub macro_iffn {
   my ($if, $cond, $trueBlock, $else, $falseBlock) = @_;
-  checkNargs(\@_, 5, 4, 3);
+  checkNargs('if', \@_, 5, 4, 3);
 
   # If there's a 'falseBlock' but $else was omitted, we need to fix
   # that.
@@ -2991,7 +2991,7 @@ sub macro_perluse {
 
 sub macro_class {
   my ($class, $name, $superclass, $body) = @_;
-  checkNargs(\@_, 3, 4);
+  checkNargs('class', \@_, 3, 4);
 
   # Handle omitted superclass
   if ($superclass->isQtLoL()) {
@@ -3016,7 +3016,7 @@ sub macro_class {
 
 sub macro_class_ext {
   my ($classExt, $name, $body) = @_;
-  checkNargs(\@_, 3, 4);
+  checkNargs('_class_ext', \@_, 3, 4);
 
   $name->checkSymbol(" in class definition.");
   $body->checkQtLoL(" in class definition.");
@@ -3155,7 +3155,7 @@ sub op_method ($$) {
 
   macro $operator, sub {
 	my ($name, $left, $right) = @_;
-	checkNargs(\@_, 3);
+	checkNargs($operator, \@_, 3);
 
 	my $lookup = LL::List->new([LL::Symbol->new('->'),
 								$left,
@@ -3241,49 +3241,51 @@ sub initGlobals {
   prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',			sub { checkNargs(\@_, 2); return boolObj($_[0] == $_[1])};
-  prim2 '==',			sub { checkNargs(\@_, 2); return $_[0]->equals($_[1]) };
+  prim2 '===',			sub { checkNargs('===', \@_, 2);
+							  return boolObj($_[0] == $_[1])};
+  prim2 '==',			sub { checkNargs('==', \@_, 2);
+							  return $_[0]->equals($_[1]) };
   prim2 'list',			sub { return LL::List->new(\@_) };
-  prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs(\@_, 2);
+  prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) };
-  prim2 'size',			sub { my ($l) = @_;  checkNargs(\@_, 1);
+  prim2 'size',			sub { my ($l) = @_;  checkNargs('size', \@_, 1);
 							  return LL::Number->new($l->size())};
   prim2 'byteArray',	sub { return LL::ByteArray->new(@_) };
-  prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs(\@_, 1);
+  prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
 							  $size->checkNumber();
 							  die "Invalid byteArray size: ${$size}\n"
 								unless ${$size} > 0;
 							  return LL::ByteArray->newSized(${$size})
 							};
   prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
-  prim2 'listSized',	sub { my ($size) = @_;  checkNargs(\@_, 1);
+  prim2 'listSized',	sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
 							  $size->checkNumber();
 							  die "Invalid list size: ${$size}\n"
 								unless ${$size} > 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
-  prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs(\@_, 1);
+  prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
 							};
-  prim2 'not',			sub { my ($arg) = @_; checkNargs(\@_, 1);
+  prim2 'not',			sub { my ($arg) = @_; checkNargs('not', \@_, 1);
 							  return boolObj(!$arg->isTrue());
 							};
-  prim2 'int',			sub { my ($arg) = @_; checkNargs(\@_, 1);
+  prim2 'int',			sub { my ($arg) = @_; checkNargs('int', \@_, 1);
 							  $arg->checkNumber(" in 'int'");
 							  return LL::Number->new(int(${$arg}));
 							};
-  prim2 'neg',			sub { my ($l) = @_; checkNargs(\@_, 1);
+  prim2 'neg',			sub { my ($l) = @_; checkNargs('neg', \@_, 1);
 							  $l->checkNumber(" in 'Lang::neg'");
 							  return LL::Number->new(-${$l});
 							};
-  prim2 'str2num',		sub { my ($str) = @_; checkNargs(\@_, 1);
+  prim2 'str2num',		sub { my ($str) = @_; checkNargs('str2num', \@_, 1);
 							  $str->checkString(" in 'num'");
 							  my ($ns, $num) = readNumber(${$str});
 							  return NIL unless $ns eq "";
 							  return decktype($num);
 							};
-  prim2 'exit',			sub { my ($status) = @_; checkNargs(\@_, 1);
+  prim2 'exit',			sub { my ($status) = @_; checkNargs('exit', \@_, 1);
 							  $status->checkNumber(" in 'exit'");
 							  exit(${$status});
 							  return NIL;	# not reached
@@ -3348,7 +3350,7 @@ sub initGlobals {
   defclass 'Object', '',
 	{class_get  => sub {my ($self) = @_; return $self->class()},
 	 isTrue_get => sub {
-	   my ($self) = @_; checkNargs(\@_, 1);
+	   my ($self) = @_; checkNargs('isTrue_get', \@_, 1);
 	   return $self->isTrue() ? decktype(1) : NIL;
 	 },
 
@@ -3361,16 +3363,16 @@ sub initGlobals {
 		 unless $self->isStructuredClass();
 	   return builtin_new($self, @argv);
 	 },
-	 name_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
+	 name_get	=> sub {my ($self) = @_; checkNargs('name_get', \@_, 1);
 						decktype($self->{name})},
 
-	 name_set	=> sub {my ($self, $value) = @_; checkNargs(\@_, 2);
+	 name_set	=> sub {my ($self, $value) = @_; checkNargs('name_set', \@_,2);
 						$value->checkString (" in 'name' class attribute.");
 						$self->{name} = $value;
 						return $value},
 
 	 selectors_get => sub {
-	   my ($self) = @_; checkNargs(\@_, 1);
+	   my ($self) = @_; checkNargs('selectors_get', \@_, 1);
 	   my @names =
 		 map { LL::Symbol->new($_) }
 		   sort keys %{ $self->{methodCache} };
@@ -3380,21 +3382,23 @@ sub initGlobals {
 	};
 
   defclass 'List',			'Object',
-	{at			=> sub {my ($self, $index) = @_; checkNargs(\@_, 2);
+	{at			=> sub {my ($self, $index) = @_; checkNargs('at', \@_, 2);
 						return $self->at($index)},
-	 atPut		=> sub {my ($self, $index, $value) = @_; checkNargs(\@_, 3);
+	 atPut		=> sub {my ($self, $index, $value) = @_;
+						checkNargs('atPut', \@_, 3);
 						return $self->atPut($index, $value)},
-	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
+	 size_get	=> sub {my ($self) = @_; checkNargs('size_get', \@_, 1);
 						return decktype($self->size());},
 	};
 
 
   defclass 'Stringlike',	'Object',
-	{at			=> sub {my ($self, $index) = @_; checkNargs(\@_, 2);
+	{at			=> sub {my ($self, $index) = @_; checkNargs('at', \@_, 2);
 						return $self->at($index)},
-	 atPut		=> sub {my ($self, $index, $value) = @_; checkNargs(\@_, 3);
+	 atPut		=> sub {my ($self, $index, $value) = @_;
+						checkNargs('atPut', \@_, 3);
 						return $self->atPut($index, $value)},
-	 size_get	=> sub {my ($self) = @_; checkNargs(\@_, 1);
+	 size_get	=> sub {my ($self) = @_; checkNargs('size_get', \@_, 1);
 						return decktype($self->size());},
 	};
 
@@ -3800,7 +3804,7 @@ sub builtin_macro {
 sub builtin_subfn {
   my ($context, $args, $body) = @_;
 
-  checkNargs(\@_, 3);
+  checkNargs('(unnamed)', \@_, 3);
 
   $args->checkList();
   $body->checkList();
@@ -3814,7 +3818,7 @@ sub builtin_subfn {
 # may be NIL in which case they are skipped.
 sub builtin_iffn {
   my ($test, $trueBlock, $falseBlock) = @_;
-  checkNargs(\@_, 3);
+  checkNargs("_::if", \@_, 3);
 
   my $result = $test->();
   if ($result->isTrue()) {
@@ -3829,7 +3833,7 @@ sub builtin_iffn {
 sub builtin_whilefn {
   my ($test, $body) = @_;
 
-  checkNargs(\@_, 2);
+  checkNargs('_::while', \@_, 2);
 
   my $result = NIL;
   while ($test->()->isTrue()) {
@@ -3843,7 +3847,7 @@ sub builtin_whilefn {
 sub builtin_mapfn {
   my ($fn, $list) = @_;
 
-  checkNargs(\@_, 2);
+  checkNargs("_::map", \@_, 2);
 
   $list->checkIndexable();
   $fn->checkFun();
@@ -3861,7 +3865,7 @@ sub builtin_mapfn {
 sub builtin_foreachfn {
   my ($list, $fn) = @_;
 
-  checkNargs(\@_, 2);
+  checkNargs('_:::foreach', \@_, 2);
 
   $list->checkIndexable();
   $fn->checkFun();
@@ -3890,7 +3894,7 @@ sub builtin_mkstr {
 sub builtin_mkstr_all {
   my ($args) = @_;
 
-  checkNargs(\@_, 1);
+  checkNargs('_::mkstr', \@_, 1);
 
   my @strings = map { $_->printStr() } @{$args};
   my $result = join(" ", @strings);
@@ -3963,7 +3967,7 @@ sub _getImportNameList {
 sub builtin_usefn {
   my ($moduleName, $with, $list) = @_;
 
-  checkNargs(\@_, 3);
+  checkNargs('_::use', \@_, 3);
 
   $moduleName->checkSymbol();
 
@@ -4017,7 +4021,7 @@ sub strEval {
 sub builtin_perlproc {
   my ($name, $args, $bodyStr) = @_;
 
-  checkNargs(\@_, 3);
+  checkNargs('_::perlproc', \@_, 3);
 
   $args->checkList();
   $name->checkSymbol();
@@ -4051,7 +4055,7 @@ sub builtin_perlproc {
 sub builtin_perluse {
   my ($moduleSym) = @_;
 
-  checkNargs(\@_, 1);
+  checkNargs('_::perluse', \@_, 1);
 
   $moduleSym->checkSymbol();
 
@@ -4072,7 +4076,7 @@ sub builtin_perluse {
 sub builtin_apply {
   my ($fun, $args) = @_;
 
-  checkNargs(\@_, 2);
+  checkNargs('apply', \@_, 2);
 
   die "Expecting 2 args, got @{[scalar @_]}\n"
 	unless scalar @_ == 2;
@@ -4086,7 +4090,7 @@ sub builtin_apply {
 sub builtin_intern {
   my ($string) = @_;
 
-  checkNargs(\@_, 1);
+  checkNargs('intern', \@_, 1);
   $string->checkString(" in 'intern'");
 
   return LL::Symbol->new(${$string});
@@ -4336,7 +4340,7 @@ sub builtin_new {
 
 sub basicLookup {
   my ($context, $name) = @_;
-  checkNargs(\@_, 2);
+  checkNargs('defined/lookup', \@_, 2);
 
   $name->checkSymbol(" in 'defined' or 'lookup'");
   my $nm = $context->findFullName(${$name});

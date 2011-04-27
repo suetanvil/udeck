@@ -1,0 +1,19 @@
+# Advanced proc tests, including forward declarations.
+
+proc foo
+proc bar
+
+proc quux {} {
+	foo
+	bar
+}
+
+proc foo {} {
+	bar
+}
+
+proc bar {} {
+	puts "bar called"
+}
+
+quux
