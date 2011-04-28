@@ -271,7 +271,8 @@ X		-also, & and | (bitwise ops)
 	 everything else.
 	-can we make '-x' syntactic sugar for '[- x]'?
 
-	-use consts for the special names on Context and GlobalContext
+	-use Perl consts for the hidden (starts with space) special fields
+     in Context and GlobalContext
 
 
 		
