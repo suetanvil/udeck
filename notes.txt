@@ -203,8 +203,8 @@ X					-replace polymorphic normalizeName() with
 X				     overridden def, set, etc.
 X					-make Context accessors use findFullName to
 X					 qualify everything correctly.
-			5. Fix (uses of):
-				isLegallyAccessible
+X			5. Fix (uses of):
+X				isLegallyAccessible
 X					-make lookup and defined take the context as arg.
 X					-add a hash of fn's that take the context and use
 X					 that instead of the regexp on the name
@@ -212,7 +212,7 @@ X					-figure out if we should support the local context
 X						-no.  Always 
 X					-add fullname.  Should support local--good for testing
 X					-make isLegallyAccessible do the right thing.
-
+X	-get rid of println
 
 	- forward declaration of functions
 X		1) create class 'UndefinedFunction' for functions that are
@@ -231,6 +231,11 @@ X		5) make 'readfile' check for undefined declared functions at
 X	       the end of loading.
 
 		6) Do the same for mproc.
+			-Make addForward store arg. lists as the value
+			-we know mprocs because they're defined in the __ namespace.
+			-clearForwards needs to return name and value pairs
+			-clearForwardFns needs to check the values
+				-need deep-compare for arg. lists.
 
 
 	-need canary to catch broken infix expressions		
@@ -244,7 +249,6 @@ X		-also, & and | (bitwise ops)
 	- static variables
 	- integers
 	- subify builtin
-
 	- rewrite compiler
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.
@@ -258,7 +262,7 @@ X		-also, & and | (bitwise ops)
 		-adding a slice fn.
 		-should add the ability to '@'
 	-object printstr/storestr
-	-get rid of println
+
 	-'var x = <y>' should parse the assignment as fully infix.
 		-maybe.	
 	-mprocs should be able to select the argument name(s) of their

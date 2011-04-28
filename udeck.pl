@@ -3201,8 +3201,7 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-				   ['println',			\&builtin_println],
-				   ['puts',				\&builtin_println],
+				   ['puts',				\&builtin_puts],
 				   ['say',				\&builtin_say],
 				   ['storestr',			\&builtin_storestr],
 				   ['show',				\&builtin_show],
@@ -3520,7 +3519,7 @@ sub mkModPath {
 }
 
 
-sub builtin_println {
+sub builtin_puts {
   for my $obj (@_) {
 	die "Not an object: '$obj'\n"
 	  unless (ref($obj) && isa($obj, 'LL::Object'));
