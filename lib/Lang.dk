@@ -6,6 +6,9 @@
 var Version = '0.01';
 
 
+#perlproc _printf {args} '''
+#'''
+
 _class_ext Number {
 
 	# Double-dispatch methods
@@ -40,19 +43,23 @@ _class_ext Object {
 
 	method isNil_get {} {return nil}
 
-#	method printable_get {} {
-#		var cl = self.class.name
-		# XXX
-#	}
+	method printable_get {} {
+		var cl = self.class.name
+		var a = [if ((cl@0).isVowel) {val "an"} {val "a"}]
+
+		return "$a $cl"
+	}
 }
 
 
 _class_ext Nil {
 	method isNil_get {} {return 1}
+	method printable_get {} {return "nil"}
 }
 
 _class_ext List {
 	method isIndexable_get {} {return 1}
+	method list_get {} {return "[@{self}]"}
 }
 
 _class_ext Stringlike {
@@ -66,6 +73,7 @@ _class_ext String {
 	method isVowel_get {} {
 		self.size == 1 || [return nil]
 		var lc = self.lowerCase
+puts lc
 		for v in [list "a" "e" "i" "o" "u"] {
 			lc == v && [return 1]
 		}
@@ -73,8 +81,46 @@ _class_ext String {
 	}
 
 	method lowercase_get {} {return [_downcase self]}
+	method printable_get {} {return self}
+}
+
+
+_class_ext Symbol {
+	printable_get {} {return ":$self"}
+}
+
+_class_ext ByteArray {
+# 	printable_get {} {
+# 		const CUTOFF = 5
+# 		val entries = 
+		
+
+# 	}
+}
+
+_class_ext Struct {
 
 }
+
+
+_class_ext Quote {
+}
+
+_class_ext Macro {
+}
+
+_class_ext Function {
+}
+
+_class_ext Method {
+}
+
+_class_ext MethodCall {
+}
+
+_class_ext PerlObj {
+}
+
 
 
 # Return the absolute value of a number
@@ -113,7 +159,8 @@ proc last {aList} {
 # numbers
 class Interval Struct {
 	readable start
-	var length incr
+	var length
+	var incr
 
 	method end_get {} {
 		return (self @ (length - 1))
@@ -145,6 +192,17 @@ class Interval Struct {
 		}
 
 		return (start + (index * incr))
+	}
+
+	method printable_get {} {
+		var end = start + (length * incr)
+
+		var by = ""
+		if ([abs incr] != 1) {
+			by = " (by $incr)"
+		}
+ 
+		return "$start .. $end$by"
 	}
 }
 

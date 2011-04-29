@@ -123,12 +123,10 @@ or
 
 
 Todo:
-	-implement a "compiler" to produce perl subs
-	-catch arg. count mismatches.
+X	-catch arg. count mismatches.
 
 X	- pod
 X	- macros
-		-subify
 X		-mprocs
 
 X	- namespaces
@@ -187,7 +185,6 @@ X		-auto-paren'd like '.' and '->'
 X	-class fn should take an optional intrinsic name.
 
 X	- make everything an object
-		- traits
 
 X	- bug: function calls fail to capture their namespace.
 X		-normalize all names at compile time?
@@ -242,16 +239,16 @@ X	       the end of loading.
 X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
+	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 
-	- merge symbol class-level qualified checks with namespace-level
-	  checks.
-	- catch unescaped operator in prefix LoL expression
+
 	- static variables
 	- integers
 	- subify builtin
 	- rewrite compiler
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.
+		-create and export Perl code
 	- tuple assignment
 			a,b,c = [foo]
 			a,b,c = :[1 2 3]
@@ -262,7 +259,8 @@ X		-also, & and | (bitwise ops)
 		-adding a slice fn.
 		-should add the ability to '@'
 	-object printstr/storestr
-
+	-traits
+	-hash/set/bag classes
 	-'var x = <y>' should parse the assignment as fully infix.
 		-maybe.	
 	-mprocs should be able to select the argument name(s) of their
@@ -270,9 +268,11 @@ X		-also, & and | (bitwise ops)
 	-quote should be a macro that expands into a function, just like
 	 everything else.
 	-can we make '-x' syntactic sugar for '[- x]'?
-
 	-use Perl consts for the hidden (starts with space) special fields
      in Context and GlobalContext
 
 
+	- merge symbol class-level qualified checks with namespace-level
+	  checks.
+	- catch unescaped operator in prefix LoL expression
 		

@@ -1,0 +1,19 @@
+# Test the 'printable' attribute
+
+puts Class.printable
+puts String.printable
+puts
+
+class ConsonentClass {var x}
+puts [ConsonentClass->new].printable
+class AnotherVowelClass {var y}
+puts [AnotherVowelClass->new].printable
+puts
+
+
+puts "Hello, world!".printable
+puts [list 1 2 {2+1} 4 5].printable
+puts nil.printable
+puts 42.printable
+puts :some_symbol.printable
+
