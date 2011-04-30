@@ -1287,8 +1287,6 @@ sub addMethods {
   $self->refreshCache();
 }
 
-
-
 sub refreshFieldCache {
   my ($self) = @_;
 
@@ -2092,7 +2090,7 @@ sub applyMacros {
 	my $val = $context->lookup(${$name});
 	last unless $val->isMacro();
 
-	print "*macro* ${$name}(@{[$expr->printStr()]}) => " if $dumpExpr;
+	print "*macro* ${$name}(@{[$expr->printStr()]}) ==> " if $dumpExpr;
 	$expr = $val->(@{$expr});
 	print $expr->printStr() . "\n" if $dumpExpr;
 
@@ -2408,9 +2406,14 @@ sub compile {
 
 	if ($isMethod) {
 	  my $mthSelf = $_[0];
-	  $context = $mthSelf->class()->isStructuredClass() ?
-		LL::Context->new($mthSelf):
-		LL::Context->new($outerContext);
+	  if ($mthSelf->class()->isStructuredClass()) {
+		$context = LL::Context->new($mthSelf);
+	  } else {
+		# Non-struct objects don't carry their namespace so we need to
+		# set that from the class here.
+		$context = LL::Context->new($outerContext);
+		$context->setNamespace($mthSelf->class()->{namespace});
+	  }
 	} elsif ($isTop) {
 	  $context = $Globals;
 	} else {
