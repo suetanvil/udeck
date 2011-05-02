@@ -57,3 +57,11 @@ perlproc consume {m} '''print $m->[0], " ", $m->[1], "\n"; '''
 var bb = [make]
 puts bb
 consume bb
+
+# Test vararg perlprocs
+puts "---------"
+perlproc tjoin {s e args} '''return join (",", @args[$s..$e])'''
+puts [tjoin 2 3 :a :b :c :d :e :f :g]
+puts [tjoin 2 3 :a :b :c :d :e]
+puts [tjoin 0 3 :a :b :c :d :e :f :g]
+puts [tjoin 2 4 :a :b :c :d :e :f :g]

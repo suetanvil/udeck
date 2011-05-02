@@ -21,3 +21,8 @@ Foo bar
 ------------
 <perlobj blartblatt>
 42 11
+---------
+c,d
+c,d
+a,b,c,d
+c,d,e
