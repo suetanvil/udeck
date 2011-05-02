@@ -4032,14 +4032,20 @@ sub builtin_perlproc {
   $name->checkSymbol();
   $bodyStr->checkString();
 
+
   my $perlArgs = "";
 
   if ($args->size() > 0) {
+	my $isArgv = ${ $args->[-1] } eq 'args';
+	pop @{$args} if $isArgv;
+
 	$perlArgs .= 'my (';
 	for my $a (@{$args}) {
 	  $a->checkSymbol(" in perlproc argument.");
 	  $perlArgs .= '$' . ${$a} . ',';
 	}
+
+	$perlArgs .= '@args' if $isArgv;
 
 	$perlArgs .= ') = map { $_ && $_->perlForm() } @_;' . "\n";
   }

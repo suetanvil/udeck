@@ -27,7 +27,11 @@ puts bar
 
 
 # uncomment!  waiting for || to work.
+
 #puts [slice foo 3 7]
 #puts [slice foo 7 3]
 #puts [slice foo -1 -5]
 
+
+# Test sprintf
+puts [sprintf "%d %x '%s'" 42 42 "Hello, world!"]

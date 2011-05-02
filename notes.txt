@@ -240,7 +240,7 @@ X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
-
+	- 'printable' attribute on all builtin classes
 
 	- static variables
 	- integers

@@ -5,9 +5,7 @@
 
 var Version = '0.01';
 
-
-#perlproc _printf {args} '''
-#'''
+perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
 
 _class_ext Number {
 
