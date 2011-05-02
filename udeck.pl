@@ -367,7 +367,8 @@ sub importPublic {
 
 # Add a forward declaration to the list
 sub addForward {
-  my ($self, $name) = @_;
+  my ($self, $name, $args) = @_;
+  $args ||= 1;	# Ensure $args is a true value.
 
   $name = $self->_normalizeName($name);
 
@@ -389,7 +390,7 @@ sub clearForwards {
   for my $forward (keys %{$self->{' forward decls'}}) {
 	next unless $forward =~ /^${namespace}\:\:/;
 
-	push @forwards, $forward;
+	push @forwards, [$forward, $self->{' forward decls'}->{$forward}];
 	delete($self->{' forward decls'}->{$forward});
   }
 
@@ -1504,7 +1505,8 @@ sub clearForwardFns {
 
   my @forwards = $Globals->clearForwards();
   my $missing = "";
-  for my $name (@forwards) {
+  for my $fwd (@forwards) {
+	my ($name, $value) = @{$fwd};
 	$missing .= "Undefined forward proc declaration '$name' in $ns\n"
 	  if ($Globals->present($name) &&
 			  $Globals->lookup($name)->isUndefinedFunction());

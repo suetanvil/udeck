@@ -228,9 +228,9 @@ X		5) make 'readfile' check for undefined declared functions at
 X	       the end of loading.
 
 		6) Do the same for mproc.
-			-Make addForward store arg. lists as the value
+X			-Make addForward store arg. lists as the value
 			-we know mprocs because they're defined in the __ namespace.
-			-clearForwards needs to return name and value pairs
+X			-clearForwards needs to return name and value pairs
 			-clearForwardFns needs to check the values
 				-need deep-compare for arg. lists.
 
