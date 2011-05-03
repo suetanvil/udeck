@@ -379,6 +379,17 @@ sub addForward {
 }
 
 
+# Return the arg. list for $name if it is an mproc (i.e. defined with
+# an arg. list); undef otherwise.
+sub mprocForwardArgs {
+  my ($self, $name) = @_;
+
+  my $list = $self->{' forward decls'}->{$name};
+  return unless defined($list);
+  return $list;
+}
+
+
 # Clear all decl's in the given namespace (defaults to current) and
 # return the list of deleted names.
 sub clearForwards {
@@ -2739,6 +2750,8 @@ sub macro_proc {
 
 sub macro_mproc {
   my ($mproc, $name, $args, $body) = @_;
+  checkNargs('mproc', \@_, 3, 4);
+  $body ||= NIL;
 
   $name->checkSymbol();
   my $qname = LL::Quote->new($name);
@@ -3748,7 +3761,7 @@ sub mk_mproc_macro {
 }
 
 
-
+# Define an mproc or just it's forward declaration.
 sub builtin_mproc {
   my ($name, $args, $body) = @_;
 

@@ -229,10 +229,8 @@ X	       the end of loading.
 
 		6) Do the same for mproc.
 X			-Make addForward store arg. lists as the value
-			-we know mprocs because they're defined in the __ namespace.
 X			-clearForwards needs to return name and value pairs
-			-clearForwardFns needs to check the values
-				-need deep-compare for arg. lists.
+			-builtin_mproc needs to check for argument mismatches
 
 
 	-need canary to catch broken infix expressions		
