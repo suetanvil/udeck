@@ -1,0 +1,22 @@
+# Test forward declaration of mproc and mproc in modules
+
+use Test::Util2 rename {doot2 = doot}
+
+doot2 {puts "First!"} {puts "Second!"}
+
+
+mproc doot {
+	sub fn
+}
+
+proc foo {} {
+	doot {puts "foo!"}
+}
+
+mproc doot {
+	sub fn
+} {
+	return [fn]
+}
+
+foo

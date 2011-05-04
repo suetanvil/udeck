@@ -7,3 +7,12 @@ use Test::Util
 proc foo2 {} {
 	puts "Foo2"
 }
+
+mproc doot {
+	sub fn1
+	sub fn2
+} {
+	fn1
+	return [fn2]
+}
+

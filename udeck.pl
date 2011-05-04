@@ -3786,12 +3786,9 @@ sub builtin_mproc {
   $args->checkList(" for mproc argument list.");
   $body->checkList() unless $body->isNil();
 
-  # Ensure that this macro hasn't already been defined.
-  die "Redefinition of macro '${$name}'.\n"
-	if $Globals->present(${$name});
-
   $Globals->ensureMacroNamespace(${$name});
-  my $procName = "__::" . $Globals->normalizeName(${$name});
+  my $fullName = $Globals->normalizeName(${$name});
+  my $procName = "__::$fullName";
   my $argSig = $args->printStr();
 
   # Gather the argument names from $args before mk_mproc_macro
@@ -3804,20 +3801,24 @@ sub builtin_mproc {
 	push @pargs, $argName;
   }
 
-  my $forward = $Globals->getForward(${$name});
+  my $forward = $Globals->getForward($fullName);
+
+  # Ensure that this macro hasn't already been defined.
+  die "Redefinition of macro '$fullName'.\n"
+	if $Globals->present($fullName) && !$forward;
 
   if (!$forward || $body->isNil()) {
 	# Create the wrapper macro.
 	my $macro = mk_mproc_macro($procName, $args);
 
 	# Give the macro a name.
-	$Globals->defsetconst(${$name}, $macro);
+	$Globals->defsetconst($fullName, $macro);
 
 	# Set the placeholder function
-	$Globals->defsetconst($procName, LL::UndefinedFunction->new(${$name}));
+	$Globals->defsetconst($procName, LL::UndefinedFunction->new($fullName));
 
 	# And set the forward declaration
-	$Globals->addForward(${$name}, $argSig);
+	$Globals->addForward($fullName, $argSig);
 
 	$forward = $argSig;
   }
@@ -3825,7 +3826,7 @@ sub builtin_mproc {
   # If this was just a forward declaration, we're done
   return if $body->isNil();
 	
-  die "Argument mismatch with forward declaration in mproc '${$name}'\n"
+  die "Argument mismatch with forward declaration in mproc '$fullName'\n"
 	unless $forward eq $argSig;
 
   # Create the function to call.
