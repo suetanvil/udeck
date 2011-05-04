@@ -116,7 +116,7 @@ sub set {
 	return $value;
   };
 
-  defined($self->{' parent'}) and return $self->{' parent'}->set($name, $value);
+  defined($self->{' parent'}) and return $self->{' parent'}->set($name,$value);
 
   die "Unknown variable: '$name'\n";	# not reached
 }
@@ -232,13 +232,22 @@ sub defNamespace {
   $self->{' namespaces'}->{$ns} = 1;
 }
 
+sub ensureMacroNamespace {
+  my ($self, $name) = @_;
+
+  $name = '__::' . $self->normalizeName($name);
+  my ($ns) = $self->_splitName($name);
+
+  $self->defNamespace($ns);
+}
+
 sub hasNamespace {
   my ($self, $ns) = @_;
   return exists($self->{' namespaces'}->{$ns});
 }
 
 
-sub _normalizeName {
+sub normalizeName {
   my ($self, $name) = @_;
 
   die "Expecting string, not reference!\n" unless ref($name) eq '';
@@ -250,39 +259,39 @@ sub _normalizeName {
 # Overridden access: ensure all names are normalized.
 sub def {
   my ($self, $name) = @_;
-  return $self->SUPER::def($self->_normalizeName($name));
+  return $self->SUPER::def($self->normalizeName($name));
 }
 
 sub set {
   my ($self, $name, $value) = @_;
-  return $self->SUPER::set($self->_normalizeName($name), $value);
+  return $self->SUPER::set($self->normalizeName($name), $value);
 }
 
 sub defset {
   my ($self, $name, $value) = @_;
-  return $self->SUPER::defset($self->_normalizeName($name), $value);
+  return $self->SUPER::defset($self->normalizeName($name), $value);
 }
 
 sub defsetconst {
   my ($self, $name, $value) = @_;
-  return $self->SUPER::defsetconst($self->_normalizeName($name), $value);
+  return $self->SUPER::defsetconst($self->normalizeName($name), $value);
 }
 
 sub lookup {
   my ($self, $name) = @_;
-  return $self->SUPER::lookup($self->_normalizeName($name));
+  return $self->SUPER::lookup($self->normalizeName($name));
 }
 
 sub present {
   my ($self, $name) = @_;
-  return $self->SUPER::present($self->_normalizeName($name));
+  return $self->SUPER::present($self->normalizeName($name));
 }
 
 # Modifies a const.  Not something that user code should ever do.
 sub setGlobalConst {
   my ($self, $name, $value) = @_;
 
-  $name = $self->_normalizeName($name);
+  $name = $self->normalizeName($name);
 
   die "setGlobalConst called on a non-const name '$name'\n"
 	unless defined($self->{' consts'}->{$name});
@@ -370,12 +379,18 @@ sub addForward {
   my ($self, $name, $args) = @_;
   $args ||= 1;	# Ensure $args is a true value.
 
-  $name = $self->_normalizeName($name);
+  $name = $self->normalizeName($name);
 
   die "Forward declaration on undefined name '$name'\n"
 	unless defined($self->{$name});
 
-  $self->{' forward decls'}->{$name} = 1;
+  $self->{' forward decls'}->{$name} = $args;
+}
+
+sub getForward {
+  my ($self, $name) = @_;
+
+  return $self->{' forward decls'}->{$name};
 }
 
 
@@ -401,7 +416,7 @@ sub clearForwards {
   for my $forward (keys %{$self->{' forward decls'}}) {
 	next unless $forward =~ /^${namespace}\:\:/;
 
-	push @forwards, [$forward, $self->{' forward decls'}->{$forward}];
+	push @forwards, $forward;
 	delete($self->{' forward decls'}->{$forward});
   }
 
@@ -1516,11 +1531,10 @@ sub clearForwardFns {
 
   my @forwards = $Globals->clearForwards();
   my $missing = "";
-  for my $fwd (@forwards) {
-	my ($name, $value) = @{$fwd};
-	$missing .= "Undefined forward proc declaration '$name' in $ns\n"
+  for my $name (@forwards) {
+	$missing .= "Undefined forward (m)proc declaration '$name' in $ns\n"
 	  if ($Globals->present($name) &&
-			  $Globals->lookup($name)->isUndefinedFunction());
+		  $Globals->lookup($name)->isUndefinedFunction());
   }
 
   die $missing if $missing;
@@ -3716,7 +3730,6 @@ sub mk_mproc_macro_argfilter {
 
 	  default {
 		die "Invalid mproc argument '${$mod}'\n" if $mod ne '';
-#		die "mproc argument contains 'strict' by itself.\n" if $strict;
 	  }
 	}
 
@@ -3730,9 +3743,9 @@ sub mk_mproc_macro_argfilter {
 # Return a macro (i.e. blessed Perl sub) which performs mproc argument
 # munging on its argument list.  $args is dismantled.
 sub mk_mproc_macro {
-  my ($name, $args) = @_;
+  my ($procName, $args) = @_;
 
-  my $resultName = LL::Symbol->new("__::${$name}");
+  my $resultName = LL::Symbol->new($procName);
 
   my $filters = mk_mproc_macro_argfilter($args);
 
@@ -3771,11 +3784,15 @@ sub builtin_mproc {
 
   $name->checkSymbol();
   $args->checkList(" for mproc argument list.");
-  $body->checkList();
+  $body->checkList() unless $body->isNil();
 
   # Ensure that this macro hasn't already been defined.
   die "Redefinition of macro '${$name}'.\n"
-	if ($Globals->present(${$name}) && $Globals->{${$name}}->isMacro());
+	if $Globals->present(${$name});
+
+  $Globals->ensureMacroNamespace(${$name});
+  my $procName = "__::" . $Globals->normalizeName(${$name});
+  my $argSig = $args->printStr();
 
   # Gather the argument names from $args before mk_mproc_macro
   # disassembles it.  (mk_mproc_macro does a lot of sanity checking so
@@ -3787,15 +3804,33 @@ sub builtin_mproc {
 	push @pargs, $argName;
   }
 
-  # Create the wrapper macro.
-  my $macro = mk_mproc_macro($name, $args);
+  my $forward = $Globals->getForward(${$name});
+
+  if (!$forward || $body->isNil()) {
+	# Create the wrapper macro.
+	my $macro = mk_mproc_macro($procName, $args);
+
+	# Give the macro a name.
+	$Globals->defsetconst(${$name}, $macro);
+
+	# Set the placeholder function
+	$Globals->defsetconst($procName, LL::UndefinedFunction->new(${$name}));
+
+	# And set the forward declaration
+	$Globals->addForward(${$name}, $argSig);
+
+	$forward = $argSig;
+  }
+
+  # If this was just a forward declaration, we're done
+  return if $body->isNil();
+	
+  die "Argument mismatch with forward declaration in mproc '${$name}'\n"
+	unless $forward eq $argSig;
 
   # Create the function to call.
   my $procArgs = LL::List->new(\@pargs);
-  my $proc = builtin_proc (LL::Symbol->new("__::${$name}"), $procArgs, $body);
-
-  # Give the macro a name.
-  $Globals->defset(${$name}, $macro);
+  my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body);
 
   return $proc;
 }
