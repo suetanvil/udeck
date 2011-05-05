@@ -1,0 +1,18 @@
+# Test forward declarations with arg. list mismatch.
+
+mproc doot {
+	sub fn
+}
+
+proc foo {} {
+	doot {puts "foo!"}
+}
+
+mproc doot {
+	sub fn
+	n
+} {
+	return [fn]
+}
+
+foo
