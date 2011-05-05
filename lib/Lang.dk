@@ -69,9 +69,9 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 
 _class_ext String {
 	method isVowel_get {} {
-		self.size == 1 || [return nil]
+		self.size == 1 || [return nil]	# XXX
 		var lc = self.lowerCase
-puts lc
+
 		for v in [list "a" "e" "i" "o" "u"] {
 			lc == v && [return 1]
 		}
@@ -88,12 +88,24 @@ _class_ext Symbol {
 }
 
 _class_ext ByteArray {
-# 	printable_get {} {
-# 		const CUTOFF = 5
-# 		val entries = 
-		
+ 	printable_get {} {
+ 		const CUTOFF = 5
+		var result = "[byteArray"
 
-# 	}
+		var count = 0
+		while (count < CUTOFF) {
+			if (count < self.size) {
+				result = [concat result " " [sprintf "0x%02x" (self@count)]]
+			}
+			count = count + 1
+		}
+
+		if (self.size > CUTOFF) {
+			result = [concat result " ... " [sprintf "0x%02x" (self@(-1))]]
+		}
+
+		result = [concat result "]"]
+ 	}
 }
 
 _class_ext Struct {

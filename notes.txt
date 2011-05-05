@@ -227,10 +227,10 @@ X		   is an UndefinedFunction.
 X		5) make 'readfile' check for undefined declared functions at
 X	       the end of loading.
 
-		6) Do the same for mproc.
+X		6) Do the same for mproc.
 X			-Make addForward store arg. lists as the value
 X			-clearForwards needs to return name and value pairs
-			-builtin_mproc needs to check for argument mismatches
+X			-builtin_mproc needs to check for argument mismatches
 
 
 	-need canary to catch broken infix expressions		
@@ -239,7 +239,11 @@ X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	- 'printable' attribute on all builtin classes
-
+	- bug: String.isVowel doesn't work
+		-due to bad || expr.
+			-need to be more stringent about infix/prefix
+			-we can get away with it, I think.
+			-catch unescaped operator in prefix LoL expression
 	- static variables
 	- integers
 	- subify builtin
@@ -268,9 +272,7 @@ X		-also, & and | (bitwise ops)
 	-can we make '-x' syntactic sugar for '[- x]'?
 	-use Perl consts for the hidden (starts with space) special fields
      in Context and GlobalContext
-
-
 	- merge symbol class-level qualified checks with namespace-level
 	  checks.
-	- catch unescaped operator in prefix LoL expression
+
 		
