@@ -1,0 +1,18 @@
+# Test forward declarations with arg. name mismatch.  (Later changes
+# could make this not an error.)
+
+mproc doot {
+	sub fn
+}
+
+proc foo {} {
+	doot {puts "foo!"}
+}
+
+mproc doot {
+	sub fn2
+} {
+	return [fn2]
+}
+
+foo
