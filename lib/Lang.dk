@@ -69,11 +69,18 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 
 _class_ext String {
 	method isVowel_get {} {
-		self.size == 1 || [return nil]	# XXX
+#		self.size == 1 || [return nil]	# XXX
+
+		if (self.size == 1) {
+			return nil
+		}
+
 		var lc = self.lowerCase
 
 		for v in [list "a" "e" "i" "o" "u"] {
-			lc == v && [return 1]
+			if (lc == v) {
+				return 1
+			}
 		}
 		return 0
 	}
@@ -142,7 +149,7 @@ proc abs {n} {
 }
 
 # The not-equal operator
-proc != {l r} {
+proc \!= {l r} {
 	return [not (l == r)]
 }
 

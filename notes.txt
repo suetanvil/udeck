@@ -240,15 +240,12 @@ X			-builtin_mproc needs to check for argument mismatches
 		-() expressions don't always resolve to function calls
 
 		
-	   
-
-
 	- bug: String.isVowel doesn't work
 		-due to bad || expr.
 			-need to be more stringent about infix/prefix
 			-we can get away with it, I think.
 			-catch unescaped operator in prefix LoL expression
-
+	-bug: arguments to setters/getters are silently ignored(?)
 
 	-need canary to catch broken infix expressions		
 X	-bug: implement '||' and '&&'

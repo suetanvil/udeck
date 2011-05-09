@@ -909,6 +909,27 @@ sub couldBeImpliedInfix {
   return 0;
 }
 
+
+# Test if $self looks like it was a malformed infix expression that
+# went through the wash^W^WasPrefixList().
+sub looksLikeMalformedInfix {
+  my ($self) = @_;
+
+  return 0 unless scalar @{$self} > 1;
+
+  # 'var' and 'const' are special cases
+  return 0 if
+	$self->[0]->isSymbol() && ${ $self->[0] } =~ /^(var|const)$/;
+
+  # See if any element other than the first is an unescaped operator.
+  for my $elem (@{$self}[1 .. $#{$self}]) {
+	return 1 if $elem->isUnescapedOperator();
+  }
+
+  return 0;
+}
+
+
 sub parsedAsInfix {
   my ($self) = @_;
 
@@ -1604,6 +1625,10 @@ sub readLoLLine {
 
   # Fix up the OO syntactic sugar
   $rlist = $rlist->withAutoInfixDone();
+
+  # Catch malformed expressions.
+  die "Expression '@{[$rlist->printStr()]}' contains unescaped operators.\n"
+	if $rlist->looksLikeMalformedInfix();
 
   # Strip out any operator escapes.  We no longer need them.
 #  $rlist->unescapeAllOperators();
