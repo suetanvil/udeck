@@ -233,17 +233,33 @@ X			-clearForwards needs to return name and value pairs
 X			-builtin_mproc needs to check for argument mismatches
 
 
+	-switch to odd-operator notation (i.e. all () expressions IN LoL
+     LINES have operators at odd slots; all prefix expressions have no
+     unescaped operators; 'var' and 'const' are exceptions, as are
+     auto-infixed espressions)
+		-() expressions don't always resolve to function calls
+
+		
+	   
+
+
+	- bug: String.isVowel doesn't work
+		-due to bad || expr.
+			-need to be more stringent about infix/prefix
+			-we can get away with it, I think.
+			-catch unescaped operator in prefix LoL expression
+
+
 	-need canary to catch broken infix expressions		
 X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	- 'printable' attribute on all builtin classes
-	- bug: String.isVowel doesn't work
-		-due to bad || expr.
-			-need to be more stringent about infix/prefix
-			-we can get away with it, I think.
-			-catch unescaped operator in prefix LoL expression
+
+
+
+
 	- static variables
 	- integers
 	- subify builtin

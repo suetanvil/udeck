@@ -1,0 +1,33 @@
+Proposed infix change.  In LoL, 
+
+	infix = all odd elements are unescaped operators, all even
+	elements not.
+
+	prefix = no unescaped operators.
+
+	var, const = special case
+
+	all others = error.
+
+
+Problem:
+
+Old form:
+
+	a->b
+
+->  [(a->b)]
+->  [ [-> a b] ]
+
+New form:
+
+	a->b
+
+->	(a->b)
+->	[-> a b]
+-> wrong! not a call!
+
+	
+		
+
+		
