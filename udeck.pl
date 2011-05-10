@@ -891,9 +891,31 @@ sub unescapeAllOperators {
   return undef;
 }
 
+
+# Test if $self is a well-formed infix expression with only boolean
+# (&& and ||) operators.
+sub isBooleanInfix {
+  my ($self) = @_;
+
+  return 0 unless scalar @{$self} % 2 == 1 && scalar @{$self} >= 3;
+
+  my $index = 0;
+  for my $item (@{$self}) {
+	return 0 if $index % 2 == 0 && $item->isUnescapedOperator();
+	return 0 if ($index % 2 == 1 && !$item->isUnescapedOperator() &&
+				 ($item ne '&&' && $item ne '||'));
+	$index++;
+  }
+  return 1;
+}
+
+
 # Assignment statements are turned infix
 sub couldBeImpliedInfix {
   my ($self) = @_;
+
+  # Booleans for flow control are allowed.
+  return 1 if $self->isBooleanInfix();
 
   # True if it takes the form <x> = <z> ...
   return 0 if scalar @{$self} < 3;	
@@ -1632,18 +1654,6 @@ sub readLoLLine {
   # Catch malformed expressions.
   die "Expression '@{[$rlist->printStr()]}' contains unescaped operators.\n"
 	if $rlist->looksLikeMalformedInfix();
-
-  # Strip out any operator escapes.  We no longer need them.
-#  $rlist->unescapeAllOperators();
-
-  # Warn of the case where an explicit list is the only element of a
-  # line because the programmer may have accidentally bracketted the
-  # line.
-# autobracketting causes this
-#  if (scalar @{$rlist} == 1 && $rlist->[0]->isList()) {
-#	dkwarn ("Entire LoL line is bracketed.  This may not be what",
-#			"you want.");
-#  }
 
   return $rlist
 }

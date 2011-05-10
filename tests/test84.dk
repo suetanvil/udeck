@@ -1,0 +1,46 @@
+# Test short-circuited boolean expressions
+
+proc bp {msg val} {
+	puts "$msg ($val)"
+	return val
+}
+
+
+[bp "left ||" 1] || [bp "right" 1]
+puts
+
+[bp "left &&" 1] && [bp "right" 1]
+puts
+
+[bp "left ||" nil] || [bp "right" 1]
+puts
+
+[bp "left &&" nil] && [bp "right" 1]
+puts
+
+[bp "left ||" 1] || [bp "right" nil]
+puts
+
+[bp "left &&" 1] && [bp "right" nil]
+
+
+puts "----------------------------------------------------------------"
+
+var x
+
+x = [bp "left ||" 1] || [bp "right" 1]
+puts x
+
+x = [bp "left &&" 1] && [bp "right" 1]
+puts x
+
+x = [bp "left ||" nil] || [bp "right" 1]
+puts x
+
+x = [bp "left &&" nil] && [bp "right" 1]
+puts x
+
+x = [bp "left ||" 1] || [bp "right" nil]
+puts x
+
+puts ([bp "left &&" 1] && [bp "right" nil])

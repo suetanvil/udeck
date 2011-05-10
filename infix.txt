@@ -1,3 +1,9 @@
+We want
+
+	x.size > 5 || [return nil]
+
+to work.
+
 Proposed infix change.  In LoL, 
 
 	infix = all odd elements are unescaped operators, all even
@@ -27,7 +33,23 @@ New form:
 ->	[-> a b]
 -> wrong! not a call!
 
-	
+
+---------------------------------------------------------------------------
+
+Instead:
+
+	1) Only assignments are converted.
+
+	2) Parser is really pedantic about escaped operators.
+
+How about making && and || LoL infix as well?
+
+How about a "magic word" that forces the expression to be parsed as
+implied infix.
+	-is there something in the language?  Maybe '='?
+
+
+
 		
 
 		

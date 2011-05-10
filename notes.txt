@@ -231,6 +231,8 @@ X		6) Do the same for mproc.
 X			-Make addForward store arg. lists as the value
 X			-clearForwards needs to return name and value pairs
 X			-builtin_mproc needs to check for argument mismatches
+X	-bug: implement '||' and '&&'
+X		-also, & and | (bitwise ops)
 
 
 	-switch to odd-operator notation (i.e. all () expressions IN LoL
@@ -246,10 +248,8 @@ X			-builtin_mproc needs to check for argument mismatches
 			-we can get away with it, I think.
 			-catch unescaped operator in prefix LoL expression
 	-bug: arguments to setters/getters are silently ignored(?)
-
+	-boolean xor
 	-need canary to catch broken infix expressions		
-X	-bug: implement '||' and '&&'
-X		-also, & and | (bitwise ops)
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	- 'printable' attribute on all builtin classes
