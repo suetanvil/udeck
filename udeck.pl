@@ -878,6 +878,9 @@ sub unescapeAllOperators {
 	$entry->unescapeAllOperators()
 	  if $entry->isList();
 
+	$entry->value()->unescapeAllOperators()
+	  if ($entry->isQuote() && $entry->value()->isList());
+
 	# Quoted objects are a special case.
 	if ($entry->isQuote() && $entry->value()->isEscapedOperator()) {
 	  $entry->[0] = $entry->[0]->asUnescapedOperator();
@@ -1105,8 +1108,8 @@ sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 
 	if (scalar @{$self} == 1) {
 	  my $retval = $self->[0];
-	  $retval = $retval->asUnescapedOperator()
-		if $retval->isEscapedOperator();
+#	  $retval = $retval->asUnescapedOperator()
+#		if $retval->isEscapedOperator();
 	  return $retval;
 	}
 

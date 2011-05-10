@@ -1,7 +1,7 @@
 # Test user-defined operators
 
-proc !!! {a b} {return "$a chicka chick chicka $b"}
-proc +- {a b} {puts a "+-" b}
+proc \!!! {a b} {return "$a chicka chick chicka $b"}
+proc \+- {a b} {puts a "+-" b}
 
 val (1 +- 2)
 

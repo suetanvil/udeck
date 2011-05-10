@@ -1,5 +1,4 @@
 <function>
-<function>
 nil
 nil
 1

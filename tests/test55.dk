@@ -1,7 +1,6 @@
 # Test proper handling of escaped operators.
 
 puts \==
-puts ==
 puts (\== == \-)
 
 var n
