@@ -902,8 +902,11 @@ sub isBooleanInfix {
   my $index = 0;
   for my $item (@{$self}) {
 	return 0 if $index % 2 == 0 && $item->isUnescapedOperator();
-	return 0 if ($index % 2 == 1 && !$item->isUnescapedOperator() &&
-				 ($item ne '&&' && $item ne '||'));
+
+	if ($index % 2 == 1) {
+	  return 0 if !$item->isUnescapedOperator();
+	  return 0 unless (${$item} eq '&&' || ${$item} eq '||');
+	}
 	$index++;
   }
   return 1;
@@ -980,7 +983,8 @@ sub withArrowResolved {
 
 
 # Search for auto-infixed operations (e.g '.' and '=>') and turn them
-# into infix subexpressions.  $oper is a regex that matches the
+# into infix subexpressions (more precisely: infix subexpressions that
+# have been parsed to prefix).  $oper is a regex that matches the
 # operator.
 sub withAutoInfixed {
   my ($self, $opRegex) = @_;
@@ -1646,10 +1650,10 @@ sub readLoLLine {
   # See if this line could be treated as infix
   if ($rlist->couldBeImpliedInfix()) {
 	$rlist = LL::InfixList->new(\@result)->asPrefixList();
+  } else {
+	# And do auto-infix conversion.
+	$rlist = $rlist->withAutoInfixDone();
   }
-
-  # Fix up the OO syntactic sugar
-  $rlist = $rlist->withAutoInfixDone();
 
   # Catch malformed expressions.
   die "Expression '@{[$rlist->printStr()]}' contains unescaped operators.\n"
