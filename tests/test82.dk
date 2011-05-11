@@ -12,8 +12,26 @@ puts
 
 
 puts "Hello, world!".printable
-puts [list 1 2 {2+1} 4 5].printable
+puts [list 1 2 {2\+1} 4 5].printable
 puts nil.printable
 puts 42.printable
 puts :some_symbol.printable
+
+# Test for wierd interpstring bug discovered here
+puts :""
+
+# Also test misc. string attributes
+for i in :['a' 'e' 'i' 'o' 'u' 'y' 'x' 'w' 'z'
+		   'A' 'E' 'I' 'O' 'U' ''
+		   'Aasd' 'Efes' 'ieos' 'Ousi' 'Uisn'] \
+	{
+		var is = ""
+
+		if (i.isVowel) {
+			is = "is"
+		} else {
+			is = "is not"
+		}
+		puts "$i $is a vowel"
+	}
 

@@ -2233,6 +2233,9 @@ sub splitInterpString {
   # First, divvy into vars and strings.
   my @parts = ("");
 
+  # The empty string is a special case
+  return [""] if $str eq "";
+
   while (1) {
 	last unless length($str) > 0;
 

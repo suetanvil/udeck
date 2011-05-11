@@ -43,6 +43,7 @@ Notes:
 
 	- 'lookup' and 'defined' only query the global namespace.
 
+	- '||' and '&&' imply infix in LoLs.
 
 Functions Todo:
 X	-listSized
@@ -233,14 +234,7 @@ X			-clearForwards needs to return name and value pairs
 X			-builtin_mproc needs to check for argument mismatches
 X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
-
-
-	-switch to odd-operator notation (i.e. all () expressions IN LoL
-     LINES have operators at odd slots; all prefix expressions have no
-     unescaped operators; 'var' and 'const' are exceptions, as are
-     auto-infixed espressions)
-		-() expressions don't always resolve to function calls
-
+X	- || and && expressions are now infix in LoLs.
 		
 	- bug: String.isVowel doesn't work
 		-due to bad || expr.
