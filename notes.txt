@@ -235,12 +235,14 @@ X			-builtin_mproc needs to check for argument mismatches
 X	-bug: implement '||' and '&&'
 X		-also, & and | (bitwise ops)
 X	- || and && expressions are now infix in LoLs.
-		
-	- bug: String.isVowel doesn't work
-		-due to bad || expr.
-			-need to be more stringent about infix/prefix
-			-we can get away with it, I think.
-			-catch unescaped operator in prefix LoL expression
+X	-bug: '' is not an empty string.
+X	- bug: String.isVowel doesn't work
+X		-due to bad || expr.
+X			-need to be more stringent about infix/prefix
+X			-we can get away with it, I think.
+X			-catch unescaped operator in prefix LoL expression
+
+
 	-bug: arguments to setters/getters are silently ignored(?)
 	-boolean xor
 	-need canary to catch broken infix expressions		

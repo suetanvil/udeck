@@ -18,12 +18,19 @@ puts 42.printable
 puts :some_symbol.printable
 
 # Test for wierd interpstring bug discovered here
-puts :""
+puts "[" :"" "]"
+
+# Test for string literal bug here.  Even sequences of single quotes
+# are empty strings.
+puts "[" '' "]"
+puts "[" '''' "]"
+puts "[" '''''''' "]"
+
 
 # Also test misc. string attributes
-for i in :['a' 'e' 'i' 'o' 'u' 'y' 'x' 'w' 'z'
-		   'A' 'E' 'I' 'O' 'U' ''
-		   'Aasd' 'Efes' 'ieos' 'Ousi' 'Uisn'] \
+for i in :["a" "e" "i" "o" "u" "y" "x" "w" "z"
+		   "A" "E" "I" "O" "U" ""
+		   "Aasd" "Efes" "ieos" "Ousi" "Uisn"] \
 	{
 		var is = ""
 

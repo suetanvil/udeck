@@ -69,9 +69,7 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 
 _class_ext String {
 	method isVowel_get {} {
-		if (self.size > 1) {
-			return (self@0).isVowel
-		}
+		(self.size != 1) && [return nil]
 
 		var lc = self.lowercase
 

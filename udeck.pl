@@ -1933,6 +1933,11 @@ sub readLoL {
 	  or die "WTF???\n";
 	my $delimCount = length($1);
 
+	# There needs to be an odd number of delimiters.  An even number
+	# is interpreted as empty because there are matching opening and
+	# closing quotes.
+	return ($line, "") if ($delimCount % 2 == 0);
+
 	my $result = '';
 	while (1) {
 
