@@ -57,7 +57,7 @@ _class_ext Nil {
 
 _class_ext List {
 	method isIndexable_get {} {return 1}
-	method list_get {} {return "[@{self}]"}
+	method printable_get {} {return "[@{self}]"}
 }
 
 _class_ext Stringlike {
@@ -82,7 +82,7 @@ _class_ext String {
 	}
 
 	method lowercase_get {} {return [_downcase self]}
-	method printable_get {} {return self}
+	method printable_get {} {return "'$self'"}
 }
 
 
@@ -91,32 +91,34 @@ _class_ext Symbol {
 }
 
 _class_ext ByteArray {
- 	printable_get {} {
- 		const CUTOFF = 5
-		var result = "[byteArray"
+#   	method printable_get {} {
+#   		const CUTOFF = 5
+#  		var result = "[byteArray"
 
-		var count = 0
-		while (count < CUTOFF) {
-			if (count < self.size) {
-				result = [concat result " " [sprintf "0x%02x" (self@count)]]
-			}
-			count = count + 1
-		}
+#  		var count = 0
+#  		while (count < CUTOFF) {
+#  			if (count < self.size) {
+#  				result = [concat result " " [sprintf "0x%02x" (self@count)]]
+#  			}
+#  			count = count + 1
+#  		}
 
-		if (self.size > CUTOFF) {
-			result = [concat result " ... " [sprintf "0x%02x" (self@(-1))]]
-		}
+#  		if (self.size > CUTOFF) {
+#  			result = [concat result " ... " [sprintf "0x%02x" (self@(-1))]]
+#  		}
 
-		result = [concat result "]"]
- 	}
+#  		result = [concat result "]"]
+#   	}
 }
 
 _class_ext Struct {
 
 }
 
-
 _class_ext Quote {
+	method printable_get {} {
+		return "[Quote $self]"
+	}
 }
 
 _class_ext Macro {

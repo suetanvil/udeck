@@ -3494,70 +3494,81 @@ sub initGlobals {
 	{
 	 # Double-dispatched methods.  Remember, the arguments are
 	 # reversed, so $self is the RHS and $other is the LHS.
-	 addNumber	=> sub {my ($self, $other) = @_;
+	 addNumber	=> sub {my ($self, $other) = @_; checkNargs('addNumber',\@_,2);
 						$other->checkNumber(" in addNumber");
 						return LL::Number->new(${$self} + ${$other})},
 					
-	 subNumber	=> sub {my ($self, $other) = @_;
-						$other->checkNumber(" in addNumber");
+	 subNumber	=> sub {my ($self, $other) = @_; checkNargs('subNumber',\@_,2);
+						$other->checkNumber(" in subNumber");
 						return LL::Number->new(${$other} - ${$self})},
 					
-	 modNumber	=> sub {my ($self, $other) = @_;
+	 modNumber	=> sub {my ($self, $other) = @_; checkNargs('modNumber',\@_,2);
 						$other->checkNumber(" in modNumber");
 						die "Modulo by zero error\n" if ${$self} == 0;
 						return decktype(int(${$other}) % int(${$self}))},
 
-	 multNumber => sub {my ($self, $other) = @_;
+	 multNumber => sub {my ($self, $other) = @_;checkNargs('multNumber',\@_,2);
 						$other->checkNumber(" in multNumber");
 						return decktype(${$other} * ${$self})},
 
-	 divNumber  => sub {my ($self, $other) = @_;
+	 divNumber  => sub {my ($self, $other) = @_; checkNargs('divNumber',\@_,2);
 						$other->checkNumber(" in divNumber");
 						die "Division by zero error\n" if ${$self} == 0;
 						return decktype(${$other} / ${$self})},
 
 	 divTruncNumber => sub {my ($self, $other) = @_;
-						$other->checkNumber(" in divTruncNumber");
-						die "Division by zero error\n" if ${$self} == 0;
-						return decktype(int(${$other} / ${$self}))},
+							checkNargs('divTruncNumber', \@_, 2);
+							$other->checkNumber(" in divTruncNumber");
+							die "Division by zero error\n" if ${$self} == 0;
+							return decktype(int(${$other} / ${$self}))},
 
-	 ltNumber	=> sub {my ($self, $other) = @_;
+	 ltNumber	=> sub {my ($self, $other) = @_; checkNargs('ltNumber', \@_,2);
 						$other->checkNumber(" in ltNumber");
 						return boolObj(${$other} < ${$self})},
 
-	 lteNumber	=> sub {my ($self, $other) = @_;
+	 lteNumber	=> sub {my ($self, $other) = @_; checkNargs('lteNumber',\@_,2);
 						$other->checkNumber(" in lteNumber");
 						return boolObj(${$other} <= ${$self})},
 
-	 gtNumber	=> sub {my ($self, $other) = @_;
+	 gtNumber	=> sub {my ($self, $other) = @_; checkNargs('gtNumber',\@_,2);
 						$other->checkNumber(" in gtNumber");
 						return boolObj(${$other} > ${$self})},
 
-	 gteNumber	=> sub {my ($self, $other) = @_;
+	 gteNumber	=> sub {my ($self, $other) = @_; checkNargs('gteNumber',\@_,2);
 						$other->checkNumber(" in gteNumber");
 						return boolObj(${$other} >= ${$self})},
 
-	 powNumber  => sub {my ($self, $other) = @_;
+	 powNumber  => sub {my ($self, $other) = @_; checkNargs('powNumber',\@_,2);
 						$other->checkNumber(" in powNumber");
 						return decktype(${$other} ** ${$self})},
 
-	 bitOrNumber=> sub {my ($self, $other) = @_;
+	 bitOrNumber=> sub {my ($self, $other) = @_; 
+						checkNargs('bitOrNumber', \@_, 2);
 						$other->checkNumber(" in bitOrNumber");
 						return decktype(int(${$other}) | int(${$self}))},
 
 	 bitXorNumber=>sub {my ($self, $other) = @_;
+						checkNargs('bitXorNumber', \@_, 2);
 						$other->checkNumber(" in bitXorNumber");
 						return decktype(int(${$other}) ^ int(${$self}))},
 
 	 bitAndNumber=>sub {my ($self, $other) = @_;
+						checkNargs('bitAndNumber', \@_, 2);
 						$other->checkNumber(" in bitAndNumber");
 						return decktype(int(${$other}) & int(${$self}))},
 
 	};
 
+  defclass 'Quote',			'Object',
+  {
+   value_get	=> sub {my ($self) = @_; checkNargs('value_get', \@_, 1);
+						return $self->value()},
+   value_put	=> sub {my ($self, $value) = @_; checkNargs('value_set',\@_,2);
+						return $value},
+
+  };
 
   defclass 'Nil',			'Object', {};
-  defclass 'Quote',			'Object', {};
   defclass 'Macro',			'Object', {};
   defclass 'Function',		'Object', {};
   defclass 'Method',		'Object', {};
