@@ -87,7 +87,7 @@ _class_ext String {
 
 
 _class_ext Symbol {
-	printable_get {} {return ":$self"}
+	method printable_get {} {return ":$self"}
 }
 
 _class_ext ByteArray {

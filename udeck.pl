@@ -4333,7 +4333,7 @@ sub mk_method {
 
 
 sub class_methods {
-  my ($body, $fields) = @_;
+  my ($body, $fields, $methodsOnly) = @_;
 
   my %methods = ();
   for my $entry (@{$body}) {
@@ -4341,7 +4341,13 @@ sub class_methods {
 
 	my $start = $entry->[0];
 	$start->checkSymbol();
-	next if ${$start} ne 'method';
+
+	
+	if (${$start} ne 'method') {
+	  die "Expecting 'method' declaration; got '${$start}'.\n"
+		if $methodsOnly;
+	  next;
+	}
 
 	die "Malformed method declaration: '@{[$entry->printStr()]}'.\n"
 	  unless scalar @{$entry} == 4;
@@ -4420,7 +4426,7 @@ sub builtin_class {
 	if (scalar keys %{$fields} > 0 &&
 		!$superclass->isStructuredClass());
 
-  my $methods = class_methods($body, $fields);
+  my $methods = class_methods($body, $fields, 0);
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,
@@ -4434,7 +4440,7 @@ sub builtin_class_ext {
   my ($class, $body) = @_;
 
   $class->checkClass();
-  my $methods = class_methods($body, {});
+  my $methods = class_methods($body, {}, 1);
   $class->addMethods ($methods);
 
   LL::Class->refreshAllBuiltinClassMethodCaches();
