@@ -1,0 +1,51 @@
+[]
+[]
+[]
+[]
+
+a is a vowel
+e is a vowel
+i is a vowel
+o is a vowel
+u is a vowel
+y is not a vowel
+x is not a vowel
+w is not a vowel
+z is not a vowel
+A is a vowel
+E is a vowel
+I is a vowel
+O is a vowel
+U is a vowel
+ is not a vowel
+Aasd is not a vowel
+Efes is not a vowel
+ieos is not a vowel
+Ousi is not a vowel
+Uisn is not a vowel
+
+class Class
+class String
+
+a ConsonentClass
+an AnotherVowelClass
+This class implements printable
+
+'Hello, world!'
+nil
+42
+:some_symbol
+[Quote :x]
+[byteArray 0x01 0x02 0x03]
+[byteArray 0x01 0x02 0x03 0x04]
+[byteArray 0x01 0x02 0x03 0x04 0x05]
+[byteArray 0x01 0x02 0x03 0x04 0x05 0x06]
+[byteArray 0x01 0x02 0x03 0x04 0x05 0x06 0x07]
+[byteArray 0x01 0x02 0x03 0x04 0x05 .. 0x08]
+[byteArray 0x01 0x02 0x03 0x04 0x05 .. 0x09]
+[list 1 2 [[2 + 1]] 4 5]
+[list 1 2 [[2 + 1]] 4 5 6]
+[list 1 2 [[2 + 1]] 4 5 6 7]
+[list 1 2 [[2 + 1]] 4 5 .. 8]
+[list 1 2 [[2 + 1]] 4 5 .. 9]
+[list 1 2 [[2 + 1]] 4 5 .. 10]

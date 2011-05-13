@@ -7,6 +7,11 @@ var Version = '0.01';
 
 perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
 
+const {
+	true = 1
+	false = nil
+}
+
 _class_ext Number {
 
 	# Double-dispatch methods
@@ -24,6 +29,8 @@ _class_ext Number {
 	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
 	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
 	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
+
+	method printable_get {} {return "$self"}
 }
 
 # Base class for all traditional structured objects
@@ -57,7 +64,21 @@ _class_ext Nil {
 
 _class_ext List {
 	method isIndexable_get {} {return 1}
-	method printable_get {} {return "[@{self}]"}
+	method printable_get {} {
+		const MAX = 5
+		(self.size < MAX + 3) && [return "[list @{self}]"]
+
+		var sublist = [listSized MAX]
+
+		var index = 0
+		while (index < MAX) {
+			sublist@index = self@index
+			index = index + 1
+		}
+
+		var last = self @ -1
+		return "[list @sublist .. $last]"
+	}
 }
 
 _class_ext Stringlike {
@@ -91,28 +112,41 @@ _class_ext Symbol {
 }
 
 _class_ext ByteArray {
-#   	method printable_get {} {
-#   		const CUTOFF = 5
-#  		var result = "[byteArray"
+   	method printable_get {} {
+		const MAXSIZE = 5
+		var {count = MAXSIZE}
 
-#  		var count = 0
-#  		while (count < CUTOFF) {
-#  			if (count < self.size) {
-#  				result = [concat result " " [sprintf "0x%02x" (self@count)]]
-#  			}
-#  			count = count + 1
-#  		}
+		var dotdot = " .. "
+		var last = [sprintf "0x%02x" (self@ -1)]
 
-#  		if (self.size > CUTOFF) {
-#  			result = [concat result " ... " [sprintf "0x%02x" (self@(-1))]]
-#  		}
+		if (self.size < MAXSIZE + 3) {
+			dotdot = ""
+			last = ""
+			count = self.size
+		}
 
-#  		result = [concat result "]"]
-#   	}
+		var formatted = [listSized count]
+		var index = 0
+		while (index < count) {
+			formatted@index = [sprintf "0x%02x" (self@index)]
+			index = index + 1
+		}
+
+		return "[byteArray @formatted$dotdot$last]"
+   	}
 }
 
 _class_ext Struct {
 
+}
+
+_class_ext Class {
+	method printable_get {} {
+		var nm = self.name
+		(nm.size == 0) && [return "a Class"]
+		
+		return "class $nm"
+	}
 }
 
 _class_ext Quote {

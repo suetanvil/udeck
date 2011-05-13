@@ -244,15 +244,16 @@ X			-catch unescaped operator in prefix LoL expression
 
 
 	-bug: arguments to setters/getters are silently ignored(?)
-	-boolean xor
 	-need canary to catch broken infix expressions		
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	- 'printable' attribute on all builtin classes
+	-string ==; list/byteArray ==;
 
 
 
 
+	-boolean xor
 	- static variables
 	- integers
 	- subify builtin
