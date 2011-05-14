@@ -511,9 +511,9 @@ sub perlForm {my ($self) = @_; die "No perl form for @{[$self->printStr]}\n"}
 sub equals {
   my ($self, $other) = @_;
   return LL::Main::boolObj(ref($self) eq ref($other) &&
-						   $self->inTypeEq($other));
+						   $self->_inTypeEq($other));
 }
-sub inTypeEq {my ($self, $other) = @_; return $self == $other }
+sub _inTypeEq {my ($self, $other) = @_; return $self == $other }
 
 sub checkIndexable {
   my ($self) = @_;
@@ -596,7 +596,7 @@ sub checkByte {
 sub isTrue {my ($self) = @_; !! ${$self} }
 sub isLiteral {return 1}
 sub isNumber {return 1}
-sub inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
+sub _inTypeEq {my ($self, $other) = @_; return ${$self} == ${$other} }
 sub perlForm {my ($self) = @_; return ${$self}}
 
 
@@ -828,7 +828,7 @@ sub printStr {
   my ($self) = @_;
   return "[".join (" ", map { $_->printStr() } @{$self})."]";
 }
-sub inTypeEq {
+sub _inTypeEq {
   my ($self, $other) = @_;
 
   return 0 unless scalar @{$self} == scalar @{$other};
@@ -1164,7 +1164,7 @@ sub isAtom {return 1}
 sub isNil {return 1}
 sub isTrue {return 0}
 sub storeStr {"nil"}
-sub inTypeEq {my ($self, $other) = @_; $other->isNil}
+sub _inTypeEq {my ($self, $other) = @_; $other->isNil}
 sub perlForm {my ($self) = @_; return undef}
 
 use constant NIL => LL::Nil->new();	# The only instance you should use
@@ -3327,8 +3327,8 @@ sub initGlobals {
   # More complex primitive functions
   prim2 '===',			sub { checkNargs('===', \@_, 2);
 							  return boolObj($_[0] == $_[1])};
-  prim2 '==',			sub { checkNargs('==', \@_, 2);
-							  return $_[0]->equals($_[1]) };
+#  prim2 '==',			sub { checkNargs('==', \@_, 2);
+#							  return $_[0]->equals($_[1]) };
   prim2 'list',			sub { return LL::List->new(\@_) };
   prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) };
@@ -3428,7 +3428,7 @@ sub initGlobals {
   op_method '|',  'op_BitOr';
   op_method '&',  'op_BitAnd';
   op_method '^',  'op_BitXor';
-
+  op_method '==', 'op_Equals';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -3556,6 +3556,10 @@ sub initGlobals {
 						checkNargs('bitAndNumber', \@_, 2);
 						$other->checkNumber(" in bitAndNumber");
 						return decktype(int(${$other}) & int(${$self}))},
+
+	 op_Equals	=> sub {my ($self, $other) = @_; checkNargs('op_Equals',\@_,2);
+						return NIL unless $other->isNumber();
+						return boolObj(${$self} == ${$other})},
 
 	};
 

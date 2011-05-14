@@ -241,15 +241,13 @@ X		-due to bad || expr.
 X			-need to be more stringent about infix/prefix
 X			-we can get away with it, I think.
 X			-catch unescaped operator in prefix LoL expression
+X	-bug: arguments to setters/getters are silently ignored(?)
 
-
-	-bug: arguments to setters/getters are silently ignored(?)
 	-need canary to catch broken infix expressions		
 	- '+' should also concatenate lists and strings
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	- 'printable' attribute on all builtin classes
 	-string ==; list/byteArray ==;
-
 
 
 

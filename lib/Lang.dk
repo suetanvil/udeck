@@ -12,6 +12,8 @@ const {
 	false = nil
 }
 
+proc _seq_Equals
+
 _class_ext Number {
 
 	# Double-dispatch methods
@@ -41,12 +43,14 @@ _class_ext Object {
 
 	method init {args} {}
 
+	method isNil_get {} {return nil}
+	method op_Equals {other} {return (self === other)}
+
 	method at {index} {die "Not indexable."}
 	method atPut {index value} {die "Not indexable."}
 	method size_get {} {die self.class " is not indexable."}
 	method isIndexable_get {} {return nil}
 
-	method isNil_get {} {return nil}
 
 	method printable_get {} {
 		var cl = self.class.name
@@ -54,6 +58,7 @@ _class_ext Object {
 
 		return "$a $cl"
 	}
+
 }
 
 
@@ -79,6 +84,8 @@ _class_ext List {
 		var last = self @ -1
 		return "[list @sublist .. $last]"
 	}
+
+	method op_Equals {obj} {return [_seq_Equals self obj]}
 }
 
 _class_ext Stringlike {
@@ -90,25 +97,31 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 
 _class_ext String {
 	method isVowel_get {} {
-		(self.size != 1) && [return nil]
+		(self.size != 1) && [return false]
 
 		var lc = self.lowercase
 
 		for v in [list "a" "e" "i" "o" "u"] {
 			if (lc == v) {
-				return 1
+				return true
 			}
 		}
-		return nil
+		return false
 	}
 
 	method lowercase_get {} {return [_downcase self]}
 	method printable_get {} {return "'$self'"}
+	method op_Equals {obj} {return [_seq_Equals self obj]}
 }
 
 
 _class_ext Symbol {
 	method printable_get {} {return ":$self"}
+
+	method op_Equals {obj} {
+		(obj.class == String) && [return ("$self" == obj)]
+		return (self === obj)
+	}
 }
 
 _class_ext ByteArray {
@@ -134,6 +147,8 @@ _class_ext ByteArray {
 
 		return "[byteArray @formatted$dotdot$last]"
    	}
+
+	method op_Equals {obj} {return [_seq_Equals self obj]}
 }
 
 _class_ext Struct {
@@ -151,7 +166,13 @@ _class_ext Class {
 
 _class_ext Quote {
 	method printable_get {} {
-		return "[Quote $self]"
+		var v = self.value
+		return "[Quote $v]"
+	}
+
+	method op_Equals {obj} {
+		(self.class == obj.class) || [return false]
+		return (self.value == obj.value)
 	}
 }
 
@@ -168,6 +189,22 @@ _class_ext MethodCall {
 }
 
 _class_ext PerlObj {
+}
+
+
+# Equality support.  This should really be part of a trait, but Deck
+# doesn't implement them yet.
+proc _seq_Equals {left right} {
+	(left.class === right.class) || [return false]
+	(left.size == right.size) || [return false]
+
+	var index = 0
+	for elem in left {
+		(elem == right@index) || [return false]
+		index = index + 1
+	}
+
+	return true
 }
 
 
