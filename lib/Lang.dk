@@ -111,7 +111,8 @@ _class_ext String {
 
 	method lowercase_get {} {return [_downcase self]}
 	method printable_get {} {return "'$self'"}
-	method op_Equals {obj} {return [_seq_Equals self obj]}
+
+	# op_Equals is implemented in Perl
 }
 
 
@@ -199,8 +200,8 @@ proc _seq_Equals {left right} {
 	(left.size == right.size) || [return false]
 
 	var index = 0
-	for elem in left {
-		(elem == right@index) || [return false]
+	while (index < left.size) {
+		(left@index == right@index) || [return false]
 		index = index + 1
 	}
 

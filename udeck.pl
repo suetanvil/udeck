@@ -3486,7 +3486,15 @@ sub initGlobals {
 						return decktype($self->size());},
 	};
 
-  defclass 'String',		'Stringlike', {};
+  defclass 'String',		'Stringlike',
+	{
+	 op_Equals	=> sub {my ($self, $other) = @_; checkNargs('op_Equals',\@_,2);
+						return NIL unless ($other->isString() || 
+										   $other->isSymbol());
+						return boolObj(${$self} eq ${$other})},
+	};
+
+
   defclass 'Symbol',		'Stringlike', {};
   defclass 'ByteArray',		'Stringlike', {};
 

@@ -1,4 +1,4 @@
-<function>
+<macro>
 nil
 nil
 1
