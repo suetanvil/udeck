@@ -3327,8 +3327,6 @@ sub initGlobals {
   # More complex primitive functions
   prim2 '===',			sub { checkNargs('===', \@_, 2);
 							  return boolObj($_[0] == $_[1])};
-#  prim2 '==',			sub { checkNargs('==', \@_, 2);
-#							  return $_[0]->equals($_[1]) };
   prim2 'list',			sub { return LL::List->new(\@_) };
   prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) };
@@ -3489,7 +3487,7 @@ sub initGlobals {
   defclass 'String',		'Stringlike',
 	{
 	 op_Equals	=> sub {my ($self, $other) = @_; checkNargs('op_Equals',\@_,2);
-						return NIL unless ($other->isString() || 
+						return NIL unless ($other->isString() ||
 										   $other->isSymbol());
 						return boolObj(${$self} eq ${$other})},
 	};

@@ -1,36 +1,114 @@
 
 proc cmp {a b} {
 	if {==  a b} {
-		puts a " == " b
+		puts a.printable " == " b.printable
 	} else {
-		puts a " != " b
+		puts a.printable " != " b.printable
 	}
 }
 
 
 cmp 1 1
 cmp 2 1
-cmp "foo" 4
+cmp 2.0 2
+puts
 
+cmp "foo" 4
 cmp "foo" "bar"
 cmp "foo" "foo"
+puts
 
 var f
 set f "foo"
 cmp f f
+puts
 
 cmp "foo" :foo
 cmp :foo "foo"
 cmp :foo :foo
-
 cmp :foo :bar
-
+puts
 
 cmp [list 1 2 3] [list 4 5 6]
 cmp [list 1 2 3 "foo"] [list 1 2 3 "foo"]
 cmp [list 1 2 3 "foo"] [list 1 2 3 "foo" 5 6]
+puts
 
 cmp ::1 ::2
 cmp ::1 ::1
 cmp ::"foo" ::"foo"
 cmp ::"foo" ::"bar"
+
+# More changes
+cmp nil nil
+cmp nil 42
+cmp nil "foo"
+puts
+
+cmp [byteArray 1 2 3 4] [byteArray 1 2 3 4]
+cmp [byteArray 1 2 3 4] [byteArray 1 2 3]
+cmp [byteArray 1 2 3 4] [list 1 2 3 4]
+cmp [byteArray 120 120 120 120] "xxxx"
+puts
+
+
+# Class tests
+class Foo {
+	readable a b
+	method _init {ia ib} {
+		a = ia
+		b = ib
+	}
+
+	method printable_get {} {
+		var cl = self.class.name
+		return "[$cl->new $a $b]"
+	}
+
+	method op_Equals {other} {
+		(other.class == Foo) || [return false]
+		return (a == other.a && b == other.b)		
+	}
+}
+
+class Bar Foo {
+	method op_Equals {other} {
+		(other.class == Bar || other.class == Foo) && \
+			[return [super->op_Equals other]]
+		return false
+	}
+} 
+
+
+var a = [Foo->new 1 2]
+var b = [Foo->new 1 2]
+var c = [Foo->new 2 3]
+
+cmp a b
+cmp a c
+cmp b c
+cmp a "hello, world"
+puts
+
+var d = [Bar->new 1 2]
+var e = [Bar->new 2 11]
+
+cmp d e
+cmp a d
+cmp d a
+puts
+
+
+class Yup {method op_Equals {other} {return true}}
+
+var f = [Yup->new]
+var g = [Yup->new]
+cmp f g
+cmp f 42
+cmp 42 f
+cmp f e
+cmp e f
+cmp a f
+cmp f a
+
+
