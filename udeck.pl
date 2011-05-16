@@ -2140,6 +2140,7 @@ sub evalExpr {
   };
 
   $expr->isList() and do {
+#$DB::single = 1 if ${$expr->[0]} eq 'puts';
 	return evalFuncCall($expr, $context);
   };
 
@@ -2431,7 +2432,7 @@ sub ensureVarsDeclared {
 sub compile {
   my ($outerContext, $args, $body, $mode, $name) = @_;
   $body->checkLoL();
-
+$DB::single = 1 if $name eq 'op_Add';
   $name ||= '<unnamed function>';
 
   die "Unknown compiler mode '$mode'\n"
@@ -3624,7 +3625,8 @@ sub mkModPath {
 
 sub builtin_puts {
   for my $obj (@_) {
-	die "Not an object: '$obj'\n"
+$DB::single = 1 unless (ref($obj) && isa($obj, 'LL::Object'));
+	die "builtin_puts: Not an object: '$obj'\n"
 	  unless (ref($obj) && isa($obj, 'LL::Object'));
 	print $obj->printStr();
   }
@@ -4261,6 +4263,7 @@ sub doMethodLookup {
 # Implements the guts of the '->' operator.
 sub builtin_getMethod {
   my ($object, $methodName) = @_;
+$DB::single = 1 if ($object->isList() && ${$methodName} eq 'op_Add');
   return doMethodLookup($object, $methodName, 0);
 }
 

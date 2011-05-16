@@ -6,6 +6,8 @@ class Foo {
 	method x {t} {puts t}
 	method seta {newA} {a = newA}
 	method puta {} {puts a}
+
+	method retself {} {puts "should return self."}
 }
 
 var z = [new Foo]
@@ -28,4 +30,7 @@ puts (x === z)
 
 puts "Is z indexable? " z.isIndexable
 
-
+# More explicit test of the return value of return-less methods.
+var x
+x = [z->retself]
+puts (x === z)

@@ -8,3 +8,5 @@ Are they the same object?
 <struct>, <struct>
 1
 Is z indexable? nil
+should return self.
+1

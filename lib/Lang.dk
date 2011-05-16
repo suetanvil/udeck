@@ -13,6 +13,8 @@ const {
 }
 
 proc _seq_Equals
+proc _write_seq
+
 
 _class_ext Number {
 
@@ -50,7 +52,7 @@ _class_ext Object {
 	method atPut {index value} {die "Not indexable."}
 	method size_get {} {die self.class " is not indexable."}
 	method isIndexable_get {} {return nil}
-
+	method last_get {} {return (self.size - 1)}
 
 	method printable_get {} {
 		var cl = self.class.name
@@ -86,6 +88,13 @@ _class_ext List {
 	}
 
 	method op_Equals {obj} {return [_seq_Equals self obj]}
+
+	method op_Add {otherSeq} {
+		var result = [listSized (self.size + otherSeq.size)]
+		_write_seq self otherSeq result
+#		return result
+	}
+
 }
 
 _class_ext Stringlike {
@@ -113,6 +122,13 @@ _class_ext String {
 	method printable_get {} {return "'$self'"}
 
 	# op_Equals is implemented in Perl
+
+	method op_Add {otherString} {
+		var result = [listSized (self.size + otherString.size)]
+		_write_seq self otherString result
+#		return result
+	}
+
 }
 
 
@@ -206,6 +222,22 @@ proc _seq_Equals {left right} {
 	}
 
 	return true
+}
+
+
+# Write the contents of src1 and src2 sequentially onto dest.  Assumes
+# that dest is long enough and of the right type to hold the contents.
+proc _write_seq {src1 src2 dest} {
+	var index = 0
+	for item in src1 {
+		dest@index = item
+		index = index + 1
+	}
+
+	for item in src2 {
+		dest@index = item
+		index = index + 1
+	}
 }
 
 
