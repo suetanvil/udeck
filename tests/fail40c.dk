@@ -1,0 +1,4 @@
+# Test bytesSized with negative argument.
+
+var b = [bytesSized -5]
+puts (b.size)

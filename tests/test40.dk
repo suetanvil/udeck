@@ -1,6 +1,38 @@
+# Test the *Sized functions
 
 # test 'listSized' function
 var l = [listSized 5]
 puts [size l]
 puts l
+
+l = [listSized 0]
+puts l
+puts
+
+# Test bytesSized
+var b = [bytesSized 5]
+puts (b.size)
+puts (b@0) "," (b@3)
+
+b = [bytesSized 0]
+puts (b.size)
+puts
+
+# Test stringSized
+var s = [stringSized 5]
+puts "[$s]"
+puts s.size
+
+s@0 = "f"
+s@1 = "o"
+s@2 = "o"
+puts s
+
+s@3 = "!"
+s@4 = "!"
+puts s
+
+s = [stringSized 0]
+puts (s == "")
+
 

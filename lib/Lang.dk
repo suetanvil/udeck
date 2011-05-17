@@ -126,9 +126,9 @@ _class_ext String {
 	# op_Equals is implemented in Perl
 
 	method op_Add {otherString} {
-		var result = [listSized (self.size + otherString.size)]
+		var result = [stringSized (self.size + otherString.size)]
 		_write_seq self otherString result
-#		return result
+		return result
 	}
 
 }

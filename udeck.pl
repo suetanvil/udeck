@@ -3336,14 +3336,20 @@ sub initGlobals {
   prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
 							  $size->checkNumber();
 							  die "Invalid byteArray size: ${$size}\n"
-								unless ${$size} > 0;
+								unless ${$size} >= 0;
 							  return LL::ByteArray->newSized(${$size})
+							};
+  prim2 'stringSized',	sub { my ($size) = @_; checkNargs('stringSized',\@_,1);
+							  $size->checkNumber();
+							  die "Invalid string size: ${$size}\n"
+								unless ${$size} >= 0;
+							  return LL::String->new("\0" x ${$size});
 							};
   prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
   prim2 'listSized',	sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
 							  $size->checkNumber();
 							  die "Invalid list size: ${$size}\n"
-								unless ${$size} > 0;
+								unless ${$size} >= 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
   prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);

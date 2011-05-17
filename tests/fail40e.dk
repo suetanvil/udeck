@@ -1,0 +1,4 @@
+# What happens when we try to assign a multi-character string into a string?
+
+var s = "foobar"
+s@3 = "oooo"

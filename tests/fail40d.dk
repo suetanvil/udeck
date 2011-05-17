@@ -1,0 +1,2 @@
+var s = [stringSized -5]
+puts "[$s]"

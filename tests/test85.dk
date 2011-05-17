@@ -1,0 +1,19 @@
+# Test sequence concatenation.  Also test method default returns and
+# bytesSized and stringSized.
+
+# Test default return value for basic class
+for obj in [list Class [list 1 2 3] 'xxx' :yyy [byteArray 1 2 3] 42 ::42
+			nil puts (1..5)] {
+	if (obj.self === obj) {
+		puts "Matches for " obj.class
+	} else {
+		puts "NO MATCH for " obj.class
+	}
+}
+
+
+
+# Test sequence concatenation
+puts (:[1 2 3] + :[4 5 6])
+puts ("a b c" + " d e f")
+
