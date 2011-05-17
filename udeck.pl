@@ -589,7 +589,7 @@ sub checkByte {
   my ($self) = @_;
   my $val = ${$self};
 
-  $self->SUPER::checkNumber()
+  $self->SUPER::checkByte()
 	unless ( $val >= 0 && $val <= 255 && $val eq int($val) );
 }
 

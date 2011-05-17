@@ -1,0 +1,4 @@
+# Test storing a non-byte number in a byte array
+
+var x = [byteArray 1 2 3 4 5]
+x@2 = 512
