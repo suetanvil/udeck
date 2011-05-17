@@ -61,6 +61,8 @@ _class_ext Object {
 		return "$a $cl"
 	}
 
+	# Needed for test case
+	method self_get {} {}
 }
 
 
