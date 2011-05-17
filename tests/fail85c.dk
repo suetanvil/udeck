@@ -1,0 +1,2 @@
+# Test storing a non-byte number in a byte array
+puts ([byteArray 1 2 3 4 5] + "asdf")

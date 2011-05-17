@@ -1,0 +1,19 @@
+Matches for <class 'Class'>
+Matches for <class 'List'>
+Matches for <class 'String'>
+Matches for <class 'Symbol'>
+Matches for <class 'ByteArray'>
+Matches for <class 'Number'>
+Matches for <class 'Quote'>
+Matches for <class 'Nil'>
+Matches for <class 'Function'>
+Matches for <class 'LL::String=SCALAR(0x164f730)'>
+[1 2 3 4 5 6]
+[1 2 3 4 5 6]
+[1 2 3 f o o]
+[1 2 3 f o o]
+foobar
+foobar
+a b c d e f
+[byteArray 0x09 0x08 0x07 0x06 0x05 0x04]
+[byteArray 0x09 0x08 0x07 0x06 0x05 .. 0x02]

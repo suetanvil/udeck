@@ -15,5 +15,18 @@ for obj in [list Class [list 1 2 3] 'xxx' :yyy [byteArray 1 2 3] 42 ::42
 
 # Test sequence concatenation
 puts (:[1 2 3] + :[4 5 6])
+puts ([list 1 2 3] + [byteArray 4 5 6])
+puts ([list 1 2 3] + "foo")
+puts ([list 1 2 3] + :foo)
+
+puts ("foo" + :["b" "a" "r"])
+puts ("foo" + :bar)
 puts ("a b c" + " d e f")
+
+puts ([byteArray 9 8 7] + [byteArray 6 5 4]).printable
+puts ([byteArray 9 8 7] + :[6 5 4 3 2]).printable
+
+
+# To do:
+#puts (:foo + "bar")
 

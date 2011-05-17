@@ -94,7 +94,7 @@ _class_ext List {
 	method op_Add {otherSeq} {
 		var result = [listSized (self.size + otherSeq.size)]
 		_write_seq self otherSeq result
-#		return result
+		return result
 	}
 
 }
@@ -168,6 +168,13 @@ _class_ext ByteArray {
    	}
 
 	method op_Equals {obj} {return [_seq_Equals self obj]}
+
+	method op_Add {otherBArray} {
+		var result = [bytesSized (self.size + otherBArray.size)]
+		_write_seq self otherBArray result
+		return result
+	}
+
 }
 
 _class_ext Struct {
