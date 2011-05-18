@@ -248,9 +248,9 @@ X		--need to test all cases.
 X	- bug: LL::Class->storeStr() returns a string ref.
 
 	-need canary to catch broken infix expressions		
-	- '+' should also concatenate lists and strings
+X	- '+' should also concatenate lists and strings
 X		-bug: List->op_Add returns the context instead of self.
-		-need to concatenate symbols
+X		-need to concatenate symbols
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 
 	-get rid of sub 'prim' -- only used once

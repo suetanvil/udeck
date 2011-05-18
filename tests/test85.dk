@@ -28,5 +28,7 @@ puts ([byteArray 9 8 7] + :[6 5 4 3 2]).printable
 
 
 # To do:
-#puts (:foo + "bar")
+puts (:foo + "bar")
+puts (:baz + :bobo)
+puts (:quux + :["b" "l" "o" "r" "t"])
 

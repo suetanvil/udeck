@@ -142,8 +142,11 @@ _class_ext Symbol {
 		return (self === obj)
 	}
 
-#	method op_Add {obj} {
-#	}
+	method op_Add {obj} {
+		var result = [stringSized (self.size + obj.size)]
+		_write_seq self obj result
+		return result
+	}
 }
 
 _class_ext ByteArray {
