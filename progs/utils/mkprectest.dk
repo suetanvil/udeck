@@ -11,14 +11,17 @@ mproc permutations_for {
 	}
 
 	var first = seq@0
-	var rest = [slice 1 seq.last]
+	var rest = [slice seq 1 seq.last]
 
 	permutations_for rest {
-		var instance = [slice a 1 nil]
-		for index in (0 .. a.last) {
-			# XXX
+		for index in (0 .. a.size) {
+			var left = [slice a 0 (index - 1)]
+			var right = [slice a index a.last]
+
+			func (left + [list first] + right)
 		}
 	}
-
-
 }
+
+
+permutations_for [list 1 2 3 4 5] {puts a}

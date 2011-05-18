@@ -3331,8 +3331,8 @@ sub initGlobals {
   prim2 'list',			sub { return LL::List->new(\@_) };
   prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) };
-  prim2 'size',			sub { my ($l) = @_;  checkNargs('size', \@_, 1);
-							  return LL::Number->new($l->size())};
+#  prim2 'size',			sub { my ($l) = @_;  checkNargs('size', \@_, 1);
+#							  return LL::Number->new($l->size())};
   prim2 'byteArray',	sub { return LL::ByteArray->new(@_) };
   prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
 							  $size->checkNumber();

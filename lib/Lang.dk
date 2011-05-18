@@ -270,11 +270,8 @@ proc \!= {l r} {
 	return [not (l == r)]
 }
 
-
-# Return the last index in 'aList'
-proc last {aList} {
-	return ([size aList] - 1)
-}
+proc size {aList} {return aList.size}
+proc last {aList} {return aList.last}
 
 
 # Insert spacer between all elements in aList
@@ -318,7 +315,7 @@ class Interval Struct {
 		die "Attempted to write to read-only object."
 	}
 
-	method size {} {return length}
+	method size_get {} {return length}
 
 	method at {index} {
 		if (index >= length) {
