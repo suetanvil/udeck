@@ -245,6 +245,7 @@ X	-bug: arguments to setters/getters are silently ignored(?)
 X	- 'printable' attribute on all builtin classes
 X	- == is now a method
 X		--need to test all cases.
+X	- bug: LL::Class->storeStr() returns a string ref.
 
 	-need canary to catch broken infix expressions		
 	- '+' should also concatenate lists and strings

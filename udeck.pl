@@ -4457,7 +4457,7 @@ sub builtin_class {
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,
-							 0, $name);
+							 0, ${$name});
 
   return $class;
 }
