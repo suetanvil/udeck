@@ -3308,6 +3308,7 @@ sub initGlobals {
 				   ['_::perluse',		\&builtin_perluse],
 				   ['apply',			\&builtin_apply],
 				   ['intern',			\&builtin_intern],
+				   ['unintern',			\&builtin_unintern],
 				   ['_::class',			\&builtin_class],
 				   ['_::class_ext',		\&builtin_class_ext],
 				   ['_::getMethod',		\&builtin_getMethod],
@@ -4233,6 +4234,16 @@ sub builtin_intern {
   $string->checkString(" in 'intern'");
 
   return LL::Symbol->new(${$string});
+}
+
+
+sub builtin_unintern {
+  my ($symbol) = @_;
+
+  checkNargs('unintern', \@_, 1);
+  $symbol->checkSymbol(" in 'unintern'");
+
+  return LL::String->new(${$symbol});
 }
 
 

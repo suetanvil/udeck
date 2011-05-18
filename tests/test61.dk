@@ -1,8 +1,15 @@
 # Test 'intern'
 
 var s = "Hello, world!"
+var y = [intern s]
 
 puts [typeof s]
 puts [intern s]
 puts [typeof [intern s]]
+puts
+
+puts [typeof y]
+puts y
+puts [unintern y]
+puts [typeof [unintern y]]
 

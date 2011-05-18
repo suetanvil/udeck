@@ -248,7 +248,7 @@ X		--need to test all cases.
 
 	-need canary to catch broken infix expressions		
 	- '+' should also concatenate lists and strings
-		-bug: List->op_Add returns the context instead of self.
+X		-bug: List->op_Add returns the context instead of self.
 		-need to concatenate symbols
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 
