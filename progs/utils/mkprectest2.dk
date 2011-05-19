@@ -1,0 +1,35 @@
+# Emit a test case that exercises parsing of infix expressions.
+
+
+
+proc shuffle {aSeq} {
+	var result = [aSeq->shallowCopy]
+
+
+}
+
+proc withVarsAdded {opList} {
+	var result = :[v0]
+
+	var n = 1
+	for op in opList {
+		result = result + [list op "v$n"]
+		n = n + 1
+	}
+	
+	return result
+}
+
+# Supported operators.  '!!!!' is the stand-in user-defined op.
+var operators = :['.' '@' '=>' '->'
+				  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
+				  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
+				  '&&' '||' '!!!!' '=']
+
+permutations_for operators {
+	say "puts :("
+	for exprPart in [withVarsAdded a] {
+		say exprPart " "
+	}
+	puts ")"
+}

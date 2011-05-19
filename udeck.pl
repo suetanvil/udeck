@@ -682,6 +682,15 @@ sub newSized {
   return bless $self, $class;
 }
 
+sub newContaining {
+  my ($class, $contents) = @_;
+
+  my $self = \$contents;
+  return bless $self, $class;
+}
+
+
+
 sub isAtom {return 1}
 sub storeStr {
   my ($self) = @_;
@@ -3476,6 +3485,9 @@ sub initGlobals {
 						return $self->atPut($index, $value)},
 	 size_get	=> sub {my ($self) = @_; checkNargs('size_get', \@_, 1);
 						return decktype($self->size());},
+
+	 shallowCopy=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+						return LL::List->new ( [ @{$self} ] ); },
 	};
 
 
@@ -3495,11 +3507,17 @@ sub initGlobals {
 						return NIL unless ($other->isString() ||
 										   $other->isSymbol());
 						return boolObj(${$self} eq ${$other})},
+	 shallowCopy=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+						return LL::String->new (${$self})},
 	};
 
 
   defclass 'Symbol',		'Stringlike', {};
-  defclass 'ByteArray',		'Stringlike', {};
+  defclass 'ByteArray',		'Stringlike',
+	{
+	 shallowCopy=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+						return LL::ByteArray->newContaining (${$self})},
+	};
 
   defclass 'Number',		'Object',
 	{
@@ -3588,7 +3606,12 @@ sub initGlobals {
   defclass 'Function',		'Object', {};
   defclass 'Method',		'Object', {};
   defclass 'MethodCall',	'Object', {};
-  defclass 'PerlObj',		'Object', {};
+
+  defclass 'PerlObj',		'Object',
+  {
+   shallowCopy	=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+						return LL::PerlObj->new($self->[0])},
+  };
 
   defclass 'Struct',		'Object', {};
 

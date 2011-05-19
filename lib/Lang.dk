@@ -61,6 +61,8 @@ _class_ext Object {
 		return "$a $cl"
 	}
 
+	method shallowCopy {} {die "Called abstract shallowCopy"}
+
 	# Needed for test case
 	method self_get {} {}
 }
@@ -69,6 +71,8 @@ _class_ext Object {
 _class_ext Nil {
 	method isNil_get {} {return 1}
 	method printable_get {} {return "nil"}
+
+	method shallowCopy {} {return self}
 }
 
 _class_ext List {
@@ -147,6 +151,8 @@ _class_ext Symbol {
 		_write_seq self obj result
 		return result
 	}
+
+	method shallowCopy {} {return self}
 }
 
 _class_ext ByteArray {
@@ -184,7 +190,10 @@ _class_ext ByteArray {
 }
 
 _class_ext Struct {
-
+	method shallowCopy {} {
+		var cl = self.class.name
+		die "shallowCopy not implemented by class '$cl'"
+	}
 }
 
 _class_ext Class {
@@ -205,6 +214,14 @@ _class_ext Quote {
 	method op_Equals {obj} {
 		(self.class == obj.class) || [return false]
 		return (self.value == obj.value)
+	}
+
+	method _init {args} {
+		self.value = args@0
+	}
+
+	method shallowCopy {} {
+		return [Quote->new self.value]
 	}
 }
 
@@ -397,3 +414,6 @@ proc irand {max} {
 	return [int [rand max]]
 }
 
+
+# Make a shallow copy of a sequence
+#proc 
