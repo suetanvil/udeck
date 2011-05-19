@@ -339,10 +339,10 @@ class Interval Struct {
 
 
 # Produce a list of elements between start and end separated by 1
-proc range {start end} {
+proc \.. {start end} {
 	return [new Interval start end 1]
 }
-const \.. = range
+const range = \..
 
 
 # Extract a sublist from aList
