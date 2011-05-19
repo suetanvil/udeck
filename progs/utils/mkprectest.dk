@@ -1,5 +1,9 @@
-# Create a test case to exercise operator precedence
 
+# Emit a (very large) test case that exercises parsing of infix
+# expressions.
+
+# Unfortunately, this is too slow to actually be useful, but it makes
+# for an okay example of mproc so there is that.
 
 
 mproc permutations_for {
@@ -23,5 +27,28 @@ mproc permutations_for {
 	}
 }
 
+proc withVarsAdded {opList} {
+	var result = :[v0]
 
-permutations_for [list 1 2 3 4 5] {puts a}
+	var n = 1
+	for op in opList {
+		result = result + [list op "v$n"]
+		n = n + 1
+	}
+	
+	return result
+}
+
+# Supported operators.  '!!!!' is the stand-in user-defined op.
+var operators = :['.' '@' '=>' '->'
+				  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
+				  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
+				  '&&' '||' '!!!!' '=']
+
+permutations_for operators {
+	say "puts :("
+	for exprPart in [withVarsAdded a] {
+		say exprPart " "
+	}
+	puts ")"
+}
