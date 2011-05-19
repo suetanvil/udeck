@@ -387,3 +387,13 @@ proc concat {args} {
 }
 
 
+perlproc _rand {} ''' return rand(); '''
+
+proc rand {max} {
+	return (max * [_rand])
+}
+
+proc irand {max} {
+	return [int [rand max]]
+}
+
