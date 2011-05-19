@@ -252,6 +252,7 @@ X	- '+' should also concatenate lists and strings
 X		-bug: List->op_Add returns the context instead of self.
 X		-need to concatenate symbols
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
+	- should autosub args be capitalized?
 
 	-get rid of sub 'prim' -- only used once
 	-boolean xor
