@@ -192,10 +192,6 @@ _class_ext ByteArray {
 }
 
 _class_ext Struct {
-	method shallowCopy {} {
-		var cl = self.class.name
-		die "shallowCopy not implemented by class '$cl'"
-	}
 }
 
 _class_ext Class {
@@ -311,6 +307,11 @@ class Interval Struct {
 	readable start
 	var length
 	var incr
+
+	method op_Equals {other} {
+		(other.class == self.class) || [return false]
+		return (start == other.start && length == other.size)
+	}
 
 	method end_get {} {
 		return (self @ (length - 1))

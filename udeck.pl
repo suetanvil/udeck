@@ -1324,6 +1324,14 @@ sub new {
   return bless $self, $class;
 }
 
+# Make a shallow copy of $self.
+sub shallowCopy {
+  my ($self) = @_;
+
+  my $copy = { %{$self} };
+  return bless $copy, ref($self);
+}
+
 # Perlform is the unmodified object. This may change
 sub perlForm {my ($self) = @_; return $self;}
 sub storeStr {return "<struct>"}
@@ -3613,8 +3621,11 @@ sub initGlobals {
 						return LL::PerlObj->new($self->[0])},
   };
 
-  defclass 'Struct',		'Object', {};
-
+  defclass 'Struct',		'Object',
+  {
+   shallowCopy	=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+						return $self->shallowCopy()},
+  };
 
   # The external 'Lang' module
   if (!$noLib) {

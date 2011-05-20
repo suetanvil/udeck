@@ -257,8 +257,12 @@ X	- seq classes should have constructors that create sized indexes.
 	-shallowCopy
 		-copy defaults to shallowCopy
 		-for structs, it's a primitive.
-		-immutables just return self
+X		-immutables just return self
 		-need quote constructor; update printable
+	-bug: "var x = 1 .. 5" doesn't work.
+	-bug: puts and say should use printable.
+		-and printable needs to lose some storable elements.
+
 
 	-deepCopy
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
