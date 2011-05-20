@@ -34,6 +34,8 @@ _class_ext Number {
 	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
 	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
 
+	method shallowCopy {} {return self}
+
 	method printable_get {} {return "$self"}
 }
 
@@ -216,25 +218,25 @@ _class_ext Quote {
 		return (self.value == obj.value)
 	}
 
-	method _init {args} {
-		self.value = args@0
-	}
-
-	method shallowCopy {} {
-		return [Quote->new self.value]
-	}
+#	method shallowCopy {} {
+#		return [quote self.value]
+#	}
 }
 
 _class_ext Macro {
+	method shallowCopy {} {return self}
 }
 
 _class_ext Function {
+	method shallowCopy {} {return self}
 }
 
 _class_ext Method {
+	method shallowCopy {} {return self}
 }
 
 _class_ext MethodCall {
+	method shallowCopy {} {return self}
 }
 
 _class_ext PerlObj {

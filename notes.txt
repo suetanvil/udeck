@@ -252,16 +252,15 @@ X	- '+' should also concatenate lists and strings
 X		-bug: List->op_Add returns the context instead of self.
 X		-need to concatenate symbols
 	- should autosub args be capitalized?
-	- seq classes should have constructors that create sized indexes.
+X	- seq classes should have constructors that create sized indexes.
 		-and *Sized functions should move to Lang.
-
-
-	- copy/shallowCopy/deepCopy methods
-		-shallowCopy is prim.
+	-shallowCopy
 		-copy defaults to shallowCopy
-		-deepCopy recursively clones fields
-			-for structs, it's a primitive.
-		-Some types are not copyable.
+		-for structs, it's a primitive.
+		-immutables just return self
+		-need quote constructor; update printable
+
+	-deepCopy
 	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	-get rid of sub 'prim' -- only used once
 	-boolean xor
