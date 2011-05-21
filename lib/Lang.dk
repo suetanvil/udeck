@@ -206,7 +206,7 @@ _class_ext Class {
 _class_ext Quote {
 	method printable_get {} {
 		var v = self.value
-		return "[Quote $v]"
+		return "[quote $v]"
 	}
 
 	method op_Equals {obj} {
@@ -214,9 +214,9 @@ _class_ext Quote {
 		return (self.value == obj.value)
 	}
 
-#	method shallowCopy {} {
-#		return [quote self.value]
-#	}
+	method shallowCopy {} {
+		return [quote self.value]
+	}
 }
 
 _class_ext Macro {

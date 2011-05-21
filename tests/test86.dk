@@ -1,0 +1,27 @@
+# Test shallowCopy
+
+proc testeq {obj} {
+	var c = [obj->shallowCopy]
+
+	if (obj == c) {
+		puts "PASSED: " obj.printable
+	} else {
+		puts "FAILED: " obj.printable
+	}
+}
+
+
+testeq :[1 2 3 4 5]
+testeq "foobar"
+testeq :foobar
+testeq [byteArray 9 8 7 6 5]
+testeq 42
+testeq ::[1 2 3 4 5]
+testeq nil
+testeq foreach
+testeq testeq
+# no idea how to get a method
+testeq ((1..5)->end_get)
+testeq (1..5)
+
+

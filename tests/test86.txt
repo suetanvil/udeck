@@ -1,0 +1,11 @@
+PASSED: [list 1 2 3 4 5]
+PASSED: 'foobar'
+PASSED: :foobar
+PASSED: [byteArray 0x09 0x08 0x07 0x06 0x05]
+PASSED: 42
+PASSED: [quote [1 2 3 4 5]]
+PASSED: nil
+PASSED: a Macro
+PASSED: a Function
+PASSED: a MethodCall
+PASSED: 1 .. 6

@@ -3361,6 +3361,8 @@ sub initGlobals {
 								unless ${$size} >= 0;
 							  return LL::String->new("\0" x ${$size});
 							};
+  prim2 'quote',		sub { my ($obj) = @_; checkNargs('quote',\@_,1);
+							  return LL::Quote->new($obj)};
   prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
   prim2 'listSized',	sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
 							  $size->checkNumber();

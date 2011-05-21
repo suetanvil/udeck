@@ -17,10 +17,10 @@
 [list 1 2 3 foo] == [list 1 2 3 foo]
 [list 1 2 3 foo] != [list 1 2 3 foo 5 6]
 
-[Quote 1] != [Quote 2]
-[Quote 1] == [Quote 1]
-[Quote foo] == [Quote foo]
-[Quote foo] != [Quote bar]
+[quote 1] != [quote 2]
+[quote 1] == [quote 1]
+[quote foo] == [quote foo]
+[quote foo] != [quote bar]
 nil == nil
 nil != 42
 nil != 'foo'
