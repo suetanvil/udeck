@@ -2588,34 +2588,6 @@ sub compile {
 
 # ---------------------------------------------------------------------------
 
-
-sub pprim ( $$$$ ) {
-  my ($retType, $name, $argsAndTypes, $function) = @_;
-
-  my $prim = sub {
-	validateArgs($name, $argsAndTypes, \@_);
-	my $retval = $function->(@_);
-	return $retType ? "LL::$retType"->new($retval) : $retval;
-  };
-
-  $Globals->defset($name, LL::Function->new($prim));
-}
-
-# Ensure that argument types of $args matches $types.
-sub validateArgs {
-  my ($name, $types, $args) = @_;
-
-  my @typeList = split(/\s+/, $types);
-
-  die "Argument count mismatch for '$name'\n"
-	if (scalar @typeList != scalar @{$args});
-
-  my $count = 0;
-  for my $type (@typeList) {
-	$args->[$count++]->checkType($type, $name);	
-  }
-}
-
 # Ensure that the number of elements in $args is one of the numbers
 # give in @counts.  If the first element of @counts (i.e. the second
 # argument) is the string '-', ignore the first argument in
@@ -2638,7 +2610,8 @@ sub checkNargs {
 }
 
 
-
+# Declare a builtin function in the local scope and bind it to the
+# given sub.
 sub prim ( $$ ) {
   my ($name, $function) = @_;
 
@@ -3338,9 +3311,6 @@ sub initGlobals {
 				  ) {
 	$Globals->defset($special->[0], LL::Function->new($special->[1]));
   }
-
-  # Other simple primitives
-  pprim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
   prim '===',			sub { checkNargs('===', \@_, 2);

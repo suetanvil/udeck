@@ -288,6 +288,10 @@ proc \!= {l r} {
 proc size {aList} {return aList.size}
 proc last {aList} {return aList.last}
 
+proc typeof {obj} {return [intern obj.class.name]}
+
+
+
 
 # Insert spacer between all elements in aList
 # proc withSpacer {aList spacer} {

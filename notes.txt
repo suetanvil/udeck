@@ -246,6 +246,8 @@ X	- 'printable' attribute on all builtin classes
 X	- == is now a method
 X		--need to test all cases.
 X	- bug: LL::Class->storeStr() returns a string ref.
+X	-get rid of sub 'prim' -- only used once
+
 
 	-need canary to catch broken infix expressions		
 X	- '+' should also concatenate lists and strings
@@ -256,17 +258,16 @@ X	- seq classes should have constructors that create sized indexes.
 		-and *Sized functions should move to Lang.
 	-shallowCopy
 		-copy defaults to shallowCopy
-		-for structs, it's a primitive.
+X		-for structs, it's a primitive.
 X		-immutables just return self
-		-need quote constructor; update printable
+X		-need quote constructor; update printable
 	-bug: "var x = 1 .. 5" doesn't work.
 	-bug: puts and say should use printable.
 		-and printable needs to lose some storable elements.
 
 
 	-deepCopy
-	- split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
-	-get rid of sub 'prim' -- only used once
+	-split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	-boolean xor
 	- static variables
 	- integers
