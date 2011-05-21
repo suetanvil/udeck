@@ -1,20 +1,15 @@
 # Emit a test case that exercises parsing of infix expressions.
 
 
-
-proc shuffle {aSeq} {
-	var result = [aSeq->shallowCopy]
-
-
-}
-
 proc withVarsAdded {opList} {
-	var result = :[v0]
+	var result = [listSized (opList.size * 2 + 1)]
+	result@0 = "v0"
 
 	var n = 1
 	for op in opList {
-		result = result + [list op "v$n"]
-		n = n + 1
+		result@n = op
+		result@(n+1) = "v$n"
+		n = n + 2
 	}
 	
 	return result
@@ -26,10 +21,12 @@ var operators = :['.' '@' '=>' '->'
 				  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
 				  '&&' '||' '!!!!' '=']
 
-permutations_for operators {
+for count in (1..30) {
+#	puts [shuffled operators]
 	say "puts :("
-	for exprPart in [withVarsAdded a] {
+	for exprPart in [withVarsAdded [shuffled operators]] {
 		say exprPart " "
 	}
 	puts ")"
 }
+

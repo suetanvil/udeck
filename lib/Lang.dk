@@ -13,8 +13,6 @@ const {
 }
 
 proc _seq_Equals
-proc shuffle
-proc rand
 proc _write_seq
 
 
@@ -412,7 +410,7 @@ proc concat {args} {
 }
 
 
-perlproc _rand {} ''' return rand(); '''
+perlproc _rand {} ''' return rand(1); '''
 
 proc rand {max} {
 	return (max * [_rand])
@@ -423,11 +421,21 @@ proc irand {max} {
 }
 
 
-# Shuffle a sequence in place
-proc shuffle {seq} {
-	for index in (0 .. seq.last) {
+# Return a shuffled copy of seq
+proc shuffled {origSeq} {
+	var seq = [origSeq->shallowCopy]
+
+	for index in (seq.last .. 1) {
+		var pick = [rand (index - 1)]
 		
+		var tmp = seq@pick
+		seq@pick = seq@index
+		seq@index = tmp
 	}
+
+	return seq
 }
+
+
 
 
