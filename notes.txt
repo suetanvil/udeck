@@ -252,18 +252,19 @@ X		-copy defaults to shallowCopy
 X		-for structs, it's a primitive.
 X		-immutables just return self
 X		-need quote constructor; update printable
-
-
-	-need canary to catch broken infix expressions		
 X	- '+' should also concatenate lists and strings
 X		-bug: List->op_Add returns the context instead of self.
 X		-need to concatenate symbols
+
+	-need canary to catch broken infix expressions		
 	- should autosub args be capitalized?
 X	- seq classes should have constructors that create sized indexes.
 		-and *Sized functions should move to Lang.
 	-bug: "var x = 1 .. 5" doesn't work.
 	-bug: puts and say should use printable.
 		-and printable needs to lose some storable elements.
+	-rename val -- too easy to type instead of var
+
 
 
 	-deepCopy

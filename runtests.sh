@@ -7,13 +7,34 @@ tmp=/tmp/runtests-$$.txt
 cd tests
 
 function fail() {
-#	echo "Test failed.  Quitting."
 	rm $tmp
 	exit 1
 }
 
 
+upto=$1
+if [ -n "$upto" ]; then
+	upto=`basename "$upto"`
+	if [ -f "$upto" ]; then
+		true
+	else
+		echo "Invalid argument: '$upto'"
+		exit 1
+	fi
+fi
+
+
 for i in test*.dk argtest.sh fail*.dk; do
+	
+	if [ -n "$upto" -a "$upto" != "$i" ]; then
+		echo "Skipping $i"
+		continue
+	fi
+
+	if [ -n "$upto" -a "$upto" = "$i" ]; then
+		upto=
+	fi
+
 	echo "$i"
 
 	if [ $i = ${i%.sh}.sh ]; then
