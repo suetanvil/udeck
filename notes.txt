@@ -247,6 +247,11 @@ X	- == is now a method
 X		--need to test all cases.
 X	- bug: LL::Class->storeStr() returns a string ref.
 X	-get rid of sub 'prim' -- only used once
+X	-shallowCopy
+X		-copy defaults to shallowCopy
+X		-for structs, it's a primitive.
+X		-immutables just return self
+X		-need quote constructor; update printable
 
 
 	-need canary to catch broken infix expressions		
@@ -256,11 +261,6 @@ X		-need to concatenate symbols
 	- should autosub args be capitalized?
 X	- seq classes should have constructors that create sized indexes.
 		-and *Sized functions should move to Lang.
-	-shallowCopy
-		-copy defaults to shallowCopy
-X		-for structs, it's a primitive.
-X		-immutables just return self
-X		-need quote constructor; update printable
 	-bug: "var x = 1 .. 5" doesn't work.
 	-bug: puts and say should use printable.
 		-and printable needs to lose some storable elements.

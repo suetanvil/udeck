@@ -16,29 +16,6 @@ proc _seq_Equals
 proc _write_seq
 
 
-_class_ext Number {
-
-	# Double-dispatch methods
-	method op_Add      {obj} {return [obj->addNumber self]}
-	method op_Sub      {obj} {return [obj->subNumber self]}
-	method op_Mod      {obj} {return [obj->modNumber self]}
-	method op_Mult     {obj} {return [obj->multNumber self]}
-	method op_Div      {obj} {return [obj->divNumber self]}
-	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
-	method op_Lt       {obj} {return [obj->ltNumber self]}
-	method op_Lte      {obj} {return [obj->lteNumber self]}
-	method op_Gt       {obj} {return [obj->gtNumber self]}
-	method op_Gte      {obj} {return [obj->gteNumber self]}
-	method op_Pow	   {obj} {return [obj->powNumber self]}
-	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
-	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
-	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
-
-	method shallowCopy {} {return self}
-
-	method printable_get {} {return "$self"}
-}
-
 # Base class for all traditional structured objects
 _class_ext Object {
 	method doesNotUnderstand {name args} {
@@ -63,12 +40,36 @@ _class_ext Object {
 		return "$a $cl"
 	}
 
+	# Copy protocol.
 	method shallowCopy {} {die "Called abstract shallowCopy"}
+	method copy {} {return [self->shallowCopy]}
 
 	# Needed for test case
 	method self_get {} {}
 }
 
+_class_ext Number {
+
+	# Double-dispatch methods
+	method op_Add      {obj} {return [obj->addNumber self]}
+	method op_Sub      {obj} {return [obj->subNumber self]}
+	method op_Mod      {obj} {return [obj->modNumber self]}
+	method op_Mult     {obj} {return [obj->multNumber self]}
+	method op_Div      {obj} {return [obj->divNumber self]}
+	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
+	method op_Lt       {obj} {return [obj->ltNumber self]}
+	method op_Lte      {obj} {return [obj->lteNumber self]}
+	method op_Gt       {obj} {return [obj->gtNumber self]}
+	method op_Gte      {obj} {return [obj->gteNumber self]}
+	method op_Pow	   {obj} {return [obj->powNumber self]}
+	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
+	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
+	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
+
+	method shallowCopy {} {return self}
+
+	method printable_get {} {return "$self"}
+}
 
 _class_ext Nil {
 	method isNil_get {} {return 1}
