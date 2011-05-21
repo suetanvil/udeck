@@ -2589,7 +2589,7 @@ sub compile {
 # ---------------------------------------------------------------------------
 
 
-sub prim ( $$$$ ) {
+sub pprim ( $$$$ ) {
   my ($retType, $name, $argsAndTypes, $function) = @_;
 
   my $prim = sub {
@@ -2639,7 +2639,7 @@ sub checkNargs {
 
 
 
-sub prim2 ( $$ ) {
+sub prim ( $$ ) {
   my ($name, $function) = @_;
 
   $Globals->defset($name, LL::Function->new($function));
@@ -3340,65 +3340,65 @@ sub initGlobals {
   }
 
   # Other simple primitives
-  prim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
+  pprim 'Symbol', 'typeof', "Object", sub { local $_=ref($_[0]); s/^LL:://; $_};
 
   # More complex primitive functions
-  prim2 '===',			sub { checkNargs('===', \@_, 2);
+  prim '===',			sub { checkNargs('===', \@_, 2);
 							  return boolObj($_[0] == $_[1])};
-  prim2 'list',			sub { return LL::List->new(\@_) };
-  prim2 '@',			sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
+  prim 'list',			sub { return LL::List->new(\@_) };
+  prim '@',				sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) };
-  prim2 'byteArray',	sub { return LL::ByteArray->new(@_) };
-  prim2 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
+  prim 'byteArray',		sub { return LL::ByteArray->new(@_) };
+  prim 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
 							  $size->checkNumber();
 							  die "Invalid byteArray size: ${$size}\n"
 								unless ${$size} >= 0;
 							  return LL::ByteArray->newSized(${$size})
 							};
-  prim2 'stringSized',	sub { my ($size) = @_; checkNargs('stringSized',\@_,1);
+  prim 'stringSized',	sub { my ($size) = @_; checkNargs('stringSized',\@_,1);
 							  $size->checkNumber();
 							  die "Invalid string size: ${$size}\n"
 								unless ${$size} >= 0;
 							  return LL::String->new("\0" x ${$size});
 							};
-  prim2 'quote',		sub { my ($obj) = @_; checkNargs('quote',\@_,1);
+  prim 'quote',			sub { my ($obj) = @_; checkNargs('quote',\@_,1);
 							  return LL::Quote->new($obj)};
-  prim2 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
-  prim2 'listSized',	sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
+  prim 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
+  prim 'listSized',		sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
 							  $size->checkNumber();
 							  die "Invalid list size: ${$size}\n"
 								unless ${$size} >= 0;
 							  return LL::List->new([(NIL) x ${$size}]);
 							};
-  prim2 '_::defns',		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);
+  prim '_::defns',		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);
 							  $ns->checkSymbol();
 							  $Globals->defNamespace(${$ns});
 							};
-  prim2 'not',			sub { my ($arg) = @_; checkNargs('not', \@_, 1);
+  prim 'not',			sub { my ($arg) = @_; checkNargs('not', \@_, 1);
 							  return boolObj(!$arg->isTrue());
 							};
-  prim2 'int',			sub { my ($arg) = @_; checkNargs('int', \@_, 1);
+  prim 'int',			sub { my ($arg) = @_; checkNargs('int', \@_, 1);
 							  $arg->checkNumber(" in 'int'");
 							  return LL::Number->new(int(${$arg}));
 							};
-  prim2 'neg',			sub { my ($l) = @_; checkNargs('neg', \@_, 1);
+  prim 'neg',			sub { my ($l) = @_; checkNargs('neg', \@_, 1);
 							  $l->checkNumber(" in 'Lang::neg'");
 							  return LL::Number->new(-${$l});
 							};
-  prim2 'str2num',		sub { my ($str) = @_; checkNargs('str2num', \@_, 1);
+  prim 'str2num',		sub { my ($str) = @_; checkNargs('str2num', \@_, 1);
 							  $str->checkString(" in 'num'");
 							  my ($ns, $num) = readNumber(${$str});
 							  return NIL unless $ns eq "";
 							  return decktype($num);
 							};
-  prim2 'exit',			sub { my ($status) = @_; checkNargs('exit', \@_, 1);
+  prim 'exit',			sub { my ($status) = @_; checkNargs('exit', \@_, 1);
 							  $status->checkNumber(" in 'exit'");
 							  exit(${$status});
 							  return NIL;	# not reached
 							};
 
 
-  prim2 '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
+  prim '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
   $Globals->defset('val', $Globals->{'_::val'});
 
 
