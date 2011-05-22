@@ -1113,7 +1113,7 @@ sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 
 	  next unless $entry->isUnescapedOperator();
 
-	  my $p = $precPerOp{${$entry}} || 0;
+	  my $p = $precPerOp{${$entry}} || $userPrec;
 	  if ($p <= $prec) {
 		$index = $ndx;
 		$prec = $p;
@@ -2861,7 +2861,7 @@ sub launder_varconst {
 	}
 
 	for my $word (@{ $decl }) {
-	  $word->checkSymbol(" (@{[$word->printStr()]})");
+	  $word->checkSymbol(" (@{[$word->printStr()]}) in var/const declaration.");
 	  die "Const '${$word}' declared without a value.\n" if $isConst;
 
 	  push @result, LL::Quote->new($word), NIL;

@@ -255,12 +255,11 @@ X		-need quote constructor; update printable
 X	- '+' should also concatenate lists and strings
 X		-bug: List->op_Add returns the context instead of self.
 X		-need to concatenate symbols
+X	-need canary to catch broken infix expressions		
+X	-bug: "var x = 1 .. 5" doesn't work.
+X		-'..' has lower precedence than '='.  WTF?
 
-	-need canary to catch broken infix expressions		
-	- should autosub args be capitalized?
-X	- seq classes should have constructors that create sized indexes.
-		-and *Sized functions should move to Lang.
-	-bug: "var x = 1 .. 5" doesn't work.
+	-should autosub args be capitalized?
 	-bug: puts and say should use printable.
 		-and printable needs to lose some storable elements.
 	-rename val -- too easy to type instead of var
