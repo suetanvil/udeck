@@ -1,8 +1,8 @@
-String
-Hello, world!
-Symbol
+:String
+:Hello, world!
+:Symbol
 
-Symbol
+:Symbol
+:Hello, world!
 Hello, world!
-Hello, world!
-String
+:String

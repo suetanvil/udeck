@@ -82,7 +82,7 @@ _class_ext List {
 	method isIndexable_get {} {return 1}
 	method printable_get {} {
 		const MAX = 5
-		(self.size < MAX + 3) && [return "[list @{self}]"]
+		(self.size < MAX + 3) && [return "[@{self}]"]
 
 		var sublist = [listSized MAX]
 
@@ -93,7 +93,7 @@ _class_ext List {
 		}
 
 		var last = self @ -1
-		return "[list @sublist .. $last]"
+		return "[@sublist .. $last]"
 	}
 
 	method op_Equals {obj} {return [_seq_Equals self obj]}
@@ -128,7 +128,7 @@ _class_ext String {
 	}
 
 	method lowercase_get {} {return [_downcase self]}
-	method printable_get {} {return "'$self'"}
+	method printable_get {} {return "$self"}
 
 	# op_Equals is implemented in Perl
 
@@ -222,21 +222,26 @@ _class_ext Quote {
 
 _class_ext Macro {
 	method shallowCopy {} {return self}
+	method printable_get {} {return "<macro>"}
 }
 
 _class_ext Function {
 	method shallowCopy {} {return self}
+	method printable_get {} {return "<function>"}
 }
 
 _class_ext Method {
 	method shallowCopy {} {return self}
+	method printable_get {} {return "<method>"}
 }
 
 _class_ext MethodCall {
 	method shallowCopy {} {return self}
+	method printable_get {} {return "<method call>"}
 }
 
 _class_ext PerlObj {
+	# method printable_get is written in perl
 }
 
 
@@ -436,6 +441,19 @@ proc shuffled {origSeq} {
 	return seq
 }
 
+
+perlproc _printstr {s} ''' print $s; '''
+
+proc say {args} {
+	for obj in args {
+		_printstr obj.printable
+	}
+}
+
+proc puts {args} {
+	apply say args
+	say "\n"
+}
 
 
 

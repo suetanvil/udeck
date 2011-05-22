@@ -31,7 +31,7 @@ a ConsonentClass
 an AnotherVowelClass
 This class implements printable
 
-'Hello, world!'
+Hello, world!
 nil
 42
 :some_symbol
@@ -43,9 +43,9 @@ nil
 [byteArray 0x01 0x02 0x03 0x04 0x05 0x06 0x07]
 [byteArray 0x01 0x02 0x03 0x04 0x05 .. 0x08]
 [byteArray 0x01 0x02 0x03 0x04 0x05 .. 0x09]
-[list 1 2 [[2 + 1]] 4 5]
-[list 1 2 [[2 + 1]] 4 5 6]
-[list 1 2 [[2 + 1]] 4 5 6 7]
-[list 1 2 [[2 + 1]] 4 5 .. 8]
-[list 1 2 [[2 + 1]] 4 5 .. 9]
-[list 1 2 [[2 + 1]] 4 5 .. 10]
+[1 2 [[2 + 1]] 4 5]
+[1 2 [[2 + 1]] 4 5 6]
+[1 2 [[2 + 1]] 4 5 6 7]
+[1 2 [[2 + 1]] 4 5 .. 8]
+[1 2 [[2 + 1]] 4 5 .. 9]
+[1 2 [[2 + 1]] 4 5 .. 10]

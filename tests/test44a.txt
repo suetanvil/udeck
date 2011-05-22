@@ -1,6 +1,6 @@
-calling <function> on foo
-foo
-calling <function> on bar
-bar
-calling <function> on x
-x
+calling <function> on :foo
+:foo
+calling <function> on :bar
+:bar
+calling <function> on :x
+:x

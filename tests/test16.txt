@@ -1,8 +1,8 @@
-Number
-Symbol
-String
-List
-Nil
-Quote
-Macro
-Function
+:Number
+:Symbol
+:String
+:List
+:Nil
+:Quote
+:Macro
+:Function

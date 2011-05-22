@@ -5,7 +5,7 @@ nil
 <function>
 nil
 nil
-_foo defined as bar
-Test::Util::_foo defined as bar
-num defined as 42
-hohoho undefined.
+:_foo defined as bar
+:Test::Util::_foo defined as bar
+:num defined as 42
+:hohoho undefined.

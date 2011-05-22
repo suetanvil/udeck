@@ -1,6 +1,6 @@
 false!
 true
-foo
+:foo
 nil
 nil
 1

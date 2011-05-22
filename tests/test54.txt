@@ -1,5 +1,5 @@
-a = 5 b = Hello c = xxx
-args = [1 2 3 4 World yyy this is more stuff 52]
+a = 5 b = Hello c = :xxx
+args = [1 2 3 4 World .. 52]
 args = [1]
 args = []
 f3 called

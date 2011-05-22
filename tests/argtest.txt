@@ -1,7 +1,22 @@
 *top*: [[puts Sys::Argv0]]
-argtest.dk
+*macro* .([. obj printable]) ==> [[_::getMethod obj :printable_get]]
+<unnamed function>: [[_printstr [[_::getMethod obj :printable_get]]]]
+argtest.dk*macro* .([. obj printable]) ==> [[_::getMethod obj :printable_get]]
+<unnamed function>: [[_printstr [[_::getMethod obj :printable_get]]]]
+
 *top*: [[puts Sys::Argv]]
-[]
+*macro* .([. obj printable]) ==> [[_::getMethod obj :printable_get]]
+<unnamed function>: [[_printstr [[_::getMethod obj :printable_get]]]]
+*macro* <([< [. self size] [+ MAX 3]]) ==> [[-> [. self size] op_Lt] [+ MAX 3]]
+*macro* ->([-> [. self size] op_Lt]) ==> [_::getMethod [. self size] :op_Lt]
+*macro* .([. self size]) ==> [[_::getMethod self :size_get]]
+*macro* +([+ MAX 3]) ==> [[-> MAX op_Add] 3]
+*macro* ->([-> MAX op_Add]) ==> [_::getMethod MAX :op_Add]
+<unnamed function>: [[_::val [[_::getMethod [[_::getMethod self :size_get]] :op_Lt] [[_::getMethod MAX :op_Add] 3]]]]
+<unnamed function>: [[_::val [return [_::mkstr "[" [_::mkstr_all self] "]"]]]]
+[]*macro* .([. obj printable]) ==> [[_::getMethod obj :printable_get]]
+<unnamed function>: [[_printstr [[_::getMethod obj :printable_get]]]]
+
 ----------
 argtest.dk
 [--dump]

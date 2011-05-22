@@ -1,13 +1,13 @@
-Matches for <class 'Class'>
-Matches for <class 'List'>
-Matches for <class 'String'>
-Matches for <class 'Symbol'>
-Matches for <class 'ByteArray'>
-Matches for <class 'Number'>
-Matches for <class 'Quote'>
-Matches for <class 'Nil'>
-Matches for <class 'Function'>
-Matches for <class 'Interval'>
+Matches for class Class
+Matches for class List
+Matches for class String
+Matches for class Symbol
+Matches for class ByteArray
+Matches for class Number
+Matches for class Quote
+Matches for class Nil
+Matches for class Function
+Matches for class Interval
 [1 2 3 4 5 6]
 [1 2 3 4 5 6]
 [1 2 3 f o o]

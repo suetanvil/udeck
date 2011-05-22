@@ -2,20 +2,20 @@
 2 != 1
 2.0 == 2
 
-'foo' != 4
-'foo' != 'bar'
-'foo' == 'foo'
+foo != 4
+foo != bar
+foo == foo
 
-'foo' == 'foo'
+foo == foo
 
-'foo' == :foo
-:foo == 'foo'
+foo == :foo
+:foo == foo
 :foo == :foo
 :foo != :bar
 
-[list 1 2 3] != [list 4 5 6]
-[list 1 2 3 foo] == [list 1 2 3 foo]
-[list 1 2 3 foo] != [list 1 2 3 foo 5 6]
+[1 2 3] != [4 5 6]
+[1 2 3 foo] == [1 2 3 foo]
+[1 2 3 foo] != [1 2 3 foo 5 6]
 
 [quote 1] != [quote 2]
 [quote 1] == [quote 1]
@@ -23,17 +23,17 @@
 [quote foo] != [quote bar]
 nil == nil
 nil != 42
-nil != 'foo'
+nil != foo
 
 [byteArray 0x01 0x02 0x03 0x04] == [byteArray 0x01 0x02 0x03 0x04]
 [byteArray 0x01 0x02 0x03 0x04] != [byteArray 0x01 0x02 0x03]
-[byteArray 0x01 0x02 0x03 0x04] != [list 1 2 3 4]
-[byteArray 0x78 0x78 0x78 0x78] != 'xxxx'
+[byteArray 0x01 0x02 0x03 0x04] != [1 2 3 4]
+[byteArray 0x78 0x78 0x78 0x78] != xxxx
 
 [Foo->new 1 2] == [Foo->new 1 2]
 [Foo->new 1 2] != [Foo->new 2 3]
 [Foo->new 1 2] != [Foo->new 2 3]
-[Foo->new 1 2] != 'hello, world'
+[Foo->new 1 2] != hello, world
 
 [Bar->new 1 2] != [Bar->new 2 11]
 [Foo->new 1 2] != [Bar->new 1 2]

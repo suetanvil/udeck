@@ -3273,8 +3273,8 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-				   ['puts',				\&builtin_puts],
-				   ['say',				\&builtin_say],
+				   ['_::puts',			\&builtin_puts],
+				   ['_::say',			\&builtin_say],
 				   ['storestr',			\&builtin_storestr],
 				   ['show',				\&builtin_show],
 				   ['_::proc',			\&builtin_proc],
@@ -3591,6 +3591,9 @@ sub initGlobals {
   {
    shallowCopy	=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
 						return LL::PerlObj->new($self->[0])},
+   printable_get=> sub {my ($self) = @_; checkNargs('printable_get', \@_, 1);
+						my $desc = "<perlobj @{[ref($self->[0])]}>";
+						return LL::String->new($desc)},
   };
 
   defclass 'Struct',		'Object',

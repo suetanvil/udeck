@@ -1,4 +1,4 @@
-foo::bar::qux
-a::b::c
+:foo::bar::qux
+:a::b::c
 [c::d::e f 13]
-foo::bar::-
+:foo::bar::-

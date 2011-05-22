@@ -5,7 +5,7 @@ Calling puta
 42
 Are they the same object?
 42
-<struct>, <struct>
+a Foo, a Foo
 1
 Is z indexable? nil
 should return self.
