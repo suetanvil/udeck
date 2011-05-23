@@ -45,6 +45,8 @@ Notes:
 
 	- '||' and '&&' imply infix in LoLs.
 
+	- DECKLIB env. var. points to the deck library.
+
 Functions Todo:
 X	-listSized
 
@@ -258,12 +260,14 @@ X		-need to concatenate symbols
 X	-need canary to catch broken infix expressions		
 X	-bug: "var x = 1 .. 5" doesn't work.
 X		-'..' has lower precedence than '='.  WTF?
+X	-bug: puts and say should use printable.
+X		-and printable needs to lose some storable elements.
 
 	-should autosub args be capitalized?
-	-bug: puts and say should use printable.
-		-and printable needs to lose some storable elements.
+	-deck.pl should be able to find its library no matter where it's
+	 installed.
 	-rename val -- too easy to type instead of var
-
+		-do? is? value?
 
 
 	-deepCopy

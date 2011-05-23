@@ -3626,11 +3626,24 @@ sub initGlobals {
 sub mkModPath {
   my @path = ();
 
-  push @path, getcwd();
+  # The environment variable 'DECKLIB' contains the lib path.  To do:
+  # handle DOS-style paths for Perl on Windows.
+  my $decklib = $ENV{DECKLIB};
+  if (defined($decklib)) {
+	my @envpath = split(/:/, $decklib);
+	@envpath = grep { -d $_ } @envpath;
+	@envpath = map { abs_path($_) } @envpath;
 
-  my $binpath = dirname(abs_path($0)) . "/lib/";
-  push @path, $binpath if -d $binpath;
+	push @path, @envpath;
+  }
 
+  # On the development subtree, the library files will be in ./lib
+  {
+	my $binpath = dirname(abs_path($0)) . "/lib/";
+	push @path, $binpath if -d $binpath;
+  }
+
+  # And convert to Deck types.
   @path = map { LL::String->new($_) } @path;
   return LL::List->new(\@path);
 }
