@@ -3639,7 +3639,7 @@ sub mkModPath {
 
   # On the development subtree, the library files will be in ./lib
   {
-	my $binpath = dirname(abs_path($0)) . "/lib/";
+	my $binpath = dirname(abs_path($0)) . "/lib-deck/";
 	push @path, $binpath if -d $binpath;
   }
 
