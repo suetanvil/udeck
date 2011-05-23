@@ -2707,7 +2707,7 @@ sub subifyOrDelay {
 sub delayed {
   my ($expr) = @_;
 
-  $expr = LL::List->new([LL::Symbol->new('_::val'), $expr]);
+  $expr = LL::List->new([LL::Symbol->new('_::value'), $expr]);
 
   return LL::List->new([LL::Symbol->new('_::sub'),
 						LL::Quote->new(LL::List->new([])),
@@ -3368,8 +3368,8 @@ sub initGlobals {
 							};
 
 
-  prim '_::val',		sub { return NIL unless scalar @_; return $_[-1] };
-  $Globals->defset('val', $Globals->{'_::val'});
+  prim '_::value',		sub { return NIL unless scalar @_; return $_[-1] };
+  $Globals->defset('value', $Globals->{'_::val'});
 
 
   # Create the hash of functions that take the context as arg. 0.

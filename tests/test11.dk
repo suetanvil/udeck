@@ -11,6 +11,6 @@ var x = [foo]
 x
 
 var y
-val (y = [foo])
+value (y = [foo])
 y
 
