@@ -13,7 +13,7 @@ if (a > b) [puts "a"] else {puts "b"}
 if [< a b] {puts "a"} {puts "b"}
 if (a > b) [puts "a"] else [puts "b"]
 
-puts [if (a < b) [val a] [val b]]
+puts [if (a < b) [value a] [val b]]
 
 puts "Done!"
 

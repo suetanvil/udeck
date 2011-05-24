@@ -14,10 +14,10 @@ x
 :[a] => {puts a} "Hello, arg 3!"
 
 # Test => in infix and prefix contexts
-x = [val {b} => {puts (b + 1)}]
+x = [value {b} => {puts (b + 1)}]
 x 42
 
-x = [val ({b} => {puts (b + 1)}) ]
+x = [value ({b} => {puts (b + 1)}) ]
 x 44
 
 

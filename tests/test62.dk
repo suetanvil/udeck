@@ -1,7 +1,7 @@
 # Test boolean state of symbols plus boolean not
 
 var i = [intern ""]
-if {val i} {
+if {value i} {
 	puts "true"
 } else {
 	puts "false!"
@@ -9,7 +9,7 @@ if {val i} {
 
 
 i = [intern "foo"]
-if {val i} {
+if {value i} {
 	puts "true"
 } else {
 	puts "false!"

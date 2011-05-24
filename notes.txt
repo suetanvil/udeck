@@ -47,6 +47,8 @@ Notes:
 
 	- DECKLIB env. var. points to the deck library.
 
+	- 'val' has been renamed to 'value'.
+
 Functions Todo:
 X	-listSized
 
@@ -262,10 +264,14 @@ X	-bug: "var x = 1 .. 5" doesn't work.
 X		-'..' has lower precedence than '='.  WTF?
 X	-bug: puts and say should use printable.
 X		-and printable needs to lose some storable elements.
+X	-deck.pl should be able to find its library no matter where it's
+X	 installed.
+X		-well, at least the env. var. DECKLIB can be used to set the 
+X		library path.
+X	-'var x = <y>' should parse the assignment as fully infix.
+
 
 	-should autosub args be capitalized?
-	-deck.pl should be able to find its library no matter where it's
-	 installed.
 	-rename val -- too easy to type instead of var
 		-do? is? value?
 
@@ -292,8 +298,6 @@ X		-and printable needs to lose some storable elements.
 	-object printstr/storestr
 	-traits
 	-hash/set/bag classes
-	-'var x = <y>' should parse the assignment as fully infix.
-		-maybe.	
 	-mprocs should be able to select the argument name(s) of their
 	 blocks.  (e.g. foreach)
 	-quote should be a macro that expands into a function, just like

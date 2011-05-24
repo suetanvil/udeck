@@ -14,5 +14,5 @@ foo {puts a} bar
 
 var x = 42
 foo {puts a} x
-foo {puts a} [val x]
+foo {puts a} [value x]
 

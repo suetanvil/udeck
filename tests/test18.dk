@@ -1,7 +1,7 @@
 
 var a
 
-set a [sub {val "this is the result"}]
+set a [sub {value "this is the result"}]
 puts a
 puts [a]
 

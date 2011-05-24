@@ -13,7 +13,7 @@ mproc mmap {
 	return result
 }
 
-var s1 = [sub {a}{puts a; val (a + 1)}]
+var s1 = [sub {a}{puts a; value (a + 1)}]
 var l1 = [list 1 2 3 4 5]
 var l2 = [mmap s1 l1]
 

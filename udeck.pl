@@ -3369,7 +3369,7 @@ sub initGlobals {
 
 
   prim '_::value',		sub { return NIL unless scalar @_; return $_[-1] };
-  $Globals->defset('value', $Globals->{'_::val'});
+  $Globals->defset('value', $Globals->{'_::value'});
 
 
   # Create the hash of functions that take the context as arg. 0.

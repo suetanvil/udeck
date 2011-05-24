@@ -15,7 +15,7 @@ mproc mmap {
 }
 
 var l1 = [list 1 2 3 4 5]
-var l2 = [mmap {puts a; val (a + 1)} l1]
+var l2 = [mmap {puts a; value (a + 1)} l1]
 
 puts l2
 

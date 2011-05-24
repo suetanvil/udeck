@@ -28,5 +28,5 @@ while [< n 10] {
 }
 
 n = 0
-while [< n 10] [val [puts "prefix body: n = " n] (n = n + 1)]
+while [< n 10] [value [puts "prefix body: n = " n] (n = n + 1)]
 
