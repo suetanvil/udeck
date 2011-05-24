@@ -1459,7 +1459,7 @@ our $Input = undef;		# Input filehandle or undef for stdin.
 my $NeedPrompt = 0;		# If true, reader is inside a LoL Line
 our $Globals = LL::GlobalContext->new();
 my %fnNeedsContext;		# Hash of functions that get the parent's context
-
+my %DocStringHash;		# Hash of docstring information
 
 # ---------------------------------------------------------------------------
 
@@ -2584,6 +2584,15 @@ sub compile {
   return $isMacro ? LL::Macro->new($fn) : LL::Function->new($fn);
 }
 
+# ---------------------------------------------------------------------------
+
+# Add a docstring to %DocStringHash.  The remaining arguments are
+# stored as a hash.  Formatting is done later.
+sub addDocString {
+  my ($name, @values) = @_;
+
+  $DocStringHash{$name} = \@values;
+}
 
 
 # ---------------------------------------------------------------------------
@@ -2612,10 +2621,11 @@ sub checkNargs {
 
 # Declare a builtin function in the local scope and bind it to the
 # given sub.
-sub prim ( $$ ) {
-  my ($name, $function) = @_;
+sub prim {
+  my ($name, $args, $docstring, $function) = @_;
 
   $Globals->defset($name, LL::Function->new($function));
+  addDocString($name, 'proc', $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
@@ -3313,11 +3323,26 @@ sub initGlobals {
   }
 
   # More complex primitive functions
-  prim '===',			sub { checkNargs('===', \@_, 2);
-							  return boolObj($_[0] == $_[1])};
-  prim 'list',			sub { return LL::List->new(\@_) };
-  prim '@',				sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
-							  return $l->at($ndx) };
+  prim ('===',
+		"lhs rhs",
+		"Test if C<lhs> and C<rhs> are the same object.",
+		sub { checkNargs('===', \@_, 2);
+			  return boolObj($_[0] == $_[1])});
+
+  prim ('list',
+		"args",
+		"Return a new list containing all of the arguments in the order" .
+		"they were given.",
+		sub { return LL::List->new(\@_) });
+
+
+  prim ('@',
+		"seq index",
+		"Look up a value in a sequence.  (Specifically, performs a " .
+		"[seq->at index] expression.)",
+		sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
+							  return $l->at($ndx) } );
+
   prim 'byteArray',		sub { return LL::ByteArray->new(@_) };
   prim 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
 							  $size->checkNumber();

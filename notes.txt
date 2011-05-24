@@ -269,13 +269,29 @@ X	 installed.
 X		-well, at least the env. var. DECKLIB can be used to set the 
 X		library path.
 X	-'var x = <y>' should parse the assignment as fully infix.
+X	-rename val -- too easy to type instead of var
+X		-do? is? value?
 
 
 	-should autosub args be capitalized?
-	-rename val -- too easy to type instead of var
-		-do? is? value?
+	-make the code self-documenting
+		-docstrings in classes, methods and procs.
+			-map docstrings to global namespace.  Method docstrings go
+			 in <class>-><method> or <class>.<method>.
+		-API:
+			_::docstring_keys -- returns list of names as strings
+			_::docstring_get <key> -- returns the doc info in a list:
 
+				[:class <superclass> <docstring> <methods> <attributes>]
+				[:proc <name> <args> <docstring>]
+				[:method <name> <args> <class> <docstring>]
+				[:attrib <name> <class> :read/:write/:readwrite <docstring>]
+				[:macro <name> <args> <docstring>]
+				[:mproc <name> <args> <docstring>]
 
+		-figure out how to integrate this with POD support.
+
+	-'@' should be a macro
 	-deepCopy
 	-split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	-boolean xor

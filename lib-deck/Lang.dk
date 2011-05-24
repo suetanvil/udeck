@@ -16,13 +16,51 @@ proc _seq_Equals
 proc _write_seq
 
 
+
 # Base class for all traditional structured objects
 _class_ext Object {
+
+=head1 Class
+
+=head2 Name: Object
+
+=head2 Parent: none
+
+=head2 Description
+
+C<Object> is the root class.  All other classes in Deck are derived
+from Object.
+
+Object is a pure abstract base class.  It cannot be instantiated.
+
+=cut
+
+=head2 Method doesNotUnderstand {name args}
+
+This method is called when the object receives a message it does not
+understand (i.e. there is no corresponding method implemented.)
+
+Default behaviour is to exit with an error message.
+
+=cut
 	method doesNotUnderstand {name args} {
 		die "Unknown method '$name' in class '" self.class.name "'"
 	}
 
+
+=head2 Method init {args} {}
+
+This is the message that each object receives when it is first
+created. Its implementation is expected to initialize the new object.
+
+=cut
 	method init {args} {}
+
+=head2 Attribute isNil
+
+Returns false.
+
+=cut
 
 	method isNil_get {} {return nil}
 	method op_Equals {other} {return (self === other)}
