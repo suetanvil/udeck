@@ -273,7 +273,6 @@ X	-rename val -- too easy to type instead of var
 X		-do? is? value?
 
 
-	-should autosub args be capitalized?
 	-make the code self-documenting
 		-docstrings in classes, methods and procs.
 			-map docstrings to global namespace.  Method docstrings go
@@ -290,8 +289,11 @@ X		-do? is? value?
 				[:mproc <name> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
-
+	-move 'map' to Lang.dk
 	-'@' should be a macro
+
+
+	-should autosub args be capitalized?
 	-deepCopy
 	-split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	-boolean xor

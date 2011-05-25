@@ -1,6 +1,16 @@
 #!/usr/bin/perl
 
 # Interpreter for a minimal implementation of Deck
+#
+# The turtle lives 'twixt plated decks
+# Which practically conceal its sex.
+# I think it clever of the turtle
+# In such a fix to be so fertile.
+# 		-- Ogden Nash
+
+
+
+
 
 
 use strict;
@@ -2632,6 +2642,7 @@ sub prim {
 sub alias {
   my ($src, $dest) = @_;
   $Globals->defset($dest, $Globals->lookup($src));
+  addDocString ($dest, @{$DocStringHash{$src}});
 }
 
 
@@ -3283,26 +3294,71 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-				   ['_::puts',			\&builtin_puts],
-				   ['_::say',			\&builtin_say],
-				   ['storestr',			\&builtin_storestr],
-				   ['show',				\&builtin_show],
-				   ['_::proc',			\&builtin_proc],
-				   ['_::sub',			\&builtin_subfn],
-				   ['_::if',			\&builtin_iffn],
-				   ['_::while',			\&builtin_whilefn],
-				   ['_::set',			\&builtin_set],
-				   ['_::var',			\&builtin_var],
-				   ['_::const',			\&builtin_const],
-				   ['_::atput',			\&builtin_atput],
-				   ['atput',			\&builtin_atput],
-				   ['_::map',			\&builtin_mapfn],
-				   ['_::foreach',		\&builtin_foreachfn],
-				   ['_::macro',			\&builtin_macro],
+#				   ['storestr',			\&builtin_storestr],
+#				   ['show',				\&builtin_show],
+
+				   ['_::puts',			"args",
+					"Identical to C<_::say> except that it also prints a" .
+					" newline.",
+					\&builtin_puts],
+
+				   ['_::say',			"args",
+					"Displays a printable representation of each of its" .
+					" arguments to stdout.  The string representations of" .
+					" the arguments are generated internally, B<not> with" .
+					" the C<printable> attribute so C<_::say> (and C<_::puts>)".
+					" will work on objects with a defective C<printable_get>.",
+					\&builtin_say],
+
+				   ['_::proc',			"name args body",
+					"Defines a proc described by the arguments.  Should only".
+					" be invoked by the C<proc> macro.",
+					\&builtin_proc],
+
+				   ['_::sub',			"args body"
+					"Defines a sub.",
+					\&builtin_subfn],
+
+				   ['_::if',			"test trueSub falseSub",
+					"Performs an 'if' comparison.  This is the backend of" .
+					" a number of flow-control macros.",
+					\&builtin_iffn],
+
+				   ['_::while',			"test body"
+					"The back-end for a number of looping macros.".
+					\&builtin_whilefn],
+
+				   ['_::set',			"name value",
+					"Assigns a value to a variable.",
+					\&builtin_set],
+
+				   ['_::var',			"args",
+					"Declare and initialize one or more variables.",
+					\&builtin_var],
+
+				   ['_::const',			"args",
+					"Declare and initialize one or more consts.",
+					\&builtin_const],
+
+				   ['_::atput',			"seq index value",
+					"Store a value in a sequence.",
+					\&builtin_atput],
+
+				   ['_::map',			"func seq",
+					"Primitive implementation of 'map'.",
+					\&builtin_mapfn],
+
+				   ['_::foreach',		"list fn",
+					"Backend for the 'for'/'foreach' macro.",
+					\&builtin_foreachfn],
+
+				   ['_::macro',			"name args body",
+					"Defines a macro.",
+					\&builtin_macro],
+
 				   ['_::mproc',			\&builtin_mproc],
 				   ['_::mkstr',			\&builtin_mkstr],
 				   ['_::mkstr_all',		\&builtin_mkstr_all],
-				   ['mkstr',			\&builtin_mkstr],
 				   ['_::use',			\&builtin_usefn],
 				   ['_::perlproc',		\&builtin_perlproc],
 				   ['_::perluse',		\&builtin_perluse],
@@ -3312,14 +3368,17 @@ sub initGlobals {
 				   ['_::class',			\&builtin_class],
 				   ['_::class_ext',		\&builtin_class_ext],
 				   ['_::getMethod',		\&builtin_getMethod],
-				   ['getMethod',		\&builtin_getMethod],
 				   ['_::getSuperMethod',\&builtin_getSuperMethod],
-				   ['getSuperMethod',	\&builtin_getSuperMethod],
 				   ['new',				\&builtin_new],
 				   ['defined',			\&builtin_definedfn],
 				   ['lookup',			\&builtin_lookup],
 				  ) {
-	$Globals->defset($special->[0], LL::Function->new($special->[1]));
+	prim (@{$special});
+  }
+
+  # Set up common aliases
+  for my $alias (qw{getMethod getSuperMethod mkstr}) {
+	alias ("_::$alias", $alias);
   }
 
   # More complex primitive functions
@@ -3332,69 +3391,121 @@ sub initGlobals {
   prim ('list',
 		"args",
 		"Return a new list containing all of the arguments in the order" .
-		"they were given.",
+		" they were given.",
 		sub { return LL::List->new(\@_) });
 
 
   prim ('@',
 		"seq index",
-		"Look up a value in a sequence.  (Specifically, performs a " .
-		"[seq->at index] expression.)",
+		"Look up a value in a sequence.  (Specifically, performs a" .
+		" [seq->at index] expression.)",
 		sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
 							  return $l->at($ndx) } );
 
-  prim 'byteArray',		sub { return LL::ByteArray->new(@_) };
-  prim 'bytesSized',	sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
-							  $size->checkNumber();
-							  die "Invalid byteArray size: ${$size}\n"
-								unless ${$size} >= 0;
-							  return LL::ByteArray->newSized(${$size})
-							};
-  prim 'stringSized',	sub { my ($size) = @_; checkNargs('stringSized',\@_,1);
-							  $size->checkNumber();
-							  die "Invalid string size: ${$size}\n"
-								unless ${$size} >= 0;
-							  return LL::String->new("\0" x ${$size});
-							};
-  prim 'quote',			sub { my ($obj) = @_; checkNargs('quote',\@_,1);
-							  return LL::Quote->new($obj)};
-  prim 'die',			sub { die join("", map { $_->printStr() } @_) . "\n" };
-  prim 'listSized',		sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
-							  $size->checkNumber();
-							  die "Invalid list size: ${$size}\n"
-								unless ${$size} >= 0;
-							  return LL::List->new([(NIL) x ${$size}]);
-							};
-  prim '_::defns',		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);
-							  $ns->checkSymbol();
-							  $Globals->defNamespace(${$ns});
-							};
-  prim 'not',			sub { my ($arg) = @_; checkNargs('not', \@_, 1);
-							  return boolObj(!$arg->isTrue());
-							};
-  prim 'int',			sub { my ($arg) = @_; checkNargs('int', \@_, 1);
-							  $arg->checkNumber(" in 'int'");
-							  return LL::Number->new(int(${$arg}));
-							};
-  prim 'neg',			sub { my ($l) = @_; checkNargs('neg', \@_, 1);
-							  $l->checkNumber(" in 'Lang::neg'");
-							  return LL::Number->new(-${$l});
-							};
-  prim 'str2num',		sub { my ($str) = @_; checkNargs('str2num', \@_, 1);
-							  $str->checkString(" in 'num'");
-							  my ($ns, $num) = readNumber(${$str});
-							  return NIL unless $ns eq "";
-							  return decktype($num);
-							};
-  prim 'exit',			sub { my ($status) = @_; checkNargs('exit', \@_, 1);
-							  $status->checkNumber(" in 'exit'");
-							  exit(${$status});
-							  return NIL;	# not reached
-							};
+  prim ('byteArray',
+		"args",
+		"Return a ByteArray containing the arguments.  Arguments must" .
+		" be integers with values between 0 and 255.",
+		sub { return LL::ByteArray->new(@_) } );
 
+  prim ('bytesSized',	
+		"size",
+		"Create an empty (zero-initialized) ByteArray that is C<size>" .
+		" bytes long.",
+		sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
+			  $size->checkNumber();
+			  die "Invalid byteArray size: ${$size}\n"
+				unless ${$size} >= 0;
+			  return LL::ByteArray->newSized(${$size})} );
 
-  prim '_::value',		sub { return NIL unless scalar @_; return $_[-1] };
-  $Globals->defset('value', $Globals->{'_::value'});
+  prim ('stringSized',
+		"size",
+		"Create an empty string C<size> characters long.",
+		sub { my ($size) = @_; checkNargs('stringSized',\@_,1);
+			  $size->checkNumber();
+			  die "Invalid string size: ${$size}\n"
+				unless ${$size} >= 0;
+			  return LL::String->new("\0" x ${$size})} );
+
+  prim ('quote',
+		"obj",
+		"Return a Quote object wrapping C<obj>.",
+		sub { my ($obj) = @_; checkNargs('quote',\@_,1);
+			  return LL::Quote->new($obj)} );
+
+  prim ('die',
+		"args",
+		"Print the arguments (using the internal printer) concatenated" .
+		" together, then exit with an error status.",
+		sub { die join("", map { $_->printStr() } @_) . "\n" } );
+
+  prim ('listSized',
+		"size",
+		"Return an empty (nil-filled) list of size C<size>.",
+		sub { my ($size) = @_;  checkNargs('listSized', \@_,1);
+			  $size->checkNumber();
+			  die "Invalid list size: ${$size}\n" unless ${$size} >= 0;
+			  return LL::List->new([(NIL) x ${$size}])}  );
+
+  prim ('_::defns',		
+		"namespaceName",
+		"Define a new namespace named by symbol C<namespaceName>.",
+		sub { my ($ns) = @_;  checkNargs('_::defns', \@_, 1);
+			  $ns->checkSymbol();
+			  $Globals->defNamespace(${$ns}) } );
+
+  prim ('not',
+		"obj",
+		"Return the boolean complement of C<obj>.",
+		sub { my ($arg) = @_; checkNargs('not', \@_, 1);
+			  return boolObj(!$arg->isTrue())} );
+
+  prim ('int',
+		"aNumber",
+		"Return number C<aNumber> as an integer.  C<aNumber> is truncated" .
+		" toward zero.",
+		sub { my ($arg) = @_; checkNargs('int', \@_, 1);
+			  $arg->checkNumber(" in 'int'");
+			  return LL::Number->new(int(${$arg}))	} );
+
+  prim ('neg',
+		"aNumber",
+		"Return number C<aNumber> negated (i.e. with its sign flipped,".
+		" so negative if it was positive and positive if it was negative.)",
+		sub { my ($l) = @_; checkNargs('neg', \@_, 1);
+			  $l->checkNumber(" in 'Lang::neg'");
+			  return LL::Number->new(-${$l}) } );
+
+  prim ('str2num',
+		"aString",
+		"Parse C<aString> as the printable form of a numeric constant.  All" .
+		" of the forms accepted by the Deck parser are also accepted by" .
+		" C<str2num>.  If C<aString> does not contain a valid number," .
+		" C<str2num> returns nil.",
+		sub { my ($str) = @_; checkNargs('str2num', \@_, 1);
+			  $str->checkString(" in 'str2num'");
+			  my ($ns, $num) = readNumber(${$str});
+			  return NIL unless $ns eq "";
+			  return decktype($num) } );
+
+  prim ('exit',
+		"status",
+		"Exit immediately with exit status C<status>.  C<status> must be a" .
+		" number.  If it is not an integer, it is truncated down to the" .
+		" nearest integer value.",
+		sub { my ($status) = @_; checkNargs('exit', \@_, 1);
+			  $status->checkNumber(" in 'exit'");
+			  exit(${$status});
+			  return NIL;	# not reached
+			} );
+
+  prim ('value',
+		"args",
+		"Return the last item in the argument list.  If none is given,".
+		" return nil.",
+		sub { return NIL unless scalar @_; return $_[-1]} );
+  alias ('value', '_::value');
+  #$Globals->defset('_::value', $Globals->{'value'});
 
 
   # Create the hash of functions that take the context as arg. 0.
@@ -3695,7 +3806,7 @@ sub builtin_say {
   return NIL;
 }
 
-
+=pod removed
 
 sub builtin_storestr {
   my $result = "";
@@ -3713,6 +3824,9 @@ sub builtin_show {
   my $result = builtin_storestr(@_);
   print ${$result}, "\n";
 }
+
+=cut
+
 
 sub builtin_set {
   my ($context, $name, $value) = @_;
