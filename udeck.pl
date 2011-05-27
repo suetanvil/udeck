@@ -1095,8 +1095,10 @@ sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 					  [qw{**}],		# power
 					  [qw{* / // %}],# mult, div, div rounded toward zero, mod
 					  [qw{+ -}],	# add, subtract
-					  [qw{<< >> >>> <<<}],	# shifts	
-					  [qw{== === != !== < > <= >=}],  # Equality and magnitude
+					  [qw{<< >> >>>
+						  <<<}],	# shifts	
+					  [qw{== === != !== < > <= >=
+						  <=>}],	# Equality and magnitude
 					  [qw{&}],		# Bitwise AND.
 					  [qw{| ^}],	# Bitwise OR, bitwise XOR
 					  [qw{&&}],		# Logical AND, short-circuited
@@ -2639,7 +2641,7 @@ sub prim {
 	unless ref($function) eq 'CODE';
 
   $Globals->defset($name, LL::Function->new($function));
-  addDocString($name, 'proc', $args, $docstring);
+  addDocString($name, 'proc', TRUE, $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
@@ -3453,6 +3455,16 @@ sub initGlobals {
 					" in the current context.  If C<name> is undefined, it" .
 					" is a fatal error.",
 					\&builtin_lookup],
+
+				   ['_::docstring_keys',"",
+					"Return a list containing the keys (i.e. names) of all" .
+					" document objects in memory.  The keys are symbols.",
+					\&builtin_docstring_keys],
+
+				   ['_::docstring_get',	"key",
+					"Return a list containing the docstring information for" .
+					" the object named by symbol C<key>.",
+					\&builtin_docstring_get],
 				  ) {
 	# Sanity assertion:
 	die "Missing field in '@{$special}'\n"
@@ -3642,6 +3654,7 @@ sub initGlobals {
   op_method '&',  'op_BitAnd';
   op_method '^',  'op_BitXor';
   op_method '==', 'op_Equals';
+  op_method '<=>','op_Cmp';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -4762,4 +4775,31 @@ sub builtin_lookup {
   my $val = basicLookup(@_);
   die "Undefined symbol '${$_[1]}'\n" unless $val;
   return $val;
+}
+
+sub builtin_docstring_keys {
+  my @keys = map { LL::Symbol->new($_) } keys %DocStringHash;
+  return LL::List->new(\@keys);
+}
+
+sub builtin_docstring_get {
+  my ($key) = @_;
+
+  $key->checkSymbol(" in _:::docstring_get");
+
+  my $ds = $DocStringHash{${$key}};
+  return NIL unless defined($ds);
+
+  my $type = LL::Symbol->new($ds->[0]);
+
+  my $result;
+  given ($ds->[0]) {
+	when ('proc') {
+	  $result = [$type, map { LL::String->new($_) } @{$ds}[1..3] ];
+	}
+
+	default {die "Corrupt docstring entry for '${$key}'\n"}
+  }
+
+  return LL::List->new($result);
 }

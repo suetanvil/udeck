@@ -274,6 +274,8 @@ X		-do? is? value?
 
 
 	-make the code self-documenting
+		-need sort
+			-need spaceship operator
 		-docstrings in classes, methods and procs.
 			-map docstrings to global namespace.  Method docstrings go
 			 in <class>-><method> or <class>.<method>.
@@ -281,12 +283,12 @@ X		-do? is? value?
 			_::docstring_keys -- returns list of names as strings
 			_::docstring_get <key> -- returns the doc info in a list:
 
-				[:class <superclass> <docstring> <methods> <attributes>]
-				[:proc <name> <args> <docstring>]
-				[:method <name> <args> <class> <docstring>]
-				[:attrib <name> <class> :read/:write/:readwrite <docstring>]
-				[:macro <name> <args> <docstring>]
-				[:mproc <name> <args> <docstring>]
+				[:class <builtin> <superclass> <docstring> <methods> <attributes>]
+				[:proc <builtin> <name> <args> <docstring>]
+				[:method <builtin> <name> <args> <class> <docstring>]
+				[:attrib <builtin> <name> <class> :read/:write/:readwrite <docstring>]
+				[:macro <builtin> <name> <args> <docstring>]
+				[:mproc <builtin> <name> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
 	-move 'map' to Lang.dk
