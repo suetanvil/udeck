@@ -2634,6 +2634,10 @@ sub checkNargs {
 sub prim {
   my ($name, $args, $docstring, $function) = @_;
 
+  # Assertion:
+  die "Expecting a sub, got '$function'\n"
+	unless ref($function) eq 'CODE';
+
   $Globals->defset($name, LL::Function->new($function));
   addDocString($name, 'proc', $args, $docstring);
 }
@@ -3294,7 +3298,7 @@ sub initGlobals {
 
   # Externally-defined primitive functions
   for my $special (
-#				   ['storestr',			\&builtin_storestr],
+#				   ['_::storestr',			\&builtin_storestr],
 #				   ['show',				\&builtin_show],
 
 				   ['_::puts',			"args",
@@ -3315,7 +3319,7 @@ sub initGlobals {
 					" be invoked by the C<proc> macro.",
 					\&builtin_proc],
 
-				   ['_::sub',			"args body"
+				   ['_::sub',			"args body",
 					"Defines a sub.",
 					\&builtin_subfn],
 
@@ -3324,8 +3328,8 @@ sub initGlobals {
 					" a number of flow-control macros.",
 					\&builtin_iffn],
 
-				   ['_::while',			"test body"
-					"The back-end for a number of looping macros.".
+				   ['_::while',			"test body",
+					"The back-end for a number of looping macros.",
 					\&builtin_whilefn],
 
 				   ['_::set',			"name value",
@@ -3356,7 +3360,7 @@ sub initGlobals {
 					"Defines a macro.",
 					\&builtin_macro],
 
-				   ['_::mproc',			"name args body".
+				   ['_::mproc',			"name args body",
 					"Define an mproc.",
 					\&builtin_mproc],
 
@@ -3444,13 +3448,21 @@ sub initGlobals {
 					" visible in the current context.",
 					\&builtin_definedfn],
 
-				   ['lookup',			\&builtin_lookup],
+				   ['lookup',			"name",
+					"Get the value of the variable named by symbol C<name>" .
+					" in the current context.  If C<name> is undefined, it" .
+					" is a fatal error.",
+					\&builtin_lookup],
 				  ) {
+	# Sanity assertion:
+	die "Missing field in '@{$special}'\n"
+	  unless scalar @{$special} == 4;
+
 	prim (@{$special});
   }
 
   # Set up common aliases
-  for my $alias (qw{getMethod getSuperMethod mkstr}) {
+  for my $alias (qw{getMethod getSuperMethod mkstr atput}) {
 	alias ("_::$alias", $alias);
   }
 
