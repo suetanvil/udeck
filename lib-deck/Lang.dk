@@ -5,8 +5,6 @@
 
 var Version = '0.01';
 
-perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
-
 const {
 	true = 1
 	false = nil
@@ -14,6 +12,12 @@ const {
 
 proc _seq_Equals
 proc _write_seq
+
+
+perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
+
+perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
+
 
 
 
@@ -29,18 +33,17 @@ _class_ext Object {
 # '''
 
 
-# This method is called when the object receives a message it does not
-# understand (i.e. there is no corresponding method implemented.)
+	# This method is called when the object receives a message it does not
+	# understand (i.e. there is no corresponding method implemented.)
 
-# Default behaviour is to exit with an error message.
-
+	# Default behaviour is to exit with an error message.
 	method doesNotUnderstand {name args} {
 		die "Unknown method '$name' in class '" self.class.name "'"
 	}
 
 
-# This is the message that each object receives when it is first
-# created. Its implementation is expected to initialize the new object.
+	# This is the message that each object receives when it is first
+	# created. Its implementation is expected to initialize the new object.
 	method init {args} {}
 
 	method isNil_get {} {return nil}
@@ -66,15 +69,12 @@ _class_ext Object {
 	# Needed for test case
 	method self_get {} {}
 
-	
+	# Comparison behaviour
+	method op_Lt       {obj} {return (self != obj || self <= obj)}
+	method op_Lte      {obj} {die "Called abstract op_Lte on " self.class.name}
+	method op_Gt       {obj} {return [not (self <= obj)]}
+	method op_Gte      {obj} {return (self > obj || self == obj)}
 
-	method op_Cmp {obj} {
-		(self == obj)	&& [return 0]
-		(self < obj)	&& [return -1]
-		(self > obj)	&& [return 1]
-
-		die "Invalid comparison in op_Cmp."
-	}
 }
 
 _class_ext Number {
@@ -86,10 +86,10 @@ _class_ext Number {
 	method op_Mult     {obj} {return [obj->multNumber self]}
 	method op_Div      {obj} {return [obj->divNumber self]}
 	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
-	method op_Lt       {obj} {return [obj->ltNumber self]}
+#	method op_Lt       {obj} {return [obj->ltNumber self]}
 	method op_Lte      {obj} {return [obj->lteNumber self]}
-	method op_Gt       {obj} {return [obj->gtNumber self]}
-	method op_Gte      {obj} {return [obj->gteNumber self]}
+#	method op_Gt       {obj} {return [obj->gtNumber self]}
+#	method op_Gte      {obj} {return [obj->gteNumber self]}
 	method op_Pow	   {obj} {return [obj->powNumber self]}
 	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
 	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
@@ -167,6 +167,17 @@ _class_ext String {
 		return result
 	}
 
+	method op_Lte {other} {
+		if (other.class == Symbol) {
+			other = [unintern other]
+		}
+
+		(other.class == String) \
+			|| [die "Comparing string with " other.class ]
+
+		return [_str_lte self other]
+	}
+
 }
 
 
@@ -185,6 +196,10 @@ _class_ext Symbol {
 	}
 
 	method shallowCopy {} {return self}
+
+	method op_Lte {other} {
+		return ([unintern self] <= other)
+	}
 }
 
 _class_ext ByteArray {
@@ -303,6 +318,13 @@ proc _write_seq {src1 src2 dest} {
 		dest@index = item
 		index = index + 1
 	}
+}
+
+
+proc \<=> {left right} {
+	(left == right)	&& [return 0]
+	(left > right)	&& [return 1]
+	return -1
 }
 
 

@@ -3654,7 +3654,6 @@ sub initGlobals {
   op_method '&',  'op_BitAnd';
   op_method '^',  'op_BitXor';
   op_method '==', 'op_Equals';
-  op_method '<=>','op_Cmp';
 
   # Define the built-in classes.
   defclass 'Object', '',

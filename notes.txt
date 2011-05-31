@@ -276,6 +276,7 @@ X		-do? is? value?
 	-make the code self-documenting
 		-need sort
 			-need spaceship operator
+				-and should be a function, dude!
 		-docstrings in classes, methods and procs.
 			-map docstrings to global namespace.  Method docstrings go
 			 in <class>-><method> or <class>.<method>.
