@@ -1,0 +1,32 @@
+Comparing 'aaa' and 'bbb'...
+aaa < bbb
+aaa <= bbb
+aaa != bbb
+Comparing 'aaa' and 'aaa'...
+aaa <= aaa
+aaa == aaa
+aaa >= aaa
+Comparing 'aaab' and 'aaaa'...
+aaab != aaaa
+aaab >= aaaa
+aaab > aaaa
+Comparing 'aaa' and 'bbb'...
+:aaa < :bbb
+:aaa <= :bbb
+:aaa != :bbb
+Comparing 'aaa' and 'aaa'...
+:aaa <= :aaa
+:aaa == :aaa
+:aaa >= :aaa
+Comparing 'aaab' and 'aaaa'...
+:aaab != :aaaa
+:aaab >= :aaaa
+:aaab > :aaaa
+Comparing 'aaa' and 'bbb'...
+aaa < :bbb
+aaa <= :bbb
+aaa != :bbb
+Comparing 'aaa' and 'bbb'...
+:aaa < bbb
+:aaa <= bbb
+:aaa != bbb

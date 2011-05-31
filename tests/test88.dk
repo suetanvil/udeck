@@ -1,0 +1,28 @@
+# Test string and symbol comparisons
+
+proc test {l r} {
+	puts "Comparing '$l' and '$r'..."
+
+	if (l < r) {puts l " < " r}
+	if (l <= r) {puts l " <= " r}
+	if (l == r) {puts l " == " r}
+	if (l != r) {puts l " != " r}
+	if (l >= r) {puts l " >= " r}
+	if (l > r) {puts l " > " r}
+}
+
+test "aaa" "bbb"
+test "aaa" "aaa"
+test "aaab" "aaaa"
+
+test :aaa :bbb
+test :aaa :aaa
+test :aaab :aaaa
+
+test "aaa" :bbb
+test :aaa "bbb"
+
+
+
+
+
