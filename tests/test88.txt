@@ -30,3 +30,6 @@ Comparing 'aaa' and 'bbb'...
 :aaa < bbb
 :aaa <= bbb
 :aaa != bbb
+[f o o b a r]
+[f o o b a r]
+[1 2 3 4 5]

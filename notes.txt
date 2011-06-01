@@ -277,6 +277,7 @@ X		-do? is? value?
 		-need sort
 X			-need string comparisions
 				-and see if I can merge string and symbol
+					-no, 'cuz of inheritance
 			-need spaceship operator
 X				-and should be a function, dude!
 				
@@ -302,6 +303,7 @@ X				-and should be a function, dude!
 
 
 	-should autosub args be capitalized?
+	-maybe make Symbol a subclass of String
 	-deepCopy
 	-split Lang into Lang (builtin stuff) and Core (standalone Deck stuff)
 	-boolean xor
@@ -337,5 +339,4 @@ X				-and should be a function, dude!
 	 block that gets called when the function returns, regardless of
 	 how.
 	-file I/O
-
-		
+	-should 'for/foreach' also define 'index' as a const?		

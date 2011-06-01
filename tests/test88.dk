@@ -24,5 +24,11 @@ test :aaa "bbb"
 
 
 
+# Also test 'asList
+puts [asList "foobar"]
+puts [asList :foobar]
+puts [asList [byteArray 1 2 3 4 5]]
+
+
 
 
