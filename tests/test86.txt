@@ -8,4 +8,4 @@ PASSED: nil
 PASSED: <macro>
 PASSED: <function>
 PASSED: <method call>
-PASSED: 1 .. 6
+PASSED: 1 .. 5
