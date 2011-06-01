@@ -12,7 +12,7 @@ const {
 
 proc _seq_Equals
 proc _write_seq
-
+proc puts
 
 perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
 
@@ -52,6 +52,15 @@ _class_ext Object {
 	method at {index} {die "Not indexable."}
 	method atPut {index value} {die "Not indexable."}
 	method size_get {} {die self.class " is not indexable."}
+	method maker_get {} {
+		'''
+		Sequence protocol: return a function which will create a collection
+		suitable for holding the contents of self and which takes one argument,
+		a number specifying the size.  It defaults to C<listSized>.
+		'''
+		return listSized
+	}
+
 	method isIndexable_get {} {return nil}
 	method last_get {} {return (self.size - 1)}
 
@@ -181,6 +190,7 @@ _class_ext String {
 		return [_str_lte self other]
 	}
 
+	method maker_get {} {return stringSized}
 }
 
 
@@ -203,6 +213,8 @@ _class_ext Symbol {
 	method op_Lte {other} {
 		return ([unintern self] <= other)
 	}
+
+	method maker_get {} {return stringSized}  # symbols are immutable
 }
 
 _class_ext ByteArray {
@@ -237,6 +249,7 @@ _class_ext ByteArray {
 		return result
 	}
 
+	method maker_get {} {return bytesSized}
 }
 
 _class_ext Struct {
@@ -324,12 +337,12 @@ proc _write_seq {src1 src2 dest} {
 }
 
 
-proc \<=> {left right} {
+proc cmp {left right} {
 	(left == right)	&& [return 0]
 	(left > right)	&& [return 1]
 	return -1
 }
-
+const \<=> = cmp
 
 # Return the absolute value of a number
 proc abs {n} {
@@ -366,6 +379,31 @@ proc asList {seq} {
 }
 
 
+perlproc _perlsort {fn ls} '''
+  $fn->checkFun(" in _sort perlfunc.");
+  my $result = [sort {$fn->($a, $b)->perlForm()} @{$ls}];
+  return $result;
+'''
+
+mproc msort {
+	sub 2 ucmp
+	seq
+} {
+	var sortList = seq
+	if (sortList.class != List) {
+		sortList = [asList sortList]
+	}
+
+	var resultList = [_perlsort [perlobj ucmp] [perlobj sortList]]
+
+	(seq.class == List) && [return resultList]
+
+	var result = [(seq.maker) seq.size]
+	_write_seq resultList :[] result
+
+	return result
+}
+			
 
 # Insert spacer between all elements in aList
 # proc withSpacer {aList spacer} {
@@ -419,7 +457,7 @@ class Interval Struct {
 	}
 
 	method printable_get {} {
-		var end = start + (length * incr)
+		var end = start + (length * incr) - 1
 
 		var by = ""
 		if ([abs incr] != 1) {

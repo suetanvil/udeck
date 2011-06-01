@@ -1280,6 +1280,7 @@ sub isFunction {return 1}
 sub checkFun {}
 sub isCallable {return 1}
 sub storeStr {return "<function>"}
+sub perlForm {my ($self) = @_; return $self}
 
 package LL::Method;
 use base 'LL::Function';
@@ -3538,6 +3539,12 @@ sub initGlobals {
 		"Return a Quote object wrapping C<obj>.",
 		sub { my ($obj) = @_; checkNargs('quote',\@_,1);
 			  return LL::Quote->new($obj)} );
+
+  prim ('perlobj',
+		'obj',
+		"Return a PerlObj wrapping C<obj>.",
+		sub { my ($obj) = @_; checkNargs('perlobj', \@_, 1);
+			  return LL::PerlObj->new($obj);} );
 
   prim ('die',
 		"args",

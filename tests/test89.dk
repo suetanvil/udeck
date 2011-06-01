@@ -1,0 +1,22 @@
+# Test the 'sort' function.
+
+var u = [list 5 3 4 1 2]
+var s = [msort {value (a <=> b)} u]
+puts u
+puts s
+
+u = "foobarquux"
+s = [msort cmp u]
+puts u
+puts s
+
+u = [byteArray 5 9 7 2 1]
+s = [msort cmp u]
+puts u
+puts s
+
+u = 1 .. 5
+s = [msort {neg [cmp a b]} u]
+puts u
+puts s
+

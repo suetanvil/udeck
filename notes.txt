@@ -274,11 +274,11 @@ X		-do? is? value?
 
 
 	-make the code self-documenting
-		-need sort
+X		-need sort
 X			-need string comparisions
-				-and see if I can merge string and symbol
-					-no, 'cuz of inheritance
-			-need spaceship operator
+X				-and see if I can merge string and symbol
+X					-no, 'cuz of inheritance
+X			-need spaceship operator
 X				-and should be a function, dude!
 				
 		-docstrings in classes, methods and procs.
@@ -291,7 +291,8 @@ X				-and should be a function, dude!
 				[:class <builtin> <superclass> <docstring> <methods> <attributes>]
 				[:proc <builtin> <name> <args> <docstring>]
 				[:method <builtin> <name> <args> <class> <docstring>]
-				[:attrib <builtin> <name> <class> :read/:write/:readwrite <docstring>]
+				[:attrib <builtin> <name> <class> :read/:write/:readwrite
+	                <docstring>]
 				[:macro <builtin> <name> <args> <docstring>]
 				[:mproc <builtin> <name> <args> <docstring>]
 
