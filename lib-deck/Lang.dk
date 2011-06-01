@@ -350,7 +350,7 @@ proc last {aList} {return aList.last}
 proc typeof {obj} {return [intern obj.class.name]}
 
 proc asList {seq} {
-	value '''
+	'''
 	Return a list containing the contents of C<seq>, an object that
 	implements the list protocol.
 	'''

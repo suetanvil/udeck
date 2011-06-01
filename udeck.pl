@@ -2489,7 +2489,16 @@ sub compile {
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
+	my $first = 1;
 	for my $expr (@{$body}) {
+
+	  # If the first item is a docstring, handle it.  For now, that
+	  # means just skipping it.
+	  if ($first) {
+		$first = 0;
+		next if ($expr->size() == 1 && $expr->[0]->isString());
+	  }
+
 	  my $newExpr = applyMacrosRecursively ($expr, $Globals);
 
 	  $newExpr->unescapeAllOperators();
