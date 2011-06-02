@@ -13,6 +13,7 @@ const {
 proc _seq_Equals
 proc _write_seq
 proc puts
+proc slice
 
 perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
 
@@ -404,19 +405,23 @@ mproc sort {
 	return result
 }
 
-=pod
-
 mproc reduce {
 	sub 1 filter
 	seq
 } {
 	var result = [(seq.maker) seq.size]
+	var index = 0
 
-	# XXX
+	for elem in seq {
+		if ([filter elem]) {
+			result@index = elem
+			index = index + 1
+		}
+	}
 
+	return [slice result 0 (index - 1)]
 }
 			
-=cut
 
 # Insert spacer between all elements in aList
 # proc withSpacer {aList spacer} {
