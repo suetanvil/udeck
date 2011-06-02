@@ -1,0 +1,15 @@
+
+var keys = [_::docstring_keys]
+
+
+puts "=head1 Functions\n\n"
+puts "=over\n\n"
+
+for key in keys {
+	var info = [_::docstring_get key]
+	
+	puts "=item " 
+
+
+}
+

@@ -34,9 +34,11 @@ puts bar
 
 # uncomment!  waiting for || to work.
 
-#puts [slice foo 3 7]
-#puts [slice foo 7 3]
-#puts [slice foo -1 -5]
+puts [slice foo 3 7]
+puts [slice foo 7 3]
+puts [slice foo -1 -5]
+puts [slice "foobar" 0 2]
+puts [slice "foobar" 3 5]
 
 
 # Test sprintf

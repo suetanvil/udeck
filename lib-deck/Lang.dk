@@ -385,7 +385,7 @@ perlproc _perlsort {fn ls} '''
   return $result;
 '''
 
-mproc msort {
+mproc sort {
 	sub 2 ucmp
 	seq
 } {
@@ -403,7 +403,20 @@ mproc msort {
 
 	return result
 }
+
+=pod
+
+mproc reduce {
+	sub 1 filter
+	seq
+} {
+	var result = [(seq.maker) seq.size]
+
+	# XXX
+
+}
 			
+=cut
 
 # Insert spacer between all elements in aList
 # proc withSpacer {aList spacer} {
@@ -481,21 +494,21 @@ const range = \..
 
 
 # Extract a sublist from aList
-proc slice {aList start end} {
+proc slice {seq start end} {
 
-	if (end == nil || end > [last aList]) {
-		end = [last aList]
+	if (end == nil || end > [last seq]) {
+		end = seq.last
 	}
 
-	if (start > end || start > [last aList]) {
-		return :[]
+	if (start > end || start > [last seq]) {
+		return [(seq.maker) 0]
 	}
 
 	var range = (start .. end)
-	var result = [listSized [size range]]
+	var result = [(seq.maker) [size range]]
 	var index = 0
 	foreach n in range {
-		result@index = aList@n
+		result@index = seq@n
 		index = index + 1
 	}
 

@@ -2462,6 +2462,7 @@ sub compile {
   my ($outerContext, $args, $body, $mode, $name) = @_;
   $body->checkLoL();
 
+  my $isNamed = !!$name;
   $name ||= '<unnamed function>';
 
   die "Unknown compiler mode '$mode'\n"
@@ -2497,7 +2498,14 @@ sub compile {
 	  # means just skipping it.
 	  if ($first) {
 		$first = 0;
-		next if ($expr->size() == 1 && $expr->[0]->isString());
+		if ($expr->size() == 1 && $expr->[0]->isString()) {
+		  next unless $isNamed;
+
+		  my $docString = ${ $expr->[0] };
+		  addDocString('proc', NIL, $args->printStr(), $docString)
+			if $isProc;
+		  next;
+		}
 	  }
 
 	  my $newExpr = applyMacrosRecursively ($expr, $Globals);
