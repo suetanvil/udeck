@@ -2502,7 +2502,7 @@ sub compile {
 		  next unless $isNamed;
 
 		  my $docString = ${ $expr->[0] };
-		  addDocString('proc', NIL, $args->printStr(), $docString)
+		  addDocString($name, 'proc', 0, $args->printStr(), $docString)
 			if $isProc;
 		  next;
 		}
@@ -2659,7 +2659,7 @@ sub prim {
 	unless ref($function) eq 'CODE';
 
   $Globals->defset($name, LL::Function->new($function));
-  addDocString($name, 'proc', TRUE, $args, $docstring);
+  addDocString($name, 'proc', 1, $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
@@ -4818,7 +4818,9 @@ sub builtin_docstring_get {
   my $result;
   given ($ds->[0]) {
 	when ('proc') {
-	  $result = [$type, map { LL::String->new($_) } @{$ds}[1..3] ];
+	  $result = [$type,
+				 boolObj($ds->[1]),
+				 map { LL::String->new($_) } @{$ds}[2..3] ];
 	}
 
 	default {die "Corrupt docstring entry for '${$key}'\n"}
