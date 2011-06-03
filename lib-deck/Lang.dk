@@ -409,6 +409,12 @@ mproc reduce {
 	sub 1 filter
 	seq
 } {
+	'''
+	Apply function C<filter> to every element of sequence C<seq> and return
+	another sequence containing only the elements on which C<filter> returned
+	a true value.  The return value's type is compatible with C<seq>'s.
+	'''
+
 	var result = [(seq.maker) seq.size]
 	var index = 0
 

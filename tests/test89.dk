@@ -1,22 +1,50 @@
-# Test the 'sort' function.
+# Test the 'sort' and 'reduce' functions.
 
+# Test 'sort'
 var u = [list 5 3 4 1 2]
-var s = [msort {value (a <=> b)} u]
+var s = [sort {value (a <=> b)} u]
 puts u
 puts s
 
 u = "foobarquux"
-s = [msort cmp u]
+s = [sort cmp u]
 puts u
 puts s
 
 u = [byteArray 5 9 7 2 1]
-s = [msort cmp u]
+s = [sort cmp u]
 puts u
 puts s
 
 u = 1 .. 5
-s = [msort {neg [cmp a b]} u]
+s = [sort {neg [cmp a b]} u]
 puts u
 puts s
+
+# Test 'reduce'
+say "Odd numbers: "
+map {say "$a "} [reduce {value (a % 2)} (1..20)]
+puts
+
+var even = [reduce {value (a % 2 == 0)} (1..20)]
+puts even
+puts even.size
+
+var vowels = [reduce {value a.isVowel} "This is a sentence."]
+puts vowels
+
+vowels = [reduce {value a.isVowel} :foobarquux]
+puts vowels
+
+even = [reduce {value (a % 2 == 0)} [byteArray 1 2 3 4 5 6 7 8 9 10] ]
+puts even
+puts even.size
+
+var empty = [reduce {value 0} (1..20)]
+puts empty " " empty.size
+
+empty = [reduce {value 1} :[]]
+puts empty " " empty.size
+
+
 
