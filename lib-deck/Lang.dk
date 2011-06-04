@@ -533,7 +533,7 @@ proc concat {args} {
 		len = len + [size l]
 	}
 
-	var result = [listSized len]
+	var result = [((args@0).maker) len]
 	var pos = 0
 	foreach l in args {
 		foreach elem in l {

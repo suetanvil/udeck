@@ -260,6 +260,9 @@ sub hasNamespace {
 sub normalizeName {
   my ($self, $name) = @_;
 
+  # Sanity check!
+  die "Undefined argument to normalizeName().\n" unless defined($name);
+
   die "Expecting string, not reference!\n" unless ref($name) eq '';
   return $name if $self->isQualified($name);
   return $self->getNamespace() . '::' . $name;
@@ -2659,12 +2662,21 @@ sub prim {
 	unless ref($function) eq 'CODE';
 
   $Globals->defset($name, LL::Function->new($function));
-  addDocString($name, 'proc', 1, $args, $docstring);
+
+  my $longName = $Globals->normalizeName($name);
+  addDocString($longName, 'proc', 1, $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
 sub alias {
   my ($src, $dest) = @_;
+
+  # Sanity check
+  die "Alias src '$src' is not qualified.\n"
+	unless $Globals->isQualified($src);
+
+  $dest = $Globals->normalizeName($dest);
+
   $Globals->defset($dest, $Globals->lookup($src));
   addDocString ($dest, @{$DocStringHash{$src}});
 }
@@ -3465,13 +3477,15 @@ sub initGlobals {
 
 				   ['defined',			"name",
 					"Test if there is a symbol named C<name> (a symbol)" .
-					" visible in the current context.",
+					" visible in the current context.  Whether or not this" .
+					" test works on local names is undefined.",
 					\&builtin_definedfn],
 
 				   ['lookup',			"name",
 					"Get the value of the variable named by symbol C<name>" .
 					" in the current context.  If C<name> is undefined, it" .
-					" is a fatal error.",
+					" is a fatal error.  Whether this can detect local names" .
+					" is currently undefined.",
 					\&builtin_lookup],
 
 				   ['_::docstring_keys',"",
@@ -3620,13 +3634,12 @@ sub initGlobals {
 			  return NIL;	# not reached
 			} );
 
-  prim ('value',
+  prim ('_::value',
 		"args",
 		"Return the last item in the argument list.  If none is given,".
 		" return nil.",
 		sub { return NIL unless scalar @_; return $_[-1]} );
-  alias ('value', '_::value');
-  #$Globals->defset('_::value', $Globals->{'value'});
+  alias ('_::value', 'value');
 
 
   # Create the hash of functions that take the context as arg. 0.
@@ -4024,7 +4037,8 @@ sub builtin_proc {
   die "proc: name '${$name}' is already defined.\n"
 	unless $Globals->lookup(${$name})->isUndefinedFunction();
 
-  my $func = compile ($Globals, $args, $body, 'proc', ${$name});
+  my $longName = $Globals->normalizeName(${$name});
+  my $func = compile ($Globals, $args, $body, 'proc', $longName);
   $Globals->setGlobalConst(${$name}, $func);
 
   return $func;
@@ -4207,7 +4221,8 @@ sub builtin_macro {
   $args->checkList();
   $body->checkList();
 
-  my $macro = compile ($Globals, $args, $body, 'macro', ${$name});
+  my $longName = $Globals->normalizeName(${$name});
+  my $macro = compile ($Globals, $args, $body, 'macro', $longName);
 
   $Globals->defset(${$name}, $macro);
 

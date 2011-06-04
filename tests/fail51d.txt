@@ -1,1 +1,1 @@
-Use of a qualified private name ('Test::Util::_foo') in function 'xxx'
+Use of a qualified private name ('Test::Util::_foo') in function 'Main::xxx'

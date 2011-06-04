@@ -5,16 +5,14 @@ var keys = [_::docstring_keys]
 puts "Sorting keys..."
 keys = [sort {cmp a b} keys]
 
-puts "Fetching docstrings..."
-var docstrings = [map {_::docstring_get a} keys]
-puts docstrings
-
 puts "=head1 Functions\n\n"
 puts "=over\n\n"
 
-var functions = [reduce {value (a@0 == :proc)} docstrings]
-for doc in functions {
-	puts "=item " (doc@1) "\n"
+var functionKeys = [reduce {value ([_::docstring_get a]@0 == :proc)} keys]
+
+for fk in functionKeys {
+	var doc = [_::docstring_get fk]
+	puts "=item $fk\n"
 
 
 }
