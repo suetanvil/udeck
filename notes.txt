@@ -288,13 +288,14 @@ X				-and should be a function, dude!
 			_::docstring_keys -- returns list of names as strings
 			_::docstring_get <key> -- returns the doc info in a list:
 
-				[:class <builtin> <superclass> <docstring> <methods> <attributes>]
-				[:proc <builtin> <name> <args> <docstring>]
-				[:method <builtin> <name> <args> <class> <docstring>]
-				[:attrib <builtin> <name> <class> :read/:write/:readwrite
+				[:class <name> <builtin> <superclass> <docstring>
+					<methods> <attributes>]
+				[:proc <name> <builtin> <args> <docstring>]
+				[:method <name> <builtin> <args> <class> <docstring>]
+				[:attrib <name> <builtin> <class> :read/:write/:readwrite
 	                <docstring>]
-				[:macro <builtin> <name> <args> <docstring>]
-				[:mproc <builtin> <name> <args> <docstring>]
+				[:macro <name> <builtin> <args> <docstring>]
+				[:mproc <name> <builtin> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
 	-move 'map' to Lang.dk

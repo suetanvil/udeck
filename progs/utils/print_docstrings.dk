@@ -1,19 +1,34 @@
 
 puts "Getting docstrings..."
 var keys = [_::docstring_keys]
+keys = [slice keys 0 5]		# temp!
 
 puts "Sorting keys..."
 keys = [sort {cmp a b} keys]
 
+puts "Getting strings..."
+var docStrings = [map {value [_::docstring_get a]} keys]
+
+puts "Selecting procedures..."
+docStrings = [reduce {value (a@0 == :proc)} docStrings]
+
 puts "=head1 Functions\n\n"
 puts "=over\n\n"
 
-var functionKeys = [reduce {value ([_::docstring_get a]@0 == :proc)} keys]
 
-for fk in functionKeys {
-	var doc = [_::docstring_get fk]
-	puts "=item $fk\n"
+# [:proc <name> <builtin> <args> <docstring>]
 
+for doc in docStrings {
+#	puts doc
+	var fname = (doc@1)
+	var fbuiltin = (doc@2)
+	var fnargs = (doc@3)
+	var fdoc = (doc@4)
 
+	puts "=item $fname\n"
+
+	puts "    C<$fname \{$fnargs\}>\n"
+
+	puts fdoc "\n"
 }
 

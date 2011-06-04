@@ -2622,9 +2622,20 @@ sub compile {
 # Add a docstring to %DocStringHash.  The remaining arguments are
 # stored as a hash.  Formatting is done later.
 sub addDocString {
-  my ($name, @values) = @_;
+  my ($name, $tag, @values) = @_;
 
-  $DocStringHash{$name} = \@values;
+  $DocStringHash{$name} = [$tag, $name, @values];
+}
+
+
+# Add a copy of the docstring for $src under the name $dest.
+sub cloneDocString {
+  my ($src, $dest) = @_;
+
+  my $clone = [ @{$DocStringHash{$src}} ];
+  $clone->[1] = $dest;
+
+  $DocStringHash{$dest} = $clone;
 }
 
 
@@ -2678,7 +2689,8 @@ sub alias {
   $dest = $Globals->normalizeName($dest);
 
   $Globals->defset($dest, $Globals->lookup($src));
-  addDocString ($dest, @{$DocStringHash{$src}});
+
+  cloneDocString($src, $dest);
 }
 
 
@@ -4834,8 +4846,9 @@ sub builtin_docstring_get {
   given ($ds->[0]) {
 	when ('proc') {
 	  $result = [$type,
-				 boolObj($ds->[1]),
-				 map { LL::String->new($_) } @{$ds}[2..3] ];
+				 LL::Symbol->new($ds->[1]),
+				 boolObj($ds->[2]),
+				 map { LL::String->new($_) } @{$ds}[3..4] ];
 	}
 
 	default {die "Corrupt docstring entry for '${$key}'\n"}
