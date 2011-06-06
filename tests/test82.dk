@@ -1,4 +1,4 @@
-# Test the 'printable' attribute
+# Test the 'printable' attribute and related code.
 
 # But first...
 # Test for wierd interpstring bug discovered here
@@ -27,6 +27,12 @@ for i in :["a" "e" "i" "o" "u" "y" "x" "w" "z"
 		puts "$i $is a vowel"
 	}
 puts
+
+
+# Test isspace
+for s in [list " " "   " "foo" " x " "" " \n" "\t"] {
+	puts "'$s'.isSpace = " s.isSpace
+}
 
 
 # Onward to printable

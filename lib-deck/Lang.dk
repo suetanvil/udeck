@@ -154,6 +154,7 @@ _class_ext Stringlike {
 
 
 perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
+perlproc _isspace {s} '''return $s =~ /^\s+$/;'''
 
 _class_ext String {
 	method isVowel_get {} {
@@ -167,6 +168,11 @@ _class_ext String {
 			}
 		}
 		return false
+	}
+
+	method isSpace_get {} {
+		'''Test if C<self> is all whitespace.'''
+		return [_isspace self]
 	}
 
 	method lowercase_get {} {return [_downcase self]}

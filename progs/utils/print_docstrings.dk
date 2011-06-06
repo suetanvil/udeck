@@ -1,4 +1,6 @@
 
+proc trimSpc
+
 puts "Getting docstrings..."
 var keys = [_::docstring_keys]
 #keys = [slice keys 0 5]		# temp!
@@ -35,3 +37,17 @@ for doc in docStrings {
 }
 
 puts "=back\n"
+
+
+
+proc trimSpc {text} {
+	'''Remove all spaces following a newline in a string.'''
+	var index = 0
+	var startOfLine = 1
+	var result = [stringSized text.size]
+
+	for c in text {
+
+
+	}
+}

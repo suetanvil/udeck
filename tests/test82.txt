@@ -24,6 +24,14 @@ ieos is not a vowel
 Ousi is not a vowel
 Uisn is not a vowel
 
+' '.isSpace = 1
+'   '.isSpace = 1
+'foo'.isSpace = nil
+' x '.isSpace = nil
+''.isSpace = nil
+' 
+'.isSpace = 1
+'	'.isSpace = 1
 class Class
 class String
 
