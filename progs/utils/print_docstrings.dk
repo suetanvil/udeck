@@ -1,7 +1,7 @@
 
 puts "Getting docstrings..."
 var keys = [_::docstring_keys]
-keys = [slice keys 0 5]		# temp!
+#keys = [slice keys 0 5]		# temp!
 
 puts "Sorting keys..."
 keys = [sort {cmp a b} keys]
@@ -25,10 +25,13 @@ for doc in docStrings {
 	var fnargs = (doc@3)
 	var fdoc = (doc@4)
 
-	puts "=item $fname\n"
+	puts "=item B<$fname \{$fnargs\}>\n"
 
-	puts "    C<$fname \{$fnargs\}>\n"
+	if (fbuiltin) {
+		fdoc = "B<Built-in> " + fdoc
+	}
 
 	puts fdoc "\n"
 }
 
+puts "=back\n"
