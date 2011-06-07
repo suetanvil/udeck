@@ -1,5 +1,38 @@
 
-proc trimSpc
+
+=pod too slow
+
+proc trimSpc {text} {
+	'''Remove all spaces following a newline in a string.'''
+	var index = 0
+	var startOfLine = true
+	var result = [stringSized text.size]
+	var skipSpace = true
+
+	for c in text {
+		[not c.isSpace] && (skipSpace = false)
+
+		if [not skipSpace] {
+			result@index = c
+			index = index + 1
+
+			if (c.isSpace) {
+				skipSpace = true
+			}
+		}
+	}
+
+	return [slice result 0 (index - 1)]
+}
+
+=cut
+
+perlproc trimSpc {s} '''
+$s =~ s/^\s*//;
+$s =~ s/\n\s*/ /g;
+$s =~ s/[ \t]+/ /g;
+return $s;
+'''
 
 puts "Getting docstrings..."
 var keys = [_::docstring_keys]
@@ -25,29 +58,14 @@ for doc in docStrings {
 	var fname = (doc@1)
 	var fbuiltin = (doc@2)
 	var fnargs = (doc@3)
-	var fdoc = (doc@4)
+	var fdoc = [trimSpc (doc@4)]
 
-	puts "=item B<$fname \{$fnargs\}>\n"
+	var biText = [if (fbuiltin) {" B<(Built-in)>"} {""}]
+	puts "=item B<$fname \{$fnargs\}>$biText\n"
 
-	if (fbuiltin) {
-		fdoc = "B<Built-in> " + fdoc
-	}
 
 	puts fdoc "\n"
 }
 
 puts "=back\n"
 
-
-
-proc trimSpc {text} {
-	'''Remove all spaces following a newline in a string.'''
-	var index = 0
-	var startOfLine = 1
-	var result = [stringSized text.size]
-
-	for c in text {
-
-
-	}
-}

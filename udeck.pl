@@ -2494,7 +2494,7 @@ sub compile {
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
-	my $first = 1;
+	my $first = 1 unless $isSub;	# Subs don't have docstrings
 	for my $expr (@{$body}) {
 
 	  # If the first item is a docstring, handle it.  For now, that
@@ -2578,7 +2578,7 @@ sub compile {
 	  $context->defset('args', $args);
 	}
 	
-	my $lastexpr;
+	my $lastexpr = NIL;
 
 	my $retname =
 	  ($isProc || $isMethod || $isMacro) ? 'return' :

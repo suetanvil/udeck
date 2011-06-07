@@ -271,8 +271,15 @@ X		library path.
 X	-'var x = <y>' should parse the assignment as fully infix.
 X	-rename val -- too easy to type instead of var
 X		-do? is? value?
-
-
+X	-bug: var biText = [if (fbuiltin) {value " B<(Built-in)>"} {value ""}] 
+X	 doesn't fail and returns perl undef.
+X		-varconst is fine
+X		-_::if is fine.  Problem is subs shouldn't be compiling.
+X		-it's not just 'if'; it's any sub.
+X		-AHA! The string gets treated as a docstring and ignored! The
+X	     sub returns undef (not NIL). Fixed!
+X		-subs shouldn't allow docstrings.
+	
 	-make the code self-documenting
 X		-need sort
 X			-need string comparisions

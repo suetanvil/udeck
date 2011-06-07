@@ -1,0 +1,5 @@
+
+# Sub's aren't allowed to have docstrings.
+
+var x = [sub {} {"xxx"}]
+
