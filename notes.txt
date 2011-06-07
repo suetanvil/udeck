@@ -279,7 +279,9 @@ X		-it's not just 'if'; it's any sub.
 X		-AHA! The string gets treated as a docstring and ignored! The
 X	     sub returns undef (not NIL). Fixed!
 X		-subs shouldn't allow docstrings.
-	
+
+
+	-_::say and _::puts should tolerate Perl arguments.
 	-make the code self-documenting
 X		-need sort
 X			-need string comparisions

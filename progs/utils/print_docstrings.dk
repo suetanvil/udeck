@@ -54,13 +54,14 @@ puts "=over\n\n"
 # [:proc <name> <builtin> <args> <docstring>]
 
 for doc in docStrings {
-#	puts doc
 	var fname = (doc@1)
 	var fbuiltin = (doc@2)
 	var fnargs = (doc@3)
 	var fdoc = [trimSpc (doc@4)]
 
-	var biText = [if (fbuiltin) {" B<(Built-in)>"} {""}]
+	var biText = ""
+	fbuiltin && (biText = " B<(Built-in)>")
+
 	puts "=item B<$fname \{$fnargs\}>$biText\n"
 
 
