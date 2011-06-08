@@ -1053,6 +1053,21 @@ sub withAutoInfixDone {
   return $result;
 }
 
+# If self is a LoL and the first item contains only a string, remove
+# it and return the string.
+sub stripDocString {
+  my ($self) = @_;
+
+  return undef unless $self->isLoL();
+  return undef unless $self->size() > 0;
+  return undef unless $self->[0]->size() == 1;
+  return undef unless $self->[0]->[0]->isString();
+
+  my $result = $self->[0]->[0];
+  @{$self} = @{$self}[1..$#{$self}];
+
+  return $result;
+}
 
 
 sub _sanitizeIndex {
@@ -2505,7 +2520,7 @@ sub compile {
 		  next unless $isNamed;
 
 		  my $docString = ${ $expr->[0] };
-		  addDocString($name, 'proc', 0, $args->printStr(), $docString)
+		  addProcDocString($name, 'proc', 0, $args->printStr(), $docString)
 			if $isProc;
 		  next;
 		}
@@ -2619,6 +2634,20 @@ sub compile {
 
 # ---------------------------------------------------------------------------
 
+# Add a proc docstring
+sub addProcDocString {
+  my ($name, $builtin, $args, $docstring) = @_;
+
+  addDocString($name, 'proc', $builtin, $args, $docstring);
+}
+
+# Add a docstring for an mproc
+sub addMProcDocString {
+  my ($name, $builtin, $args, $docstring) = @_;
+
+  addDocString($name, 'mproc', $builtin, $args, $docstring);
+}
+
 # Add a docstring to %DocStringHash.  The remaining arguments are
 # stored as a hash.  Formatting is done later.
 sub addDocString {
@@ -2675,7 +2704,7 @@ sub prim {
   $Globals->defset($name, LL::Function->new($function));
 
   my $longName = $Globals->normalizeName($name);
-  addDocString($longName, 'proc', 1, $args, $docstring);
+  addProcDocString($longName, 'proc', 1, $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
@@ -4158,7 +4187,7 @@ sub mk_mproc_macro {
 }
 
 
-# Define an mproc or just it's forward declaration.
+# Define an mproc or just its forward declaration.
 sub builtin_mproc {
   my ($name, $args, $body) = @_;
 
@@ -4174,6 +4203,12 @@ sub builtin_mproc {
   my $fullName = $Globals->normalizeName(${$name});
   my $procName = "__::$fullName";
   my $argSig = $args->printStr();
+
+  # Add the docstring if present
+  {
+	my $docstring = $body->isNil ? undef : $body->stripDocString();
+	addMProcDocString($fullName, 0, $argSig, $docstring) if $docstring;
+  }
 
   # Gather the argument names from $args before mk_mproc_macro
   # disassembles it.  (mk_mproc_macro does a lot of sanity checking so
@@ -4844,7 +4879,7 @@ sub builtin_docstring_get {
 
   my $result;
   given ($ds->[0]) {
-	when ('proc') {
+	when (/^m?proc$/) {
 	  $result = [$type,
 				 LL::Symbol->new($ds->[1]),
 				 boolObj($ds->[2]),

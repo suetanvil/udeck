@@ -396,6 +396,18 @@ mproc sort {
 	sub 2 ucmp
 	seq
 } {
+	'''
+	Return a copy of C<seq> with the elements sorted according to C<ucmp>.
+
+	C<ucmp> should take two arguments and return -1, 0 or 1 depending on
+	whether the first argument is less than, equal to or greater than the
+	second argument.  (This is the same interface as C<cmp>).
+
+	C<seq> is an object that implements the sequence protocol and the return
+	value is constructed by the function returned by C<seq>'s C<maker>
+	attribute.
+	'''
+
 	var sortList = seq
 	if (sortList.class != List) {
 		sortList = [asList sortList]
