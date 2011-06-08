@@ -28,9 +28,12 @@ proc trimSpc {text} {
 =cut
 
 perlproc trimSpc {s} '''
-$s =~ s/^\s*//;
-$s =~ s/\n\s*/ /g;
-$s =~ s/[ \t]+/ /g;
+$s =~ s/\A\s*//gmx;
+$s =~ s/\s*\z//gmx;
+
+$s =~ s/([^\n])\n([^\n])/$1 $2/gmx;
+$s =~ s/(\n)[ \t]+/$1/gmx;
+$s =~ s/[ \t]+/ /gmx;
 return $s;
 '''
 
