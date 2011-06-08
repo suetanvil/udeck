@@ -48,7 +48,9 @@ puts "Getting strings..."
 var docStrings = [map {value [_::docstring_get a]} keys]
 
 puts "Selecting procedures..."
-docStrings = [reduce {value (a@0 == :proc)} docStrings]
+docStrings = [reduce {
+	value (a@0 == :proc && ([slice (a@1) 0 3] != '__::'))
+	   } docStrings]
 
 puts "=head1 Functions\n\n"
 puts "=over\n\n"
