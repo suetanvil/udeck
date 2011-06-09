@@ -1,5 +1,7 @@
 
 
+var DocStrings
+
 =pod too slow
 
 proc trimSpc {text} {
@@ -47,48 +49,57 @@ proc isProcOrMProc {doc} {
 }
 
 
-puts "Getting docstrings..."
-var keys = [_::docstring_keys]
-#keys = [slice keys 0 5]		# temp!
+proc printFunctions {} {
+	puts "Selecting procedures..."
+	var fDocs = [reduce isProcOrMProc DocStrings]
 
-puts "Sorting keys..."
-keys = [sort {cmp a b} keys]
-
-puts "Getting strings..."
-var docStrings = [map {value [_::docstring_get a]} keys]
-
-puts "Selecting procedures..."
-docStrings = [reduce isProcOrMProc docStrings]
-
-puts "=head1 Procedures and MProcs\n\n"
-puts "=over\n\n"
+	puts "=head1 Procedures and MProcs\n\n"
+	puts "=over\n\n"
 
 
+	for doc in fDocs {
+		var ftag = (doc@0)
+		var fname = (doc@1)
+		var fbuiltin = (doc@2)
+		var fnargs = (doc@3)
+		var fdoc = [trimSpc (doc@4)]
 
+		var biText = ""
+		fbuiltin && (biText = " B<(Built-in)>")
 
-for doc in docStrings {
-	var ftag = (doc@0)
-	var fname = (doc@1)
-	var fbuiltin = (doc@2)
-	var fnargs = (doc@3)
-	var fdoc = [trimSpc (doc@4)]
-
-	var biText = ""
-	fbuiltin && (biText = " B<(Built-in)>")
-
-	var procType = "proc"
-	if (ftag == :mproc) {
-		procType = "mproc"
-	} else {
+		var procType = "proc"
+		if (ftag == :mproc) {
+			procType = "mproc"
+		} else {
 		fnargs = "{$fnargs}"
+		}
+
+
+		puts "=item B<$procType $fname $fnargs>$biText\n"
+
+
+		puts fdoc "\n"
 	}
 
-
-	puts "=item B<$procType $fname $fnargs>$biText\n"
-
-
-	puts fdoc "\n"
+	puts "\n\n=back\n"
 }
 
-puts "\n\n=back\n"
+
+proc setup {} {
+	puts "Getting docstrings..."
+	var keys = [_::docstring_keys]
+	#keys = [slice keys 0 5]		# temp!
+
+	puts "Sorting keys..."
+	keys = [sort {cmp a b} keys]
+
+	puts "Getting strings..."
+	DocStrings = [map {value [_::docstring_get a]} keys]
+}
+
+
+
+
+setup
+printFunctions
 
