@@ -40,6 +40,7 @@ return $s;
 
 proc isProcOrMProc {doc} {
 	"Test if C<doc> is a proc or mproc."
+
 	(doc@0 == :proc && ([slice (doc@1) 0 3] != '__::')) && [return true]
 	(doc@0 == :mproc) && [return true]
 	return false
@@ -63,9 +64,10 @@ puts "=head1 Procedures and MProcs\n\n"
 puts "=over\n\n"
 
 
-# [:proc <name> <builtin> <args> <docstring>]
+
 
 for doc in docStrings {
+	var ftag = (doc@0)
 	var fname = (doc@1)
 	var fbuiltin = (doc@2)
 	var fnargs = (doc@3)
@@ -74,11 +76,19 @@ for doc in docStrings {
 	var biText = ""
 	fbuiltin && (biText = " B<(Built-in)>")
 
-	puts "=item B<$fname \{$fnargs\}>$biText\n"
+	var procType = "proc"
+	if (ftag == :mproc) {
+		procType = "mproc"
+	} else {
+		fnargs = "{$fnargs}"
+	}
+
+
+	puts "=item B<$procType $fname $fnargs>$biText\n"
 
 
 	puts fdoc "\n"
 }
 
-puts "=back\n"
+puts "\n\n=back\n"
 
