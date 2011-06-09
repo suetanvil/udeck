@@ -2520,7 +2520,7 @@ sub compile {
 		  next unless $isNamed;
 
 		  my $docString = ${ $expr->[0] };
-		  addProcDocString($name, 'proc', 0, $args->printStr(), $docString)
+		  addProcDocString($name, 0, $args->printStr(), $docString)
 			if $isProc;
 		  next;
 		}
@@ -2704,7 +2704,7 @@ sub prim {
   $Globals->defset($name, LL::Function->new($function));
 
   my $longName = $Globals->normalizeName($name);
-  addProcDocString($longName, 'proc', 1, $args, $docstring);
+  addProcDocString($longName, 1, $args, $docstring);
 }
 
 # Make $dest reference the same thing as $src
