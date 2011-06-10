@@ -71,7 +71,7 @@ proc printFunctions {} {
 		if (ftag == :mproc) {
 			procType = "mproc"
 		} else {
-		fnargs = "{$fnargs}"
+			fnargs = "{$fnargs}"
 		}
 
 
@@ -79,6 +79,39 @@ proc printFunctions {} {
 
 
 		puts fdoc "\n"
+	}
+
+	puts "\n\n=back\n"
+}
+
+
+proc printClasses {} {
+	puts "Selecting procedures..."
+	var fDocs = [reduce {value (a@0 == :class)} DocStrings]
+
+	puts "=head1 Classes\n\n"
+	puts "=over\n\n"
+
+
+	for doc in fDocs {
+		var name = doc@1
+		var builtin = doc@2
+		var docstring = [trimSpc (doc@3)]
+
+		var biText = ""
+		builtin && (biText = " B<(Built-in)>")
+
+		var cl = [lookup name]
+
+		var sc = 'none'
+
+		(cl == Object) || [sc = cl.superclass.name]
+		sc = "($sc)"
+
+		puts "=item B<$name from $sc> $biText\n\n"
+
+		puts docstring
+
 	}
 
 	puts "\n\n=back\n"
@@ -101,5 +134,5 @@ proc setup {} {
 
 
 setup
-printFunctions
-
+#printFunctions
+printClasses

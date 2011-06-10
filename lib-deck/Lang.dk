@@ -24,15 +24,12 @@ perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
 
 # Base class for all traditional structured objects
 _class_ext Object {
+	'''
+	C<Object> is the root class.  All other classes in Deck are derived
+	from Object.
 
-
-# '''
-# C<Object> is the root class.  All other classes in Deck are derived
-# from Object.
-
-# Object is a pure abstract base class.  It cannot be instantiated.
-# '''
-
+	Object is a pure abstract base class.  It cannot be instantiated.
+	'''
 
 	# This method is called when the object receives a message it does not
 	# understand (i.e. there is no corresponding method implemented.)

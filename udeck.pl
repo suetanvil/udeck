@@ -4825,6 +4825,15 @@ sub builtin_class_ext {
   my ($class, $body) = @_;
 
   $class->checkClass();
+  $body->checkLoL(" in _class_ext.");
+
+  {
+	my $docstring = $body->stripDocString();
+	my $name = $class->{name};
+	addClassDocString($name, 1, $docstring) if ($name && $docstring);
+  }
+
+
   my $methods = class_methods($body, {}, 1);
   $class->addMethods ($methods);
 
@@ -4900,6 +4909,14 @@ sub builtin_docstring_get {
 				 LL::Symbol->new($ds->[1]),
 				 boolObj($ds->[2]),
 				 map { LL::String->new($_) } @{$ds}[3..4] ];
+	}
+
+	when ('class') {
+	  $result = [$type,
+				 LL::Symbol->new($ds->[1]),
+				 boolObj($ds->[2]),
+				 LL::String->new($ds->[3]),
+				];
 	}
 
 	default {die "Corrupt docstring entry for '${$key}'\n"}
