@@ -60,4 +60,11 @@ puts [byteArray 1 2 3].isNil
 puts :foo.isNil
 puts nil.isNil
 
+puts "---"
+
+puts "foo"
+puts "foo".class
+puts "foo".class.superclass
+puts "foo".class.superclass.superclass
+puts "foo".class.superclass.superclass.superclass
 

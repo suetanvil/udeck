@@ -2634,6 +2634,15 @@ sub compile {
 
 # ---------------------------------------------------------------------------
 
+#[:class <name> <builtin> <docstring>]
+
+sub addClassDocString {
+  my ($name, $builtin, $docstring) = @_;
+
+  addDocString ($name, 'class', $builtin, $docstring);
+}
+
+
 # Add a proc docstring
 sub addProcDocString {
   my ($name, $builtin, $args, $docstring) = @_;
@@ -3766,6 +3775,11 @@ sub initGlobals {
 	   return LL::List->new(\@names);
 	 },
 
+	 superclass_get => sub {my ($self)=@_; checkNargs('superclass_get',\@_,1);
+							return $self->{superclass}
+							  if defined($self->{superclass});
+							return NIL},
+
 	};
 
   defclass 'List',			'Object',
@@ -4789,6 +4803,8 @@ sub builtin_class {
 
   $superclass->checkClass(" in superclass for class declaration.");
   $name->checkString(" in _::class name argument.");
+
+  my $docstring = 
 
   my ($fields, $attribNames) = class_fields($body);
   die "Attempted to create fields in non-struct class.\n"

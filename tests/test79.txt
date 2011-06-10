@@ -37,3 +37,9 @@ nil
 nil
 nil
 1
+---
+foo
+class String
+class Stringlike
+class Object
+nil

@@ -297,8 +297,7 @@ X				-and should be a function, dude!
 			_::docstring_keys -- returns list of names as strings
 			_::docstring_get <key> -- returns the doc info in a list:
 
-				[:class <name> <builtin> <superclass> <docstring>
-					<methods> <attributes>]
+				[:class <name> <builtin> <superclass> <docstring>]
 				[:proc <name> <builtin> <args> <docstring>]
 				[:method <name> <builtin> <args> <class> <docstring>]
 				[:attrib <name> <builtin> <class> :read/:write/:readwrite
