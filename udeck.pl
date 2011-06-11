@@ -2509,7 +2509,7 @@ sub compile {
   # Expand all macros (and also check for scope violations)
   my @fixedBody;
   {
-	my $first = 1 unless $isSub;	# Subs don't have docstrings
+	my $first = 1;
 	for my $expr (@{$body}) {
 
 	  # If the first item is a docstring, handle it.  For now, that
@@ -2517,7 +2517,7 @@ sub compile {
 	  if ($first) {
 		$first = 0;
 		if ($expr->size() == 1 && $expr->[0]->isString()) {
-		  next unless $isNamed;
+		  die "docstring found in a $mode.\n" if ($isTop || $isSub);
 
 		  my $docString = ${ $expr->[0] };
 		  addProcDocString($name, 0, $args->printStr(), $docString)
