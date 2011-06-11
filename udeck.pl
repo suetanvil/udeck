@@ -1066,7 +1066,7 @@ sub stripDocString {
   my $result = $self->[0]->[0];
   @{$self} = @{$self}[1..$#{$self}];
 
-  return $result;
+  return ${$result};
 }
 
 
@@ -4803,8 +4803,13 @@ sub builtin_class {
 
   $superclass->checkClass(" in superclass for class declaration.");
   $name->checkString(" in _::class name argument.");
+  $body->checkLoL(" in class body.");
 
-  my $docstring = 
+  {
+	my $docstring = $body->stripDocString();
+	my $nm = ${$name};
+	addClassDocString($nm, 0, $docstring) if ($nm && $docstring);
+  }
 
   my ($fields, $attribNames) = class_fields($body);
   die "Attempted to create fields in non-struct class.\n"

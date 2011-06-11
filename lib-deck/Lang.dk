@@ -600,9 +600,31 @@ mproc reduce {
 
 
 
-# This object mimics a list containing a consecutive sequence of
-# numbers
 class Interval Struct {
+	'''
+	Instances of C<Interval> mimic a list containing a consecutive list of
+	numbers as defined by the C<new> arguments C<startVal>, C<endVal> and
+	C<incrVal>, all Numbers truncated to the nearest integer. C<startVal> is
+	the first number, C<endVal> is the last (possibly approximated) and 
+	C<incrVal> is the increment from one value to the next.
+
+	The main purpose of C<Interval> is to provide a way to do a for/foreach
+	loop over a series of integers without having to create an actual array
+	of integers.  This allows you to do stuff like this:
+
+	    C<for i in (1 .. 10000000) { ... }>
+
+	instead of
+
+	    C<var x = 0; while (x < 10000000) { ... ; x = x + 1 }>
+
+	(The C<..> operator creates an C<Interval>.)
+
+	C<Intervals> implement the sequence protocol but C<atPut> fails with
+	an error.
+	'''
+
+
 	readable start
 	var length
 	var incr
@@ -654,6 +676,11 @@ class Interval Struct {
 
 # Produce a list of elements between start and end separated by 1
 proc \.. {start end} {
+	'''
+	Create an C<Interval> for the range from C<start> to C<end> with an 
+	increment of 1.
+	'''
+
 	var by = 1
 	if (end < start) {
 		by = -1
