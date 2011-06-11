@@ -310,6 +310,14 @@ X				-and should be a function, dude!
 	-'@' should be a macro
 	-Bug: evaluate 'puts :"foo$a".class; puts :[1 2 3].class'.  The
 	 first one isn't a [list ...] expression.
+	-need to figure out what to do with negative indexes: handy but
+	 difficult to implement.  Either get rid of it or make all classes
+	 (including Interval) do it.
+		-maybe put 'normalizeIndex' in Object, then move to the
+	     Sequence trait when we have traits.
+	-there should be some way to query a MethodCall to see if it's a
+	 :doesNotUnderstand call.
+
 
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)

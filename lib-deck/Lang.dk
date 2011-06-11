@@ -28,7 +28,7 @@ _class_ext Object {
 	C<Object> is the root class.  All other classes in Deck are derived
 	from Object.
 
-	Object is a pure abstract base class.  It cannot be instantiated.
+	C<Object> is a pure abstract base class.  It cannot be instantiated.
 	'''
 
 	# This method is called when the object receives a message it does not
@@ -85,6 +85,10 @@ _class_ext Object {
 }
 
 _class_ext Number {
+	'''
+	C<Number> is the class of all (built-in) number types in Deck.
+	Instances are floating-point values.
+	'''
 
 	# Double-dispatch methods
 	method op_Add      {obj} {return [obj->addNumber self]}
@@ -111,6 +115,12 @@ _class_ext Number {
 }
 
 _class_ext Nil {
+	'''
+	C<Nil> is the type of the object representing uninitialized variables.
+	There is only one instance, the global constant C<nil>.  Unset variables
+	are initialized to nil, as are empty lists.
+	'''
+
 	method isNil_get {} {return 1}
 	method printable_get {} {return "nil"}
 
@@ -118,6 +128,22 @@ _class_ext Nil {
 }
 
 _class_ext List {
+	'''
+	C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
+	Deck does not present its lists as linked lists of cells.  Instead, a
+	Deck C<List> is an array (i.e. a "vector") of object references whose
+	individual items can be accessed with the C<at> and C<atPut> methods
+	(usually hidden by the C<@> operator).  The indexes start at zero and
+	increase to the number of items minus one.
+
+	This is different from most Lispish languages, where a list is implemented
+	as a linked list of pairs of references (CONS cells).
+
+	C<List> implements the sequence protocol: C<at>, C<atput>, C<size>,
+	C<maker> C<isIndexable> returns true.
+	'''
+
+
 	method isIndexable_get {} {return 1}
 	method printable_get {} {
 		const MAX = 5
@@ -146,6 +172,12 @@ _class_ext List {
 }
 
 _class_ext Stringlike {
+	'''
+	This is the abstract base class for several classes representing
+	various sequences of binary or specially-encoded data.  It should
+	not be used directly.
+	'''
+
 	method isIndexable_get {} {return 1}
 }
 
@@ -154,6 +186,20 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 perlproc _isspace {s} '''return $s =~ /^\s+$/;'''
 
 _class_ext String {
+	'''
+	C<String> instances contain human-readable text which can be
+	printed to the console or stored in a file.  The class implements
+	the sequence protocol but the objects stored or retrieved from a
+	C<String> must themselves be strings of length 1.  
+
+	Unlike many other languages, Deck does not have a character type.
+	Instead, strings are encoded in some manner and it is best not to
+	make assumptions about the details.  In particular, you should
+	B<never> use a C<String> to hold arbitrary binary data as this
+	will break when Deck switches to using UTF8.  Use C<ByteArray> for
+	that.
+	'''
+
 	method isVowel_get {} {
 		(self.size != 1) && [return false]
 
@@ -199,6 +245,32 @@ _class_ext String {
 
 
 _class_ext Symbol {
+	'''
+	Symbols are mostly used to represent names in expressions.  They
+	are similar to strings in that they contain human-readable text.  However,
+	there are some notable differences:
+
+	=over
+
+	=item 1.
+
+	Symbols are immutable.  C<atPut> will fail on one.
+
+	=item 2.
+
+	Symbols are unique.  There is only ever one symbol with a particular
+	value.
+
+	=back
+
+	C<Symbol> implements the sequence protocol but as mentioned above, the
+	C<atPut> method will fail.
+
+	C<Symbols> can be converted to and from strings via the C<intern> and 
+	C<unintern> functions.  Symbol constants are tokens beginning with the
+	C<:> character, e.g. ":foo".
+	'''
+
 	method printable_get {} {return ":$self"}
 
 	method op_Equals {obj} {
@@ -221,7 +293,16 @@ _class_ext Symbol {
 	method maker_get {} {return stringSized}  # symbols are immutable
 }
 
+
+
 _class_ext ByteArray {
+	'''
+	A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
+	is allowed.
+
+	C<ByteArray> implements the sequence protocol but will fail if you
+	attempt to store a value in it that is not an integer between 0 and 255.
+	'''
    	method printable_get {} {
 		const MAXSIZE = 5
 		var {count = MAXSIZE}
@@ -257,9 +338,29 @@ _class_ext ByteArray {
 }
 
 _class_ext Struct {
+	'''
+	C<Struct> is the base class for all traditional classes.  A traditional
+	class is a class whose data is stored in named fields.
+
+	This is an abstract base class and cannot be instantiated.  All subclasses
+	should implement the method C<init> to initialize the fields when an
+	instance is created.
+
+	C<Struct> subclasses are typically instantiated using the C<new> method or
+	procedure.
+	'''
 }
 
+
 _class_ext Class {
+	'''
+	All classes (i.e. types) in Deck are themselves objects and those objects
+	are instances of type C<Class>.  This includes C<Class> itself.
+
+	C<Class> serves two purposes: to provide information about the class and
+	to create new instances via its C<new> method.
+	'''
+
 	method printable_get {} {
 		var nm = self.name
 		(nm.size == 0) && [return "a Class"]
@@ -269,6 +370,17 @@ _class_ext Class {
 }
 
 _class_ext Quote {
+	'''
+	C<Quote> instances are used to represent quotation in Deck expressions.
+	Each C<Quote> contains a single data value which may be accessed using
+	the C<value> attribute.  The presence of the C<Quote> in an expression
+	is used to indicate that the value it wraps should not be evaluated in
+	the usual way.
+
+	You will only ever need to use a C<Quote> when creating Deck expressions
+	to be compiled later by the Deck compiler.
+	'''
+
 	method printable_get {} {
 		var v = self.value
 		return "[quote $v]"
@@ -284,27 +396,52 @@ _class_ext Quote {
 	}
 }
 
+
 _class_ext Macro {
+	"C<Macro> is the class of all Deck macros."
 	method shallowCopy {} {return self}
 	method printable_get {} {return "<macro>"}
 }
 
 _class_ext Function {
+	"C<Function> is the class of most Deck functions (procs, subs, etc)."
 	method shallowCopy {} {return self}
 	method printable_get {} {return "<function>"}
 }
 
 _class_ext Method {
+	"C<Method> is the class of all Deck methods."
 	method shallowCopy {} {return self}
 	method printable_get {} {return "<method>"}
 }
 
 _class_ext MethodCall {
+	'''
+	C<MethodCall> is the class of all method call objects.  Method calls are
+	callable objects that will call a specific method on a specific object,
+	both of which are captured inside the C<MethodCall>.
+
+	Instances of C<MethodCall> are the result of a call to C<getMethod> or
+	C<getSuperMethod> (which are usually called by the macro C<-E<gt>>).
+	'''
 	method shallowCopy {} {return self}
 	method printable_get {} {return "<method call>"}
 }
 
 _class_ext PerlObj {
+	'''
+	C<PerlObj> is a wrapper around some Perl data.  Perl functions created
+	using C<perlproc> can return Perl data that has no meaningful
+	representation inside Deck and these can then be passed to other Perl
+	functions.
+
+	For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
+	hold a reference to an instance of a class defined in the library.
+
+	There is no way to modify a PerlObj in Deck.
+	'''
+
+
 	# method printable_get is written in perl
 }
 
@@ -342,6 +479,10 @@ proc _write_seq {src1 src2 dest} {
 
 
 proc cmp {left right} {
+	'''
+	Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less than,
+	equal to or greater than C<right>.
+	'''
 	(left == right)	&& [return 0]
 	(left > right)	&& [return 1]
 	return -1
@@ -350,6 +491,7 @@ const \<=> = cmp
 
 # Return the absolute value of a number
 proc abs {n} {
+	"Return the absolute value of C<n>, a Number."
 	if (n < 0) {
 		return [-n]
 	}
@@ -357,8 +499,9 @@ proc abs {n} {
 }
 
 # The not-equal operator
-proc \!= {l r} {
-	return [not (l == r)]
+proc \!= {left right} {
+	"Return C<true> if C<left> and C<right> are not equal (C<==>)."
+	return [not (left == right)]
 }
 
 proc size {aList} {return aList.size}

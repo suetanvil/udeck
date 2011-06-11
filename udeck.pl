@@ -3448,8 +3448,8 @@ sub initGlobals {
 
 				   ['_::mkstr',			"args",
 					"Return a string containing all of the arguments'" .
-					" B<internal> (i.e. from the interpreter, B<not> the" .
-					" C<printable> attribute, just like C<_::say>).  This" .
+					" B<internal> string representation (i.e. from the" .
+					" interpreter, B<not> the C<printable> attribute).  This" .
 					" is used to expand double-quoted strings.",
 					\&builtin_mkstr],
 

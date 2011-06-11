@@ -1,202 +1,84 @@
+Getting docstrings...
+Sorting keys...
+Getting strings...
+Selecting procedures...
+=head1 Classes
 
-=head1 The Object System
 
-=head2 Thoughts
+=over
 
-I'm not going to try to implement the object system in pure Deck.
-You're welcome.
 
-For now, builtin types (list, string, etc.) are not OOPS.  That will
-change.
+=item B<ByteArray (Stringlike)>  B<-- Built-in>
 
-Objects are a special type.
+A C<ByteArray> is a sequence of 8-bit bytes. Any sequence of bytes is allowed.
 
-Classes are also a special type.  They are also callable and create
-instances, then call 'INIT' with their arguments.
+C<ByteArray> implements the sequence protocol but will fail if you attempt to store a value in it that is not an integer between 0 and 255.
 
-Let's use 'new' to create instances.  There's no real advantage to
-making classes callable.
+=item B<Class (Object)>  B<-- Built-in>
 
-I'm not going to use the Perl object system until I have a better
-grasp of everything.
+All classes (i.e. types) in Deck are themselves objects and those objects are instances of type C<Class>. This includes C<Class> itself.
 
-=head2 Syntax
+C<Class> serves two purposes: to provide information about the class and to create new instances via its C<new> method.
 
-	class Foo Object {
-		var xxx = 42
-		var yyy = 53
+=item B<List (Object)>  B<-- Built-in>
 
-		method INIT {x} {puts x}
+C<List> is the fundamental Deck list type. Unlike most Lispish languages, Deck does not present its lists as linked lists of cells. Instead, a Deck C<List> is an array (i.e. a "vector") of object references whose individual items can be accessed with the C<at> and C<atPut> methods (usually hidden by the C<@> operator). The indexes start at zero and increase to the number of items minus one.
 
-		method bar {a} {puts a}
-		method quux {b} {puts b}
-	}
+This is different from most Lispish languages, where a list is implemented as a linked list of pairs of references (CONS cells).
 
+C<List> implements the sequence protocol: C<at>, C<atput>, C<size>, C<maker> C<isIndexable> returns true.
 
-	[o->m 42]
+=item B<Nil (Object)>  B<-- Built-in>
 
-	-"->" is magical.
-		-in prefix expressions, o->m is equivalent to (o->m) 
-		 at the start of an expression
-		-if escaped, behaves as usual.
+C<Nil> is the type of the object representing uninitialized variables. There is only one instance, the global constant C<nil>. Unset variables are initialized to nil, as are empty lists.
 
-	-"." is magical
-			o.xxx = 123
-			o.yyy = o.xxx + 42
-			z = [foo o.xxx o.yyy]
-		-'.' magically autoparens
-X		-'.' needs higher precedence than '->'.
-X			o.so->foo
+=item B<Number (Object)>  B<-- Built-in>
 
+C<Number> is the class of all (built-in) number types in Deck. Instances are floating-point values.
 
+=item B<Object (none)>  B<-- Built-in>
 
+C<Object> is the root class. All other classes in Deck are derived from Object.
 
-=head2 Semantics
+C<Object> is a pure abstract base class. It cannot be instantiated.
 
-	-instance variables are visible only to the object's methods, NOT to
-	 subclasses and NOT to methods added after the fact.
+=item B<String (Stringlike)>  B<-- Built-in>
 
-	-where is 'self' added?
+C<String> instances contain human-readable text which can be printed to the console or stored in a file. The class implements the sequence protocol but the objects stored or retrieved from a C<String> must themselves be strings of length 1. 
 
-		stdout->print 42
+Unlike many other languages, Deck does not have a character type. Instead, strings are encoded in some manner and it is best not to make assumptions about the details. In particular, you should B<never> use a C<String> to hold arbitrary binary data as this will break when Deck switches to using UTF8. Use C<ByteArray> for that.
 
-		[\-> stdout print] 42
+=item B<Stringlike (Object)>  B<-- Built-in>
 
-		var n = stdout->print
-		n 42
+This is the abstract base class for several classes representing various sequences of binary or specially-encoded data. It should not be used in any way.
 
-	-what if a local class existed in the context that defined it?
+=item B<Struct (Object)>  B<-- Built-in>
 
-	-'public', 'readable' and 'writeable' declare public access for
-	 ivars.
+C<Struct> is the base class for all traditional classes. A traditional class is a class whose data is stored in named fields.
 
-	-'super' is a magic word used by the . and -> macros as a flag
-	 to indicate that it should expand to a different lookup function.
+This is an abstract base class and cannot be instantiated. All subclasses should implement the method C<init> to initialize the fields when an instance is created.
 
-	-'_' convention should work on accessors as well.  So need to
-	 append _get or _set rather than prepending.
+C<Struct> subclasses are typically instantiated using the C<new> method or procedure.
 
-	-going to make all ivars C++-private.
+=item B<Symbol (Stringlike)>  B<-- Built-in>
 
+Symbols are mostly used to represent names in expressions. They are similar to strings in that they contain human-readable text. However, there are some notable differences:
 
-=head3 Subclass Implementation
+=over
 
-	-objects are still a hash of names/values
-		-ivars are mangled with the class ID.
-		-uses are mangled at compile time.
-			-this has to be done in methods and subs inside methods.
+=item 1.
 
-	-for now, we can get most of this by requiring that ivars are
-	 unique in an inheritance tree.
-		-call it a ToDo.
-	
+Symbols are immutable. C<atPut> will fail on one.
 
+=item 2.
 
+Symbols are unique. There is only ever one symbol with a particular value.
 
-=head2 To Do
+=back
 
-	-basic class and object
-X		-'class' type.
-			-perlform
-X			-at, atPut, size, isIndexible
-X		-'object' type.
-X			-doesNotUnderstand
-X		-lookup function.
-X			-special syntax for lookup.
-X		-class definition
-X			-class macro
-X			-_::class function
-X				-inheritance
-X				-methods
-X					-private methods
-X						-enforce at macro level
-X						-rename get and set so that _ is preserved
-X					-must return self
-X					-self must be const
-X					-super
-X				-instance variables
-X				-attributes
-X					-access methods
-X					-'.'
-X						-assignment support
-X						-autoparen
-X						-_set must return assignment value
-X						-must preserve privacy (name_set, not set_name)
-X			-initializer
-X				-field initialization  (left out for now--spooky)
-			-must allow duplicate field names in the class heirarchy
-X		-class 'Object'
-X			-isTrue
+C<Symbol> implements the sequence protocol but as mentioned above, the C<atPut> method will fail.
 
-		-binary operator to method conversion
-			-equals
+C<Symbols> can be converted to and from strings via the C<intern> and C<unintern> functions. Symbol constants are tokens beginning with the C<:> character, e.g. ":foo".
 
-		-make everything an object
-
-X		-object instantiation
-	
-X		-make LL::Object a subclass of Context.
-	
-=head 2 To Test
-
-X	-do init args match up with [new Class args]?
-X	-test passing args to _init
-X	-subclass ivar may not mask superclass ivar
-X	-private methods
-
-
-
-=head2 Promoting Builtin Types
-
-X	1) Rename LL::Datum back to LL::Object and LL::Object to LL::Struct.
-X	2) Add Deck classes for the builtins.
-X	3) Add method 'class' to all Deck types to retrieve
-X	   the class.  For Objects, it returns the ' class' field; for
-X	   everything else, it's the builtin Deck class.
-X			-replace all accesses of the field with method calls.
-X			-implement minimal classes for all built-in types.
-				-fill them in in Lang.dk
-X			-Implement 'new' for Struct subclasses only.
-
-
-X	4) replace all uses of ' class' with calls to 'deckClass'.
-X		-make class() store classes externally to the namespace.
-	5) Move relevant stuff into Object
-
-X	6) Let declarations in Lang.dk modify base class definitions.
-X		-implement _::sys_class to represent the exact semantics
-X		 of modifying an existing builtin class.
-X		-actually, went with _class_ext to do it.
-
-	7) Move to an object-oriented implementation
-		-isIndexable, size should become attributes
-X		-isNil
-X		-operators should become method calls.
-X			-need a builtin for that.
-X		-pass name to struct via class macro.
-		-replace at and atPut functions with method calls.
-		-make printStr/storeStr into Deck methods
-			-move 
-
-=head2 Traits
-
-
-
-=head2 Issues
-
-	-does a field decl. like "var x = [foo 4 2]" work?
-		-what field order should I use?
-		-how do I initialize them.
-			-maybe define a bunch of unnamed methods to do it?
-		-answer: no.  Too spooky.  Do it in _init.
-
-
-
-
-
-
-
-
-
-
+=back
 

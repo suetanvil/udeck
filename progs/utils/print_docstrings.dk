@@ -99,22 +99,22 @@ proc printClasses {} {
 		var docstring = [trimSpc (doc@3)]
 
 		var biText = ""
-		builtin && (biText = " B<(Built-in)>")
+		builtin && (biText = " B<-- Built-in>")
 
 		var cl = [lookup name]
 
 		var sc = 'none'
 
-		(cl == Object) || [sc = cl.superclass.name]
+		(cl == Object) || (sc = cl.superclass.name)
 		sc = "($sc)"
 
-		puts "=item B<$name from $sc> $biText\n\n"
+		puts "=item B<$name $sc> $biText\n"
 
-		puts docstring
+		puts docstring "\n"
 
 	}
 
-	puts "\n\n=back\n"
+	puts "=back\n"
 }
 
 
