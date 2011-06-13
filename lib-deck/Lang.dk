@@ -31,11 +31,13 @@ _class_ext Object {
 	C<Object> is a pure abstract base class.  It cannot be instantiated.
 	'''
 
-	# This method is called when the object receives a message it does not
-	# understand (i.e. there is no corresponding method implemented.)
-
-	# Default behaviour is to exit with an error message.
 	method doesNotUnderstand {name args} {
+		'''
+		This method is called when the object receives a message it does not
+		understand (i.e. there is no corresponding method implemented.)
+
+		Default behaviour is to exit with an error message.
+		'''		
 		die "Unknown method '$name' in class '" self.class.name "'"
 	}
 

@@ -2634,6 +2634,15 @@ sub compile {
 
 # ---------------------------------------------------------------------------
 
+#[:method <name> <builtin> <args> <class> <docstring>]
+# Name is of the form 'class->name'
+sub addMethodDocString {
+  my ($name, $builtin, $args, $docstring) = @_;
+
+  addDocString ($name, 'method', $args, $docstring);
+}
+
+
 #[:class <name> <builtin> <docstring>]
 
 sub addClassDocString {
@@ -2662,6 +2671,7 @@ sub addMProcDocString {
 sub addDocString {
   my ($name, $tag, @values) = @_;
 
+  map { die "addDocString: got ref!\n" if ref($_) } @_;
   $DocStringHash{$name} = [$tag, $name, @values];
 }
 
@@ -4716,7 +4726,7 @@ sub mk_method {
 
 
 sub class_methods {
-  my ($body, $fields, $methodsOnly) = @_;
+  my ($body, $fields, $methodsOnly, $className) = @_;
 
   my %methods = ();
   for my $entry (@{$body}) {
@@ -4741,6 +4751,14 @@ sub class_methods {
 
 	$body->checkQtLoL(" in method definition.");
 	$body = $body->value();	# There's no more eval so drop the quote
+
+	# Extract the docstring (if any)
+	if ($className) {
+	  my $ds = $body->stripDocString();
+	  addMethodDocString("$className->${$name}", 0, $args->printStr(), $ds)
+		if $ds;
+	}
+
 
 	$methods{${$name}} = mk_method($name, $args, $fields, $body);
   }
@@ -4816,7 +4834,7 @@ sub builtin_class {
 	if (scalar keys %{$fields} > 0 &&
 		!$superclass->isStructuredClass());
 
-  my $methods = class_methods($body, $fields, 0);
+  my $methods = class_methods($body, $fields, 0, ${$name});
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,
