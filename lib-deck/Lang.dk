@@ -624,7 +624,6 @@ class Interval Struct {
 	an error.
 	'''
 
-
 	readable start
 	var length
 	var incr
@@ -762,12 +761,18 @@ proc shuffled {origSeq} {
 perlproc _printstr {s} ''' print $s; '''
 
 proc say {args} {
+	"Write the printable form of each argument in turn on stdout."
 	for obj in args {
 		_printstr obj.printable
 	}
 }
 
 proc puts {args} {
+	'''
+	Write the printable form of each argument in turn on stdout followed by
+	a newline.
+	'''
+
 	apply say args
 	say "\n"
 }
