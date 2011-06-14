@@ -85,6 +85,45 @@ proc printFunctions {} {
 }
 
 
+proc printMethodDoc {doc} {
+	var tag = (doc@0)
+	var name = (doc@1)
+	var builtin = (doc@2)
+	var className = (doc@3)
+	var methodName = (doc@4)
+	var args = (doc@5)
+	var doc = [trimSpc (doc@6)]
+	
+	var biText = ""
+	builtin && (biText = " B<(Built-in)>")
+
+	puts "=item B<method $methodName $args>$biText\n"
+	puts doc "\n"
+}
+
+
+proc printMethods {name} {
+	var cl = [lookup [intern name]]
+	var selectors = [sort cmp cl.selectors]
+	var nm = cl.name
+
+	puts "=over"
+
+	foreach sel in selectors {
+		var doc = [_::docstring_get "$nm->$sel"]
+puts sel "," doc
+		if (doc) {
+			printMethodDoc doc
+		}
+	}
+
+	puts "=back"
+
+}
+
+
+
+
 proc printClasses {} {
 	puts "Selecting procedures..."
 	var fDocs = [reduce {value (a@0 == :class)} DocStrings]
@@ -101,7 +140,7 @@ proc printClasses {} {
 		var biText = ""
 		builtin && (biText = " B<-- Built-in>")
 
-		var cl = [lookup name]
+		var cl = [lookup [intern name]]
 
 		var sc = 'none'
 
@@ -112,6 +151,7 @@ proc printClasses {} {
 
 		puts docstring "\n"
 
+		printMethods name
 	}
 
 	puts "=back\n"
@@ -133,6 +173,7 @@ proc setup {} {
 
 
 
-setup
+#setup
 #printFunctions
-printClasses
+#printClasses
+printMethods "Lang::Object"

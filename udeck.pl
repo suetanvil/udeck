@@ -2634,16 +2634,21 @@ sub compile {
 
 # ---------------------------------------------------------------------------
 
-#[:method <name> <builtin> <args> <class> <docstring>]
+#[:method <name> <builtin> <classname> <methodname>
+#	<args> <docstring>]
+
 # Name is of the form 'class->name'
 sub addMethodDocString {
   my ($name, $builtin, $args, $docstring) = @_;
+$DB::single = 1;
+  my ($className, $methodName) = split (/\-\>/, $name);
+  die "Malformed method name for docstring: '$name'\n"
+	unless $methodName;
 
-  addDocString ($name, 'method', $args, $docstring);
+  addDocString ($name, 'method', $builtin, $className, $methodName,
+				$args, $docstring);
 }
 
-
-#[:class <name> <builtin> <docstring>]
 
 sub addClassDocString {
   my ($name, $builtin, $docstring) = @_;
@@ -4825,7 +4830,7 @@ sub builtin_class {
 
   {
 	my $docstring = $body->stripDocString();
-	my $nm = ${$name};
+	my $nm = $Globals->normalizeName(${$name});
 	addClassDocString($nm, 0, $docstring) if ($nm && $docstring);
   }
 
@@ -4853,6 +4858,7 @@ sub builtin_class_ext {
   {
 	my $docstring = $body->stripDocString();
 	my $name = $class->{name};
+	$name = $Globals->normalizeName($name) if $name;
 	addClassDocString($name, 1, $docstring) if ($name && $docstring);
   }
 
@@ -4917,8 +4923,10 @@ sub builtin_docstring_keys {
 
 sub builtin_docstring_get {
   my ($key) = @_;
+$DB::single = 1;
 
-  $key->checkSymbol(" in _:::docstring_get");
+  die "Expecting Symbol or String, got @{[ref($key)]}\n"
+	unless ($key->isSymbol() || $key->isString());
 
   my $ds = $DocStringHash{${$key}};
   return NIL unless defined($ds);
@@ -4929,16 +4937,24 @@ sub builtin_docstring_get {
   given ($ds->[0]) {
 	when (/^m?proc$/) {
 	  $result = [$type,
-				 LL::Symbol->new($ds->[1]),
+				 LL::String->new($ds->[1]),
 				 boolObj($ds->[2]),
 				 map { LL::String->new($_) } @{$ds}[3..4] ];
 	}
 
 	when ('class') {
 	  $result = [$type,
-				 LL::Symbol->new($ds->[1]),
+				 LL::String->new($ds->[1]),
 				 boolObj($ds->[2]),
 				 LL::String->new($ds->[3]),
+				];
+	}
+
+	when ('method') {
+	  $result = [$type,
+				 LL::String->new($ds->[1]),
+				 boolObj($ds->[2]),
+				 map { LL::String->new($_) } @{$ds}[3..$#{$ds}]
 				];
 	}
 

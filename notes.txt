@@ -299,7 +299,8 @@ X				-and should be a function, dude!
 
 				[:class <name> <builtin> <superclass> <docstring>]
 				[:proc <name> <builtin> <args> <docstring>]
-				[:method <name> <builtin> <args> <class> <docstring>]
+				[:method <name> <builtin> <classname> <methodname> 
+					<args> <docstring>]
 				[:attrib <name> <builtin> <class> :read/:write/:readwrite
 	                <docstring>]
 				[:macro <name> <builtin> <args> <docstring>]
@@ -358,4 +359,5 @@ X				-and should be a function, dude!
 	 block that gets called when the function returns, regardless of
 	 how.
 	-file I/O
-	-should 'for/foreach' also define 'index' as a const?		
+	-should 'for/foreach' also define 'index' as a const?
+	-interpolated strings should allow for "$foo.bar".
