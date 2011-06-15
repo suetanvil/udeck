@@ -2640,7 +2640,7 @@ sub compile {
 # Name is of the form 'class->name'
 sub addMethodDocString {
   my ($name, $builtin, $args, $docstring) = @_;
-$DB::single = 1;
+
   my ($className, $methodName) = split (/\-\>/, $name);
   die "Malformed method name for docstring: '$name'\n"
 	unless $methodName;
@@ -4854,16 +4854,15 @@ sub builtin_class_ext {
 
   $class->checkClass();
   $body->checkLoL(" in _class_ext.");
+  my $name = $class->{name};
 
   {
 	my $docstring = $body->stripDocString();
-	my $name = $class->{name};
 	$name = $Globals->normalizeName($name) if $name;
 	addClassDocString($name, 1, $docstring) if ($name && $docstring);
   }
 
-
-  my $methods = class_methods($body, {}, 1);
+  my $methods = class_methods($body, {}, 1, $name);
   $class->addMethods ($methods);
 
   LL::Class->refreshAllBuiltinClassMethodCaches();
@@ -4923,7 +4922,6 @@ sub builtin_docstring_keys {
 
 sub builtin_docstring_get {
   my ($key) = @_;
-$DB::single = 1;
 
   die "Expecting Symbol or String, got @{[ref($key)]}\n"
 	unless ($key->isSymbol() || $key->isString());

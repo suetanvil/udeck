@@ -107,17 +107,16 @@ proc printMethods {name} {
 	var selectors = [sort cmp cl.selectors]
 	var nm = cl.name
 
-	puts "=over"
+	puts "=over\n"
 
 	foreach sel in selectors {
-		var doc = [_::docstring_get "$nm->$sel"]
-puts sel "," doc
+		var doc = [_::docstring_get "$name->$sel"]
 		if (doc) {
 			printMethodDoc doc
 		}
 	}
 
-	puts "=back"
+	puts "=back\n"
 
 }
 
@@ -173,7 +172,7 @@ proc setup {} {
 
 
 
-#setup
+setup
 #printFunctions
-#printClasses
-printMethods "Lang::Object"
+printClasses
+#printMethods "Lang::Object"

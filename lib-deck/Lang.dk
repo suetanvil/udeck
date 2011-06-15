@@ -42,16 +42,54 @@ _class_ext Object {
 	}
 
 
-	# This is the message that each object receives when it is first
-	# created. Its implementation is expected to initialize the new object.
-	method init {args} {}
+	method init {args} {
+		'''
+		This is the message that each object receives when it is first
+		created. Its implementation is expected to initialize the new object.
+		'''
+	}
 
-	method isNil_get {} {return nil}
-	method op_Equals {other} {return (self === other)}
+	method isNil_get {} {
+		"Returns a true value if this object is nil, false otherwise."
+		return nil
+	}
 
-	method at {index} {die "Not indexable."}
-	method atPut {index value} {die "Not indexable."}
-	method size_get {} {die self.class " is not indexable."}
+	method op_Equals {other} {
+		'''
+		Test if this object is equal to C<other>.  This is the implementation
+		of the C<==> operator.
+		'''
+
+		return (self === other)
+	}
+
+
+	method at {index} {
+		'''
+		Sequence Protocol: Return the item at position C<index>.  Indexes
+		must be contiguous and start at zero.
+		'''
+
+		die "Not indexable."
+	}
+
+	method atPut {index value} {
+		'''
+		Sequence Protocol: If this object is indexable, store C<value> at
+		position C<index> and return C<value>.  Indexes start at zero and
+		must be contiguous.
+		'''
+
+		die "Not indexable."
+	}
+
+	method size_get {} {
+		'''
+		Sequence Protocol: Return the number of items in this object.
+		'''
+		die self.class " is not indexable."
+	}
+
 	method maker_get {} {
 		'''
 		Sequence protocol: return a function which will create a collection
@@ -61,10 +99,27 @@ _class_ext Object {
 		return listSized
 	}
 
-	method isIndexable_get {} {return nil}
-	method last_get {} {return (self.size - 1)}
+	method isIndexable_get {} {
+		'''
+		Tests if this object can be treated as a sequence (i.e. implements
+        the sequence protocol).  If true, the object must implement at least
+		C<at>, C<size> and C<maker> as expected and C<atPut> should either
+		behave as expected as well or fail with an error.
+		'''
+
+		return nil
+	}
+
+	method last_get {} {
+		'''
+		Sequence Protocol: Return the index of the last item in this
+		object.
+		'''
+		return (self.size - 1)
+	}
 
 	method printable_get {} {
+		"Return a human-readable textual represention of this object."
 		var cl = self.class.name
 		var a = [if ((cl@0).isVowel) {value "an"} {value "a"}]
 
@@ -72,17 +127,40 @@ _class_ext Object {
 	}
 
 	# Copy protocol.
-	method shallowCopy {} {die "Called abstract shallowCopy"}
-	method copy {} {return [self->shallowCopy]}
+	method shallowCopy {} {
+		"Make a copy of this object without copying the objects it references."
+		die "Called abstract shallowCopy"
+	}
+	method copy {} {
+		"Make a copy of this object."
+		return [self->shallowCopy]
+	}
 
 	# Needed for test case
-	method self_get {} {}
+	method self_get {} {
+		"Return this object."
+	}
 
 	# Comparison behaviour
-	method op_Lt       {obj} {return (self <= obj && self != obj)}
-	method op_Lte      {obj} {die "Called abstract op_Lte on " self.class.name}
-	method op_Gt       {obj} {return [not (self <= obj)]}
-	method op_Gte      {obj} {return (self > obj || self == obj)}
+	method op_Lt {obj} {
+		"Operator C<E<lt>>: Test if self is less than C<obj>."
+		return (self <= obj && self != obj)
+	}
+
+	method op_Lte {obj} {
+		"Operator C<E<lt>=>: Abstract method. Subclasses must implement this."
+		die "Called abstract op_Lte on " self.class.name
+	}
+
+	method op_Gt {obj} {
+		"Operator C<E<gt>>: Test if self is greather than C<obj>."
+		return [not (self <= obj)]
+	}
+
+	method op_Gte {obj} {
+		"Operator C<E<gt>=>: Test if self is greater than or equal to C<obj>."
+		return (self > obj || self == obj)
+	}
 
 }
 
