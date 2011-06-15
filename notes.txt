@@ -318,8 +318,9 @@ X				-and should be a function, dude!
 	     Sequence trait when we have traits.
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.
-	-The 'die' implementations of sequence protocol should onlyu be in
+	-The 'die' implementations of sequence protocol should only be in
 	 sequence classes.
+	-_class_ext should be in '_::'
 
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)

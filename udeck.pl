@@ -4686,7 +4686,7 @@ sub class_fields {
 	next if scalar @{$entry} == 0;		# Maybe too tolerant
 
 	my $start = fieldType($entry);
-	next if ($start eq 'method');
+	next if ($start eq 'method' || $start eq 'mdoc');
 	shift @{$entry};
 
 	my $readable = ($start =~ /^(public|readable)$/);
@@ -4731,7 +4731,7 @@ sub mk_method {
 
 
 sub class_methods {
-  my ($body, $fields, $methodsOnly, $className) = @_;
+  my ($body, $fields, $methodsOnly, $className, $allowDoc) = @_;
 
   my %methods = ();
   for my $entry (@{$body}) {
@@ -4739,11 +4739,10 @@ sub class_methods {
 
 	my $start = $entry->[0];
 	$start->checkSymbol();
-
 	
 	if (${$start} ne 'method') {
 	  die "Expecting 'method' declaration; got '${$start}'.\n"
-		if $methodsOnly;
+		if $methodsOnly && (${$start} eq 'mdoc' && !$allowDoc);
 	  next;
 	}
 
@@ -4771,6 +4770,42 @@ sub class_methods {
   return \%methods;
 }
 
+
+# Extract 'mdoc' statements from _class_ext declarations.
+sub class_ext_docs {
+  my ($class, $body) = @_;
+
+  my %methods = ();
+  for my $entry (@{$body}) {
+	next if scalar @{$entry} == 0;		# Maybe too tolerant
+
+	my $start = $entry->[0];
+	$start->checkSymbol();
+	
+	next if (${$start} ne 'mdoc');
+
+	die "Malformed method declaration: '@{[$entry->printStr()]}'.\n"
+	  unless scalar @{$entry} == 4;
+
+	my ($mdoc, $name, $args, $docstring) = @{$entry};
+	$name->checkSymbol(" in method name.");
+	$args = fixFormalArgs($args)->value();
+	$docstring->checkString (" in 'mdoc' statement.");
+
+	# Ensure that $name is a method in the class.
+	die "No method named '${$name}' for matching mdoc.\n"
+	  unless defined($class->{methods}->{${$name}});
+
+	# Set the docstring
+	my $className = $Globals->normalizeName($class->{name});
+	die "No classname for _class_ext.\n" unless $className;
+
+	addMethodDocString("$className->${$name}", 0, $args->printStr(),
+					   ${$docstring});
+  }
+
+  return;
+}
 
 
 
@@ -4839,7 +4874,7 @@ sub builtin_class {
 	if (scalar keys %{$fields} > 0 &&
 		!$superclass->isStructuredClass());
 
-  my $methods = class_methods($body, $fields, 0, ${$name});
+  my $methods = class_methods($body, $fields, 0, ${$name}, 0);
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,
@@ -4862,8 +4897,11 @@ sub builtin_class_ext {
 	addClassDocString($name, 1, $docstring) if ($name && $docstring);
   }
 
-  my $methods = class_methods($body, {}, 1, $name);
+  my $methods = class_methods($body, {}, 1, $name, 1);
   $class->addMethods ($methods);
+
+  # Add the mdoc statements to the set of docstrings.
+  class_ext_docs ($class, $body);
 
   LL::Class->refreshAllBuiltinClassMethodCaches();
 

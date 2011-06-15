@@ -31,6 +31,10 @@ _class_ext Object {
 	C<Object> is a pure abstract base class.  It cannot be instantiated.
 	'''
 
+	# Docs for builtin methods:
+	mdoc class_get {} "Return the class of this object."
+	mdoc isTrue_get{} "Return this object's truth value.  Deep magic."
+
 	method doesNotUnderstand {name args} {
 		'''
 		This method is called when the object receives a message it does not
@@ -161,7 +165,6 @@ _class_ext Object {
 		"Operator C<E<gt>=>: Test if self is greater than or equal to C<obj>."
 		return (self > obj || self == obj)
 	}
-
 }
 
 _class_ext Number {
@@ -749,6 +752,10 @@ class Interval Struct {
 		}
  
 		return "$start .. $end$by"
+	}
+
+	method isTrue_get {} {
+		return (self.size > 0)
 	}
 }
 
