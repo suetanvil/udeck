@@ -274,9 +274,15 @@ _class_ext Number {
 	mdoc op_Equals {obj} "Test if C<self> and C<obj> have the same numeric
         value.  (Non-numbers clearly do not.)"
 
-	method shallowCopy {} {return self}
+	method shallowCopy {} {
+		"Return self, since Numbers are immutable."
+		return self
+	}
 
-	method printable_get {} {return "$self"}
+	method printable_get {} {
+		"Standard C<printable> attribute."
+		return "$self"
+	}
 }
 
 _class_ext Nil {
@@ -286,10 +292,19 @@ _class_ext Nil {
 	are initialized to nil, as are empty lists.
 	'''
 
-	method isNil_get {} {return 1}
-	method printable_get {} {return "nil"}
+	method isNil_get {} {
+		"Test if this object is C<nil>. Returns true."
+		return true
+	}
+	method printable_get {} {
+		"Standard C<printable> attribute."
+		return "nil"
+	}
 
-	method shallowCopy {} {return self}
+	method shallowCopy {} {
+		"Return C<self> since nil is immutable."
+		return self
+	}
 }
 
 _class_ext List {
@@ -307,7 +322,6 @@ _class_ext List {
 	C<List> implements the sequence protocol: C<at>, C<atput>, C<size>,
 	C<maker> C<isIndexable> returns true.
 	'''
-
 
 	method isIndexable_get {} {return 1}
 	method printable_get {} {
