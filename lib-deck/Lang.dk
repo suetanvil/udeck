@@ -33,7 +33,7 @@ _class_ext Object {
 
 	# Docs for builtin methods:
 	mdoc class_get {} "Return the class of this object."
-	mdoc isTrue_get{} "Return this object's truth value.  Deep magic."
+	mdoc isTrue_get{} "Return this object's truth value.  Somewhat magical."
 
 	method doesNotUnderstand {name args} {
 		'''
@@ -174,23 +174,105 @@ _class_ext Number {
 	'''
 
 	# Double-dispatch methods
-	method op_Add      {obj} {return [obj->addNumber self]}
-	method op_Sub      {obj} {return [obj->subNumber self]}
-	method op_Mod      {obj} {return [obj->modNumber self]}
-	method op_Mult     {obj} {return [obj->multNumber self]}
-	method op_Div      {obj} {return [obj->divNumber self]}
-	method op_DivTrunc {obj} {return [obj->divTruncNumber self]}
-	method op_Lte      {obj} {return [obj->lteNumber self]}
-	method op_Pow	   {obj} {return [obj->powNumber self]}
-	method op_BitOr	   {obj} {return [obj->bitOrNumber self]}
-	method op_BitXor   {obj} {return [obj->bitXorNumber self]}
-	method op_BitAnd   {obj} {return [obj->bitAndNumber self]}
+	mdoc addNumber {num} "Add self to number C<num>"
+	method op_Add {obj} {
+		"C<+> operator.  Performs addition."
+		return [obj->addNumber self]
+	}
+
+	mdoc subNumber {num} "Subtract self from C<num>"
+	method op_Sub {obj} {
+		"C<-> operator.  Performs subtraction."
+		return [obj->subNumber self]
+	}
+
+	mdoc modNumber {num} "Return C<num> modulo self."
+	method op_Mod {obj} {
+		"C<%> operator.  Performs the modulo operation."
+		return [obj->modNumber self]
+	}
+
+	mdoc multNumber {num} "Return C<num> multiplied by C<self>."
+	method op_Mult {obj} {
+		"C<*> operator.  Performs multiplication."
+		return [obj->multNumber self]
+	}
+
+	mdoc divNumber {num} "Return C<num> divided by C<self>."
+	method op_Div {obj} {
+		"C</> operator.  Performs division."
+		return [obj->divNumber self]
+	}
+
+	mdoc divTruncNumber {num} "Return C<num> divided by C<self> and rounded
+       toward zero."
+	method op_DivTrunc {obj} {
+		"C<//> operator.  Performs division, truncating to the nearest int."
+		return [obj->divTruncNumber self]
+	}
+
+	mdoc lteNumber {num} "Return true if C<num> is less than or equal to 
+       C<self>."
+	method op_Lte {obj} {
+		"C<E<lt>=> operator.  Performs greater-than-or-equal-to test."
+		return [obj->lteNumber self]
+	}
+
+	mdoc powNumber {num} "Return C<num> raised to the power of C<self>."
+	method op_Pow {obj} {
+		"C<**> operator.  Return C<self> raised to the power of C<other>."
+		return [obj->powNumber self]
+	}
+
+	mdoc bitOrNumber {num} "Return C<num> bitwise ORed with C<self>.
+       Both are first truncated to the nearest integer."
+	method op_BitOr	{obj} {
+		"C<|> operator.  Perform bitwise OR operation.  Fractional arguments
+         are first truncated toward zero."
+		return [obj->bitOrNumber self]
+	}
+
+	mdoc bitXorNumber {num} "Return C<num> bitwise XORed with C<self>.
+       Both are first truncated to the nearest integer."
+	method op_BitXor {obj} {
+		"C<^> operator.  Perform bitwise exclusive-OR operation.  Fractional
+         arguments are first truncated toward zero."
+		return [obj->bitXorNumber self]
+	}
+
+	mdoc bitAndNumber {num} "Return C<num> bitwise ANDed with C<self>.
+       Both are first truncated to the nearest integer."
+	method op_BitAnd {obj} {
+		"C<&> operator.  Perform bitwise AND operation.  Fractional arguments
+         are first truncated toward zero."
+		return [obj->bitAndNumber self]
+	}
 
 	# Optional comparisons.  Object already implements them but these
 	# versions are (probably) faster.
-	method op_Lt       {obj} {return [obj->ltNumber self]}
-	method op_Gt       {obj} {return [obj->gtNumber self]}
-	method op_Gte      {obj} {return [obj->gteNumber self]}
+	mdoc ltNumber {num} "Test if C<num> is less than C<self>."
+	method op_Lt {obj} {
+		"C<E<lt>> operator. Test if C<self> is less than C<obj>.  
+         This overrides the version in C<Object> for no good reason."
+		return [obj->ltNumber self]
+	}
+
+	mdoc gtNumber {num} "Test if C<num> is greater than C<self> "
+	method op_Gt {obj} {
+		"C<E<gt>> operator. Test if C<self> is greater than C<obj>.
+         This overrides the version in C<Object> for no good reason."
+		return [obj->gtNumber self]
+	}
+
+	mdoc gteNumber {num} "Test if C<num> is greater than or equal to C<self> "
+	method op_Gte {obj} {
+		"C<E<gt>=> operator.  Test if C<self> is greater than or equal to
+         C<self>.  This overrides the version in C<Object> for no good reason."
+		return [obj->gteNumber self]
+	}
+
+	mdoc op_Equals {obj} "Test if C<self> and C<obj> have the same numeric
+        value.  (Non-numbers clearly do not.)"
 
 	method shallowCopy {} {return self}
 
