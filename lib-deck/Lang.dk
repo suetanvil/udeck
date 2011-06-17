@@ -561,20 +561,31 @@ _class_ext Symbol {
 		return ([unintern self] <= other)
 	}
 
-	method maker_get {} {return stringSized}  # symbols are immutable
+	method maker_get {} {
+		"Sequence protocol: return a function which will create a collection
+		 suitable for holding the contents of self and which takes one
+         argument, a number specifying the size.  In this case, it's
+         C<stringSized>."
+		return stringSized
+	}
 }
 
 
 
 _class_ext ByteArray {
-	'''
+	"
 	A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
 	is allowed.
 
 	C<ByteArray> implements the sequence protocol but will fail if you
 	attempt to store a value in it that is not an integer between 0 and 255.
-	'''
+    "
+
+	mdoc shallowCopy {} \
+		"Return a copy of C<self>."
+
    	method printable_get {} {
+		"The printable form of C<self>."
 		const MAXSIZE = 5
 		var {count = MAXSIZE}
 
@@ -597,15 +608,31 @@ _class_ext ByteArray {
 		return "[byteArray @formatted$dotdot$last]"
    	}
 
-	method op_Equals {obj} {return [_seq_Equals self obj]}
+
+	method op_Equals {obj} {
+		"C<==> operator: True if C<obj> is also a ByteArray and all elements
+         equal the corresponding element in C<obj>."
+		return [_seq_Equals self obj]
+	}
 
 	method op_Add {otherBArray} {
+		"C<+> operator, overloaded: Returns C<self> and C<obj>
+         concatenated together.  The result is the type returned by C<maker>
+         (C<ByteArray> in this case).  Note that C<obj> does B<not> have
+         to be a C<ByteArray> but B<must> contain only bytes (i.e. integers
+         between 0 and 255."		
 		var result = [bytesSized (self.size + otherBArray.size)]
 		_write_seq self otherBArray result
 		return result
 	}
 
-	method maker_get {} {return bytesSized}
+	method maker_get {} {
+		"Sequence protocol: return a function which will create a collection
+		 suitable for holding the contents of self and which takes one
+         argument, a number specifying the size.  In this case, it's
+         C<bytesSized>."
+		return bytesSized
+	}
 }
 
 _class_ext Struct {
