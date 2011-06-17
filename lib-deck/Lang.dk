@@ -749,33 +749,40 @@ _class_ext Method {
 }
 
 _class_ext MethodCall {
-	'''
-	C<MethodCall> is the class of all method call objects.  Method calls are
-	callable objects that will call a specific method on a specific object,
-	both of which are captured inside the C<MethodCall>.
+	"C<MethodCall> is the class of all method call objects.  Method calls are
+	 callable objects that will call a specific method on a specific object,
+	 both of which are captured inside the C<MethodCall>.
 
-	Instances of C<MethodCall> are the result of a call to C<getMethod> or
-	C<getSuperMethod> (which are usually called by the macro C<-E<gt>>).
-	'''
-	method shallowCopy {} {return self}
-	method printable_get {} {return "<method call>"}
+	 Instances of C<MethodCall> are the result of a call to C<getMethod> or
+	 C<getSuperMethod> (which are usually called by the macro C<-E<gt>>)."
+
+	method shallowCopy {} {
+		"C<MethodCalls> are immutable so we just return the same instance."
+		return self
+	}
+
+	method printable_get {} {
+		"Return a human-readable textual represention of this object."
+		return "<method call>"
+	}
 }
 
 _class_ext PerlObj {
-	'''
-	C<PerlObj> is a wrapper around some Perl data.  Perl functions created
-	using C<perlproc> can return Perl data that has no meaningful
-	representation inside Deck and these can then be passed to other Perl
-	functions.
+	"C<PerlObj> is a wrapper around some Perl data.  Perl functions created
+	 using C<perlproc> can return Perl data that has no meaningful
+	 representation inside Deck and these can then be passed to other Perl
+	 functions.
 
-	For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
-	hold a reference to an instance of a class defined in the library.
+	 For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
+	 hold a reference to an instance of a class defined in the library.
 
-	There is no way to modify a PerlObj in Deck.
-	'''
+	 There is no way to modify a PerlObj in Deck."
 
+	mdoc shallowCopy {} \
+		"C<MethodCalls> are immutable so we just return the same instance."
+	mdoc printable_get {} \
+		"Return a human-readable textual represention of this object."
 
-	# method printable_get is written in perl
 }
 
 
@@ -812,41 +819,48 @@ proc _write_seq {src1 src2 dest} {
 
 
 proc cmp {left right} {
-	'''
-	Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less than,
-	equal to or greater than C<right>.
-	'''
+	"Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less
+     than, equal to or greater than C<right> respectively.  Operator
+     C<E<lt>=E<gt>> (i.e. the spaceship operator) is an alias to C<cmp>."
+
 	(left == right)	&& [return 0]
 	(left > right)	&& [return 1]
 	return -1
 }
 const \<=> = cmp
 
-# Return the absolute value of a number
-proc abs {n} {
-	"Return the absolute value of C<n>, a Number."
-	if (n < 0) {
-		return [-n]
+proc abs {aNum} {
+	"Return the absolute value of C<aNum>, a Number."
+	if (aNum < 0) {
+		return [-aNum]
 	}
-	return n
+	return aNum
 }
 
-# The not-equal operator
 proc \!= {left right} {
-	"Return C<true> if C<left> and C<right> are not equal (C<==>)."
+	"Return C<true> if C<left> and C<right> are not equal according to C<==>."
 	return [not (left == right)]
 }
 
-proc size {aList} {return aList.size}
-proc last {aList} {return aList.last}
 
-proc typeof {obj} {return [intern obj.class.name]}
+proc size {aSeq} {
+	"Return the number of items in sequence C<aSeq>."
+	return aSeq.size
+}
+
+proc last {aSeq} {
+	"Return the index of the last item in sequence C<aSeq>."
+	return aSeq.last
+}
+
+proc typeof {obj} {
+	"Return the name of the type of C<obj>."
+	return [intern obj.class.name]
+}
 
 proc asList {seq} {
-	'''
-	Return a list containing the contents of C<seq>, an object that
-	implements the list protocol.
-	'''
+	"Return a list containing the contents of C<seq>, an object that
+	 implements the list protocol."
 
 	var result = [listSized seq.size]
 	var index = 0
