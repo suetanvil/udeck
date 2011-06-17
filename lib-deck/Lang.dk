@@ -1057,8 +1057,11 @@ proc slice {seq start end} {
 	return result
 }
 
-# Concatenate all list-like arguments together.
 proc concat {args} {
+	"Return a sequence containing the contents of all arguments (which must
+     be sequences) concatenated together.  The return type is determined by
+     the first argument's C<maker>.  Under some circumstances, this may be
+     faster than C<+>."
 	var len = 0
 	foreach l in args {
 		len = len + [size l]
@@ -1080,27 +1083,29 @@ proc concat {args} {
 perlproc _rand {} ''' return rand(1); '''
 
 proc rand {max} {
+	"Return a random non-negative real number less than C<max>."
 	return (max * [_rand])
 }
 
 proc irand {max} {
+	"Return an integer between 0 and C<max> - 1."
 	return [int [rand max]]
 }
 
 
-# Return a shuffled copy of seq
-proc shuffled {origSeq} {
-	var seq = [origSeq->shallowCopy]
+proc shuffled {seq} {
+	"Return a copy of sequence C<seq> with the elements shuffled."
+	var shuffledSeq = [seq->shallowCopy]
 
-	for index in (seq.last .. 1) {
+	for index in (shuffledSeq.last .. 1) {
 		var pick = [rand (index - 1)]
 		
-		var tmp = seq@pick
-		seq@pick = seq@index
-		seq@index = tmp
+		var tmp = shuffledSeq@pick
+		shuffledSeq@pick = shuffledSeq@index
+		shuffledSeq@index = tmp
 	}
 
-	return seq
+	return shuffledSeq
 }
 
 

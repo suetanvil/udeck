@@ -324,6 +324,7 @@ X				-and should be a function, dude!
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
 
+	-maybe make the comparisons other than <= into functions.
 	-move 'map' to Lang.dk
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)
