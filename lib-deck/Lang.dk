@@ -255,7 +255,7 @@ _class_ext Number {
 	}
 
 	method printable_get {} {
-		"Standard C<printable> attribute."
+		"Return a human-readable textual represention of this object."
 		return "$self"
 	}
 }
@@ -270,7 +270,7 @@ _class_ext Nil {
 		return true
 	}
 	method printable_get {} {
-		"Standard C<printable> attribute."
+		"Return a human-readable textual represention of this object."
 		return "nil"
 	}
 
@@ -435,7 +435,8 @@ _class_ext String {
 	}
 
 	method printable_get {} {
-		"Return C<self>; a string is its own printable."
+		"Return a human-readable textual represention of this object; in this
+		 case just C<self>; a string is its own printable."
 		return self
 	}
 
@@ -491,10 +492,11 @@ _class_ext Symbol {
 
 	 C<Symbols> can be converted to and from strings via the C<intern> and 
 	 C<unintern> functions.  Symbol constants are tokens beginning with the
-	 C<:> character, e.g. C<:foo>"
+	 C<:> character, e.g. C<:foo>.  Note that while this is analagous to
+     quoting (see class Quote), a Symbol literal is not a Quote expression."
 
 	method printable_get {} {
-		"The printable form of C<self>."
+		"Return a human-readable textual represention of this object."
 		return ":$self"
 	}
 
@@ -548,7 +550,7 @@ _class_ext ByteArray {
 		"Return a copy of C<self>."
 
    	method printable_get {} {
-		"The printable form of C<self>."
+		"Return a human-readable textual represention of this object."
 		const MAXSIZE = 5
 		var {count = MAXSIZE}
 
@@ -645,7 +647,7 @@ _class_ext Class {
          is like that."
 
 	method printable_get {} {
-		"The printable string form."
+		"Return a human-readable textual represention of this object."
 		var nm = self.name
 		(nm.size == 0) && [return "a Class"]
 		
@@ -654,28 +656,54 @@ _class_ext Class {
 }
 
 _class_ext Quote {
-	'''
-	C<Quote> instances are used to represent quotation in Deck expressions.
-	Each C<Quote> contains a single data value which may be accessed using
-	the C<value> attribute.  The presence of the C<Quote> in an expression
-	is used to indicate that the value it wraps should not be evaluated in
-	the usual way.
+	"C<Quote> instances are used to represent quotation in Deck expressions.
+     They are typically represented in Deck source code via the colon operator
+     (C<:>).  (Note that a quote expression is analogous to but different from
+     a C<Symbol> literal.)
 
-	You will only ever need to use a C<Quote> when creating Deck expressions
-	to be compiled later by the Deck compiler.
-	'''
+	 Each C<Quote> contains a single data value which may be accessed using
+	 the C<value> attribute.  A C<Quote> in an expression evaluates to its
+     wrapped value.  For example, the compiler will evaluate this
+
+     C<[a b c]>
+
+     as an expression where C<a>, C<b> and C<c> are expected to be variables
+     and C<a> is expected to reference something callable and so will attempt
+     to call the callable at C<a> with arguments C<b> and C<c>.
+
+     On the other hand, this
+
+     C<:[a b c]>
+
+     will evaluate to C<[a b c]>, a C<List> of C<Symbols>.
+
+     Instances are created with the function C<quote>.
+
+     In practice, you will rarely find references to C<Quote> in everyday code.
+     Their purpose is to affect compilation and that's generally over with
+     by the time it reaches your code.  You will (probably) only ever need
+     to use a C<Quote> when creating Deck expressions to be compiled later
+     by the Deck compiler."
+
+	mdoc value_get {} \
+		"The thing being wrapped."
+	mdoc value_set {} ""
 
 	method printable_get {} {
+		"Return a human-readable textual represention of this object."
 		var v = self.value
 		return "[quote $v]"
 	}
 
 	method op_Equals {obj} {
+		"C<==> operator: True if C<obj> is also a C<Quote> and both objects'
+         values are also equal according to C<op_Equals>."
 		(self.class == obj.class) || [return false]
 		return (self.value == obj.value)
 	}
 
 	method shallowCopy {} {
+		"Create a new C<Quote> wrapping the same object."
 		return [quote self.value]
 	}
 }
@@ -684,7 +712,10 @@ _class_ext Quote {
 _class_ext Macro {
 	"C<Macro> is the class of all Deck macros."
 	method shallowCopy {} {return self}
-	method printable_get {} {return "<macro>"}
+	method printable_get {} {
+		"Return a human-readable textual represention of this object."
+		return "<macro>"
+	}
 }
 
 _class_ext Function {
