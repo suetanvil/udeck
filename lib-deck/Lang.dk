@@ -319,7 +319,7 @@ _class_ext List {
 	This is different from most Lispish languages, where a list is implemented
 	as a linked list of pairs of references (CONS cells).
 
-	C<List> implements the sequence protocol: C<at>, C<atput>, C<size>,
+	C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
 	C<maker> C<isIndexable> returns true.
 	'''
 
@@ -409,7 +409,7 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 perlproc _isspace {s} '''return $s =~ /^\s+$/;'''
 
 _class_ext String {
-	'''
+	"
 	C<String> instances contain human-readable text which can be
 	printed to the console or stored in a file.  The class implements
 	the sequence protocol but the objects stored or retrieved from a
@@ -421,21 +421,32 @@ _class_ext String {
 	B<never> use a C<String> to hold arbitrary binary data as this
 	will break when Deck switches to using UTF8.  Use C<ByteArray> for
 	that.
-	'''
+
+	That being said, C<Strings> are currently 7-bit ASCII and all operations
+	are performed within the C<C> locality.
+	"
 
 	mdoc op_Equals {obj} \
 		"C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
          and all characters match the the corresponding characters in C<obj>."
 
-	mdoc op_shallowCopy {} \
+	mdoc shallowCopy {} \
 		"Create and return a copy of C<self>."
+
+	method maker_get {} {
+		"Sequence protocol: return a function which will create a collection
+		 suitable for holding the contents of self and which takes one
+         argument, a number specifying the size.  In this case, it's
+         C<stringSized>."
+		return stringSized
+	}
 
 	method isVowel_get {} {
 		"Return true if C<self> contains one character and that character
          is an ASCII vowel."
 		(self.size != 1) && [return false]
 
-		var lc = self.lowercase
+		var lc = [self->lowercase]
 
 		for v in [list "a" "e" "i" "o" "u"] {
 			if (lc == v) {
@@ -450,18 +461,32 @@ _class_ext String {
 		return [_isspace self]
 	}
 
-	method lowercase_get {} {return [_downcase self]}
-	method printable_get {} {return "$self"}
+	method lowercase {} {
+		"Return a copy of C<self> with all uppercase characters replaced
+         with their lowercase equivalents."
+		return [_downcase self]
+	}
 
-	# op_Equals is implemented in Perl
+	method printable_get {} {
+		"Return C<self>; a string is its own printable."
+		return self
+	}
 
 	method op_Add {otherString} {
+		"C<+> operator, overloaded: Returns C<self> and C<other> concatenated
+         together.  The result is the type returned by C<maker> (C<String> in
+         this case).  Note that C<otherString> does B<not> have to be a string
+         but B<must> contain only strings of length 1 (i.e. characters)."
 		var result = [stringSized (self.size + otherString.size)]
 		_write_seq self otherString result
 		return result
 	}
 
 	method op_Lte {other} {
+		"C<E<lt>=> operator: lexically compares C<self> with C<other> (which
+         B<must> be a C<String> or C<Symbol>) and returns true if self comes
+         before C<other> or if they are equal.  The other comparisons are
+         implemented in C<Object>."
 		if (other.class == Symbol) {
 			other = [unintern other]
 		}
@@ -472,7 +497,6 @@ _class_ext String {
 		return [_str_lte self other]
 	}
 
-	method maker_get {} {return stringSized}
 }
 
 
