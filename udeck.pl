@@ -2520,7 +2520,11 @@ sub compile {
 		  die "docstring found in a $mode.\n" if ($isTop || $isSub);
 
 		  my $docString = ${ $expr->[0] };
-		  addProcDocString($name, 0, $args->printStr(), $docString)
+
+		  my $astr = $args->printStr();
+		  $astr .= 'args' if $isVararg;		# Bad formatting, fixed later
+
+		  addProcDocString($name, 0, $astr, $docString)
 			if $isProc;
 		  next;
 		}
@@ -2645,6 +2649,8 @@ sub addMethodDocString {
   die "Malformed method name for docstring: '$name'\n"
 	unless $methodName;
 
+  $args =~ s/\[|\]//g;
+
   addDocString ($name, 'method', $builtin, $className, $methodName,
 				$args, $docstring);
 }
@@ -2660,6 +2666,8 @@ sub addClassDocString {
 # Add a proc docstring
 sub addProcDocString {
   my ($name, $builtin, $args, $docstring) = @_;
+
+  $args =~ s/\[|\]//g;
 
   addDocString($name, 'proc', $builtin, $args, $docstring);
 }
@@ -3486,11 +3494,11 @@ sub initGlobals {
 					"Implement the C<perluse> statement.",
 					\&builtin_perluse],
 
-				   ['apply',			"aFunction argList",
+				   ['apply',			"fun argList",
 					"Call function C<fun> with the arguments in list" .
 					" C<argList> and returns the result of the call." .
 					" C<argList> B<must> be a standard Deck list and not" .
-					" merely an object that implements the list protocol.",
+					" merely an object that implements the sequence protocol.",
 					\&builtin_apply],
 
 				   ['intern',			"aString",
@@ -4860,10 +4868,11 @@ sub builtin_class {
   $name->checkString(" in _::class name argument.");
   $body->checkLoL(" in class body.");
 
+  my $fullNameStr = $Globals->normalizeName(${$name});
   {
 	my $docstring = $body->stripDocString();
-	my $nm = $Globals->normalizeName(${$name});
-	addClassDocString($nm, 0, $docstring) if ($nm && $docstring);
+	addClassDocString($fullNameStr, 0, $docstring)
+	  if ($fullNameStr && $docstring);
   }
 
   my ($fields, $attribNames) = class_fields($body);
@@ -4871,7 +4880,7 @@ sub builtin_class {
 	if (scalar keys %{$fields} > 0 &&
 		!$superclass->isStructuredClass());
 
-  my $methods = class_methods($body, $fields, 0, ${$name}, 0);
+  my $methods = class_methods($body, $fields, 0, $fullNameStr, 0);
   class_attributes ($attribNames, $body, $fields, $methods);
 
   my $class = LL::Class->new([keys %{$fields}], $methods, $superclass, 1,

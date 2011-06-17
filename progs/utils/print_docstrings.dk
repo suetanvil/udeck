@@ -50,7 +50,6 @@ proc isProcOrMProc {doc} {
 
 
 proc printFunctions {} {
-	puts "Selecting procedures..."
 	var fDocs = [reduce isProcOrMProc DocStrings]
 
 	puts "=head1 Procedures and MProcs\n\n"
@@ -97,7 +96,7 @@ proc printMethodDoc {doc} {
 	var biText = ""
 	builtin && (biText = " B<(Built-in)>")
 
-	puts "=item B<method $methodName $args>$biText\n"
+	puts "=item B<method $methodName {$args}>$biText\n"
 	puts doc "\n"
 }
 
@@ -121,7 +120,6 @@ proc printMethods {name} {
 
 
 proc printClasses {} {
-	puts "Selecting procedures..."
 	var fDocs = [reduce {value (a@0 == :class)} DocStrings]
 
 	puts "=head1 Classes\n\n"
@@ -155,14 +153,11 @@ proc printClasses {} {
 
 
 proc setup {} {
-	puts "Getting docstrings..."
 	var keys = [_::docstring_keys]
 	#keys = [slice keys 0 5]		# temp!
 
-	puts "Sorting keys..."
 	keys = [sort {cmp a b} keys]
 
-	puts "Getting strings..."
 	DocStrings = [map {value [_::docstring_get a]} keys]
 }
 
@@ -170,6 +165,6 @@ proc setup {} {
 
 
 setup
-#printFunctions
+printFunctions
 printClasses
 #printMethods "Lang::Object"
