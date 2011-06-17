@@ -1,0 +1,23 @@
+# Test the Quote object
+
+var x = ::x
+var y = [quote :x]
+
+puts (x == y)
+puts (x.value == y.value)
+
+puts ([x->copy] == x)
+puts
+
+
+x = ::[1 2 3]
+y = [quote :[1 2 3]]
+var z = [x->copy]
+
+puts (x == y)
+puts (x.value == y.value)
+puts (x.value === y.value)
+
+puts (x === z)
+puts (x.value === z.value)
+

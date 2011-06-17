@@ -3916,9 +3916,6 @@ sub initGlobals {
   {
    value_get	=> sub {my ($self) = @_; checkNargs('value_get', \@_, 1);
 						return $self->value()},
-   value_set	=> sub {my ($self, $value) = @_; checkNargs('value_set',\@_,2);
-						return $value},
-
   };
 
   defclass 'Nil',			'Object', {};

@@ -659,9 +659,9 @@ _class_ext Quote {
 	"C<Quote> instances are used to represent quotation in Deck expressions.
      They are typically represented in Deck source code via the colon operator
      (C<:>).  (Note that a quote expression is analogous to but different from
-     a C<Symbol> literal.)
+     a literal C<Symbol>.)
 
-	 Each C<Quote> contains a single data value which may be accessed using
+	 Each C<Quote> contains a single data value which may be retrieved using
 	 the C<value> attribute.  A C<Quote> in an expression evaluates to its
      wrapped value.  For example, the compiler will evaluate this
 
@@ -687,7 +687,6 @@ _class_ext Quote {
 
 	mdoc value_get {} \
 		"The thing being wrapped."
-	mdoc value_set {} ""
 
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
