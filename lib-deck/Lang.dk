@@ -24,33 +24,29 @@ perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
 
 # Base class for all traditional structured objects
 _class_ext Object {
-	'''
+	"
 	C<Object> is the root class.  All other classes in Deck are derived
 	from Object.
 
 	C<Object> is a pure abstract base class.  It cannot be instantiated.
-	'''
+	"
 
 	# Docs for builtin methods:
 	mdoc class_get {} "Return the class of this object."
 	mdoc isTrue_get{} "Return this object's truth value.  Somewhat magical."
 
 	method doesNotUnderstand {name args} {
-		'''
-		This method is called when the object receives a message it does not
-		understand (i.e. there is no corresponding method implemented.)
+		"This method is called when the object receives a message it does not
+		 understand (i.e. there is no corresponding method implemented.)
 
-		Default behaviour is to exit with an error message.
-		'''		
+		 Default behaviour is to exit with an error message."
 		die "Unknown method '$name' in class '" self.class.name "'"
 	}
 
 
-	method init {args} {
-		'''
-		This is the message that each object receives when it is first
-		created. Its implementation is expected to initialize the new object.
-		'''
+	method _init {args} {
+		"This is the message that each object receives when it is first
+		 created. Its implementation is expected to initialize the new object."
 	}
 
 	method isNil_get {} {
@@ -88,37 +84,28 @@ _class_ext Object {
 	}
 
 	method size_get {} {
-		'''
-		Sequence Protocol: Return the number of items in this object.
-		'''
+		"Sequence Protocol: Return the number of items in this object."
 		die self.class " is not indexable."
 	}
 
 	method maker_get {} {
-		'''
-		Sequence protocol: return a function which will create a collection
-		suitable for holding the contents of self and which takes one argument,
-		a number specifying the size.  It defaults to C<listSized>.
-		'''
+		"Sequence protocol: return a function which will create a collection
+		 suitable for holding the contents of self and which takes one
+         argument,a number specifying the size.  It defaults to C<listSized>."
 		return listSized
 	}
 
 	method isIndexable_get {} {
-		'''
-		Tests if this object can be treated as a sequence (i.e. implements
-        the sequence protocol).  If true, the object must implement at least
-		C<at>, C<size> and C<maker> as expected and C<atPut> should either
-		behave as expected as well or fail with an error.
-		'''
-
+		"Tests if this object can be treated as a sequence (i.e. implements
+         the sequence protocol).  If true, the object must implement at least
+		 C<at>, C<size> and C<maker> as expected and C<atPut> should either
+		 behave as expected as well or fail with an error."
 		return nil
 	}
 
 	method last_get {} {
-		'''
-		Sequence Protocol: Return the index of the last item in this
-		object.
-		'''
+		"Sequence Protocol: Return the index of the last item in this
+		 object."
 		return (self.size - 1)
 	}
 
@@ -168,10 +155,10 @@ _class_ext Object {
 }
 
 _class_ext Number {
-	'''
+	"
 	C<Number> is the class of all (built-in) number types in Deck.
 	Instances are floating-point values.
-	'''
+	"
 
 	# Double-dispatch methods
 	mdoc addNumber {num} "Add self to number C<num>"
@@ -286,11 +273,11 @@ _class_ext Number {
 }
 
 _class_ext Nil {
-	'''
+	"
 	C<Nil> is the type of the object representing uninitialized variables.
 	There is only one instance, the global constant C<nil>.  Unset variables
 	are initialized to nil, as are empty lists.
-	'''
+	"
 
 	method isNil_get {} {
 		"Test if this object is C<nil>. Returns true."
@@ -308,10 +295,10 @@ _class_ext Nil {
 }
 
 _class_ext List {
-	'''
+	"
 	C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
 	Deck does not present its lists as linked lists of cells.  Instead, a
-	Deck C<List> is an array (i.e. a "vector") of object references whose
+	Deck C<List> is an array (i.e. a 'vector') of object references whose
 	individual items can be accessed with the C<at> and C<atPut> methods
 	(usually hidden by the C<@> operator).  The indexes start at zero and
 	increase to the number of items minus one.
@@ -321,7 +308,7 @@ _class_ext List {
 
 	C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
 	C<maker> C<isIndexable> returns true.
-	'''
+	"
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
@@ -378,11 +365,11 @@ _class_ext List {
 }
 
 _class_ext Stringlike {
-	'''
+	"
 	This is the abstract base class for several classes representing
 	various sequences of binary or specially-encoded data.  It should
 	not be used directly.
-	'''
+	"
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
@@ -502,7 +489,7 @@ _class_ext String {
 
 
 _class_ext Symbol {
-	'''
+	"
 	Symbols are mostly used to represent names in expressions.  They
 	are similar to strings in that they contain human-readable text.  However,
 	there are some notable differences:
@@ -525,8 +512,8 @@ _class_ext Symbol {
 
 	C<Symbols> can be converted to and from strings via the C<intern> and 
 	C<unintern> functions.  Symbol constants are tokens beginning with the
-	C<:> character, e.g. ":foo".
-	'''
+	C<:> character, e.g. C<:foo>
+	"
 
 	method printable_get {} {
 		"The printable form of C<self>."
@@ -636,7 +623,7 @@ _class_ext ByteArray {
 }
 
 _class_ext Struct {
-	'''
+	"
 	C<Struct> is the base class for all traditional classes.  A traditional
 	class is a class whose data is stored in named fields.
 
@@ -646,7 +633,12 @@ _class_ext Struct {
 
 	C<Struct> subclasses are typically instantiated using the C<new> method or
 	procedure.
-	'''
+    "
+
+	mdoc shallowCopy {} \
+		"Return a copy of C<self> with all instance variables referencing
+         the same objects the original references.  Subclasses should
+         override this if that is not the correct behaviour."         
 }
 
 

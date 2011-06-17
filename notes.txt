@@ -309,8 +309,6 @@ X				-and should be a function, dude!
 		-figure out how to integrate this with POD support.
 	-move 'map' to Lang.dk
 	-'@' should be a macro
-	-Bug: evaluate 'puts :"foo$a".class; puts :[1 2 3].class'.  The
-	 first one isn't a [list ...] expression.
 	-need to figure out what to do with negative indexes: handy but
 	 difficult to implement.  Either get rid of it or make all classes
 	 (including Interval) do it.
@@ -321,6 +319,7 @@ X				-and should be a function, dude!
 	-The 'die' implementations of sequence protocol should only be in
 	 sequence classes.
 	-_class_ext should be in '_::'
+	-'dnu' should be '_dnu'
 
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)
