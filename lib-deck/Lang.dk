@@ -16,7 +16,6 @@ proc puts
 proc slice
 
 perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
-
 perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
 
 
@@ -24,12 +23,10 @@ perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
 
 # Base class for all traditional structured objects
 _class_ext Object {
-	"
-	C<Object> is the root class.  All other classes in Deck are derived
-	from Object.
+	"C<Object> is the root class.  All other classes in Deck are derived
+	 from Object.
 
-	C<Object> is a pure abstract base class.  It cannot be instantiated.
-	"
+	 C<Object> is a pure abstract base class.  It cannot be instantiated."
 
 	# Docs for builtin methods:
 	mdoc class_get {} "Return the class of this object."
@@ -55,31 +52,23 @@ _class_ext Object {
 	}
 
 	method op_Equals {other} {
-		'''
-		Test if this object is equal to C<other>.  This is the implementation
-		of the C<==> operator.
-		'''
-
+		"C<==> operator: Test if C<self> and C<other> are equal with respect
+         to their types.  Should be overridden by subclass; defaults to using
+         C<===>."
 		return (self === other)
 	}
 
 
 	method at {index} {
-		'''
-		Sequence Protocol: Return the item at position C<index>.  Indexes
-		must be contiguous and start at zero.
-		'''
-
+		"Sequence Protocol: Return the item at position C<index>.  Indexes
+		 must be contiguous and start at zero."
 		die "Not indexable."
 	}
 
 	method atPut {index value} {
-		'''
-		Sequence Protocol: If this object is indexable, store C<value> at
-		position C<index> and return C<value>.  Indexes start at zero and
-		must be contiguous.
-		'''
-
+		"Sequence Protocol: If this object is indexable, store C<value> at
+		 position C<index> and return C<value>.  Indexes start at zero and
+		 must be contiguous."
 		die "Not indexable."
 	}
 
@@ -155,10 +144,8 @@ _class_ext Object {
 }
 
 _class_ext Number {
-	"
-	C<Number> is the class of all (built-in) number types in Deck.
-	Instances are floating-point values.
-	"
+	"C<Number> is the class of all (built-in) number types in Deck.
+	 Instances are floating-point values."
 
 	# Double-dispatch methods
 	mdoc addNumber {num} "Add self to number C<num>"
@@ -258,8 +245,9 @@ _class_ext Number {
 		return [obj->gteNumber self]
 	}
 
-	mdoc op_Equals {obj} "Test if C<self> and C<obj> have the same numeric
-        value.  (Non-numbers clearly do not.)"
+	mdoc op_Equals {obj} \
+		"Test if C<self> and C<obj> have the same numeric value.
+         (Non-numbers clearly do not.)"
 
 	method shallowCopy {} {
 		"Return self, since Numbers are immutable."
@@ -273,11 +261,9 @@ _class_ext Number {
 }
 
 _class_ext Nil {
-	"
-	C<Nil> is the type of the object representing uninitialized variables.
-	There is only one instance, the global constant C<nil>.  Unset variables
-	are initialized to nil, as are empty lists.
-	"
+	"C<Nil> is the type of the object representing uninitialized variables.
+	 There is only one instance, the global constant C<nil>.  Unset variables
+	 are initialized to nil, as are empty lists."
 
 	method isNil_get {} {
 		"Test if this object is C<nil>. Returns true."
@@ -295,20 +281,18 @@ _class_ext Nil {
 }
 
 _class_ext List {
-	"
-	C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
-	Deck does not present its lists as linked lists of cells.  Instead, a
-	Deck C<List> is an array (i.e. a 'vector') of object references whose
-	individual items can be accessed with the C<at> and C<atPut> methods
-	(usually hidden by the C<@> operator).  The indexes start at zero and
-	increase to the number of items minus one.
+	"C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
+	 Deck does not present its lists as linked lists of cells.  Instead, a
+	 Deck C<List> is an array (i.e. a 'vector') of object references whose
+	 individual items can be accessed with the C<at> and C<atPut> methods
+	 (usually hidden by the C<@> operator).  The indexes start at zero and
+	 increase to the number of items minus one.
 
-	This is different from most Lispish languages, where a list is implemented
-	as a linked list of pairs of references (CONS cells).
+	 This is different from most Lispish languages, where a list is implemented
+	 as a linked list of pairs of references (CONS cells).
 
-	C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
-	C<maker> C<isIndexable> returns true.
-	"
+	 C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
+	 C<maker> C<isIndexable> returns true."
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
@@ -365,11 +349,9 @@ _class_ext List {
 }
 
 _class_ext Stringlike {
-	"
-	This is the abstract base class for several classes representing
-	various sequences of binary or specially-encoded data.  It should
-	not be used directly.
-	"
+	"This is the abstract base class for several classes representing
+	 various sequences of binary or specially-encoded data.  It should
+	 not be used directly."
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
@@ -396,22 +378,20 @@ perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
 perlproc _isspace {s} '''return $s =~ /^\s+$/;'''
 
 _class_ext String {
-	"
-	C<String> instances contain human-readable text which can be
-	printed to the console or stored in a file.  The class implements
-	the sequence protocol but the objects stored or retrieved from a
-	C<String> must themselves be strings of length 1.  
+	"C<String> instances contain human-readable text which can be
+	 printed to the console or stored in a file.  The class implements
+	 the sequence protocol but the objects stored or retrieved from a
+	 C<String> must themselves be strings of length 1.  
 
-	Unlike many other languages, Deck does not have a character type.
-	Instead, strings are encoded in some manner and it is best not to
-	make assumptions about the details.  In particular, you should
-	B<never> use a C<String> to hold arbitrary binary data as this
-	will break when Deck switches to using UTF8.  Use C<ByteArray> for
-	that.
+	 Unlike many other languages, Deck does not have a character type.
+	 Instead, strings are encoded in some manner and it is best not to
+	 make assumptions about the details.  In particular, you should
+	 B<never> use a C<String> to hold arbitrary binary data as this
+	 will break when Deck switches to using UTF8.  Use C<ByteArray> for
+	 that.
 
-	That being said, C<Strings> are currently 7-bit ASCII and all operations
-	are performed within the C<C> locality.
-	"
+	 That being said, C<Strings> are currently 7-bit ASCII and all operations
+	 are performed within the C<C> locality."
 
 	mdoc op_Equals {obj} \
 		"C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
@@ -489,31 +469,29 @@ _class_ext String {
 
 
 _class_ext Symbol {
-	"
-	Symbols are mostly used to represent names in expressions.  They
-	are similar to strings in that they contain human-readable text.  However,
-	there are some notable differences:
+	"Symbols are mostly used to represent names in expressions.  They
+	 are similar to strings in that they contain human-readable text.  However,
+	 there are some notable differences:
 
-	=over
+	 =over
 
-	=item 1.
+	 =item 1.
 
-	Symbols are immutable.  C<atPut> will fail on one.
+	 Symbols are immutable.  C<atPut> will fail on one.
 
-	=item 2.
+	 =item 2.
 
-	Symbols are unique.  There is only ever one symbol with a particular
-	value.
+	 Symbols are unique.  There is only ever one symbol with a particular
+	 value.
 
-	=back
+	 =back
 
-	C<Symbol> implements the sequence protocol but as mentioned above, the
-	C<atPut> method will fail.
+	 C<Symbol> implements the sequence protocol but as mentioned above, the
+	 C<atPut> method will fail.
 
-	C<Symbols> can be converted to and from strings via the C<intern> and 
-	C<unintern> functions.  Symbol constants are tokens beginning with the
-	C<:> character, e.g. C<:foo>
-	"
+	 C<Symbols> can be converted to and from strings via the C<intern> and 
+	 C<unintern> functions.  Symbol constants are tokens beginning with the
+	 C<:> character, e.g. C<:foo>"
 
 	method printable_get {} {
 		"The printable form of C<self>."
@@ -560,13 +538,11 @@ _class_ext Symbol {
 
 
 _class_ext ByteArray {
-	"
-	A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
-	is allowed.
+	"A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
+	 is allowed.
 
-	C<ByteArray> implements the sequence protocol but will fail if you
-	attempt to store a value in it that is not an integer between 0 and 255.
-    "
+	 C<ByteArray> implements the sequence protocol but will fail if you
+	 attempt to store a value in it that is not an integer between 0 and 255."
 
 	mdoc shallowCopy {} \
 		"Return a copy of C<self>."
@@ -623,17 +599,15 @@ _class_ext ByteArray {
 }
 
 _class_ext Struct {
-	"
-	C<Struct> is the base class for all traditional classes.  A traditional
-	class is a class whose data is stored in named fields.
+	"C<Struct> is the base class for all traditional classes.  A traditional
+	 class is a class whose data is stored in named fields.
 
-	This is an abstract base class and cannot be instantiated.  All subclasses
-	should implement the method C<init> to initialize the fields when an
-	instance is created.
+	 This is an abstract base class and cannot be instantiated.  All subclasses
+	 should implement the method C<init> to initialize the fields when an
+	 instance is created.
 
-	C<Struct> subclasses are typically instantiated using the C<new> method or
-	procedure.
-    "
+	 C<Struct> subclasses are typically instantiated using the C<new> method or
+	 procedure."
 
 	mdoc shallowCopy {} \
 		"Return a copy of C<self> with all instance variables referencing
@@ -643,15 +617,35 @@ _class_ext Struct {
 
 
 _class_ext Class {
-	'''
-	All classes (i.e. types) in Deck are themselves objects and those objects
-	are instances of type C<Class>.  This includes C<Class> itself.
+	"All classes (i.e. types) in Deck are themselves objects and those objects
+	 are instances of type C<Class>.  This includes C<Class> itself.
 
-	C<Class> serves two purposes: to provide information about the class and
-	to create new instances via its C<new> method.
-	'''
+	 C<Class> serves two purposes: to provide information about the class and
+	 to create new instances via its C<new> method."
+
+	mdoc new {args} \
+		"Create a new instance of this class and return it.  The argument list
+         is passed to the new object's C<_init> method, which C<new> calls 
+         first."
+
+	mdoc name_get {} \
+		"The class's name.  Note that unnamed classes may exist and
+         that the C<name> attribute is not necessarily the same as the global
+         symbol (if present) that references the class.  This is the common
+         case but it is not guaranteed."
+	mdoc name_set {} "xxx"
+
+	mdoc selectors_get {} \
+		"Return a C<List> of C<Symbols>, each one the name of a method
+         implemented by this method or one of its superclasses."
+
+	mdoc superclass_get {} \
+		"Return a reference to this class's superclass.  This can be C<nil>
+         if the class does not have a superclass.  Currently, only C<Object>
+         is like that."
 
 	method printable_get {} {
+		"The printable string form."
 		var nm = self.name
 		(nm.size == 0) && [return "a Class"]
 		

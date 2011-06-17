@@ -307,7 +307,6 @@ X				-and should be a function, dude!
 				[:mproc <name> <builtin> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
-	-move 'map' to Lang.dk
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
 	 difficult to implement.  Either get rid of it or make all classes
@@ -320,7 +319,12 @@ X				-and should be a function, dude!
 	 sequence classes.
 	-_class_ext should be in '_::'
 	-'dnu' should be '_dnu'
+	-class.methods -- list of names of methods implemented by this
+     class only.
+	-class->can method -- test if class responds to given message
+		-also need to do something about argument counts.
 
+	-move 'map' to Lang.dk
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)
 	-should autosub args be capitalized?
