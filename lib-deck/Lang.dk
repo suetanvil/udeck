@@ -323,8 +323,28 @@ _class_ext List {
 	C<maker> C<isIndexable> returns true.
 	'''
 
-	method isIndexable_get {} {return 1}
+	mdoc at {index} \
+		"Sequence Protocol: Return the item at position C<index>.  Indexes
+		must be contiguous and start at zero."
+
+	mdoc atPut {index value} \
+		"Sequence Protocol: Store C<value> at position C<index> and
+		 return C<value>.  Indexes start at zero and must be
+		 contiguous."
+
+	mdoc size_get {} \
+		"Sequence Protocol: Return the number of items in this object."
+
+	mdoc shallowCopy {} \
+		"Return a copy of C<self> without copying the items it references."
+
+	method isIndexable_get {} {
+		"Returns true, since C<List> implements the sequence protocol."
+		return 1
+	}
+
 	method printable_get {} {
+		"Return a human-readable textual represention of this C<List>."
 		const MAX = 5
 		(self.size < MAX + 3) && [return "[@{self}]"]
 
@@ -340,9 +360,16 @@ _class_ext List {
 		return "[@sublist .. $last]"
 	}
 
-	method op_Equals {obj} {return [_seq_Equals self obj]}
+	method op_Equals {obj} {
+		"C<==> operator: True if C<obj> is also a List and all elements
+         equal (via C<op_Equals>) the corresponding element in C<obj>."
+		return [_seq_Equals self obj]
+	}
 
 	method op_Add {otherSeq} {
+		"C<+> operator, overloaded: Returns C<self> and C<other> concatenated
+         together.  The result is the type returned by C<maker> (C<list> in
+         this case)."
 		var result = [listSized (self.size + otherSeq.size)]
 		_write_seq self otherSeq result
 		return result
@@ -357,7 +384,24 @@ _class_ext Stringlike {
 	not be used directly.
 	'''
 
-	method isIndexable_get {} {return 1}
+	mdoc at {index} \
+		"Sequence Protocol: Return the item at position C<index>.  Indexes
+		must be contiguous and start at zero."
+
+	mdoc atPut {index value} \
+		"Sequence Protocol: Store C<value> at position C<index> and
+		 return C<value>.  Indexes start at zero and must be
+		 contiguous. C<value> must be of a type that can be stored in this
+         object."
+
+	mdoc size_get {} \
+		"Sequence Protocol: Return the number of items in this object."
+
+	method isIndexable_get {} {
+		"Returns true, since all C<Stringlike> subclasses implement the
+         sequence protocol."
+		return 1
+	}
 }
 
 
@@ -379,7 +423,16 @@ _class_ext String {
 	that.
 	'''
 
+	mdoc op_Equals {obj} \
+		"C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
+         and all characters match the the corresponding characters in C<obj>."
+
+	mdoc op_shallowCopy {} \
+		"Create and return a copy of C<self>."
+
 	method isVowel_get {} {
+		"Return true if C<self> contains one character and that character
+         is an ASCII vowel."
 		(self.size != 1) && [return false]
 
 		var lc = self.lowercase
@@ -393,7 +446,7 @@ _class_ext String {
 	}
 
 	method isSpace_get {} {
-		'''Test if C<self> is all whitespace.'''
+		"Test if C<self> is all ASCII whitespace."
 		return [_isspace self]
 	}
 
