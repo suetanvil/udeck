@@ -473,10 +473,11 @@ _class_ext String {
 	}
 
 	method op_Add {otherString} {
-		"C<+> operator, overloaded: Returns C<self> and C<other> concatenated
-         together.  The result is the type returned by C<maker> (C<String> in
-         this case).  Note that C<otherString> does B<not> have to be a string
-         but B<must> contain only strings of length 1 (i.e. characters)."
+		"C<+> operator, overloaded: Returns C<self> and C<otherString>
+         concatenated together.  The result is the type returned by C<maker>
+         (C<String> in this case).  Note that C<otherString> does B<not> have
+         to be a string but B<must> contain only strings of length 1
+         (i.e. characters)."
 		var result = [stringSized (self.size + otherString.size)]
 		_write_seq self otherString result
 		return result
@@ -527,22 +528,36 @@ _class_ext Symbol {
 	C<:> character, e.g. ":foo".
 	'''
 
-	method printable_get {} {return ":$self"}
+	method printable_get {} {
+		"The printable form of C<self>."
+		return ":$self"
+	}
 
 	method op_Equals {obj} {
+		"C<==> operator: true if self === obj or if obj is a string with the
+         same characters in it."
 		(obj.class == String) && [return ("$self" == obj)]
 		return (self === obj)
 	}
 
 	method op_Add {obj} {
+		"C<+> operator, overloaded: Returns C<self> and C<obj>
+         concatenated together.  The result is the type returned by C<maker>
+         (C<String> in this case).  Note that C<obj> does B<not> have
+         to be a C<String> or C<Symbol> but B<must> contain only strings
+         of length 1 (i.e. characters)."
 		var result = [stringSized (self.size + obj.size)]
 		_write_seq self obj result
 		return result
 	}
 
-	method shallowCopy {} {return self}
+	method shallowCopy {} {
+		"Symbols are immutable so just return C<self>."
+		return self
+	}
 
 	method op_Lte {other} {
+		"C<E<lt>=> operator: See C<String-E<gt>op_Lte>."
 		return ([unintern self] <= other)
 	}
 
