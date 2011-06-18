@@ -26,8 +26,14 @@ puts
 var b = [byteArray 1 2 3 5 7 11 13 17 23]
 puts [map {value (a+1)} b]
 map {puts a; value 0} b
+puts
 
 var pf = {a} => {puts a; value 0}
 map pf b
+puts
+
+dofor {puts "byte $a"} b
+puts
+
 
 

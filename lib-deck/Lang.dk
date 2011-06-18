@@ -935,6 +935,10 @@ mproc map {
 	sub 1 transFn
 	seq
 } {
+	"Call function C<transFn> on each element in C<seq> and return another
+     sequence containing the results of the calls on the corresponding input
+     elements.  The return value's type is compatible with C<seq>'s."
+
 	var result = [seq.maker seq.size]
 	var index = 0
 
@@ -946,7 +950,19 @@ mproc map {
 	return result
 }
 	
-	
+
+mproc dofor {
+	sub 1 fn
+	seq
+} {
+	"Call function C<fn> on each element in C<seq>, discarding the result.
+     This is a slightly more compact, less flexible form of the C<for> loop."
+
+	for elem in seq {
+		fn elem
+	}
+}
+
 
 
 

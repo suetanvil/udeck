@@ -4216,7 +4216,7 @@ sub mk_mproc_macro {
   my $macro = sub {
 	my ($givenName, @args) = @_;
 	my @newArgs = ();
-	die "Arg count mismatch in call to mproc '$givenName'\n"
+	die "Arg count mismatch in call to mproc '${$givenName}'\n"
 	  unless scalar @args == scalar @{$filters};
 
 	push @newArgs, $resultName;
