@@ -101,15 +101,63 @@ proc printMethodDoc {doc} {
 }
 
 
+perlproc _attribName {s} '''return unless $s =~ s/_[gs]et$//; return $s;'''
+
+proc uniq {aSeq} {
+	var result = [aSeq.maker aSeq.size]
+
+	var index = 0
+	var prev = nil
+	for elem in aSeq {
+		if (elem != prev) {
+			result@index = elem
+			prev = elem
+			index = index + 1
+		}
+	}
+
+	return [slice result 0 (index - 1)]
+}
+
+
 proc printMethods {name} {
 	var cl = [lookup [intern name]]
-	var selectors = [sort cmp cl.selectors]
 	var nm = cl.name
 
+	var attributes = [map {_attribName a} cl.selectors]
+puts attributes
+	attributes = [reduce {a} attributes]
+puts attributes
+	attributes = [sort cmp attributes]
+puts attributes
+	attributes = [uniq attributes]
+puts attributes
+puts "-----------------------"
+
+	puts "=head2 Methods\n"
 	puts "=over\n"
 
 	foreach sel in selectors {
 		var doc = [_::docstring_get "$name->$sel"]
+		if (doc) {
+			printMethodDoc doc
+		}
+	}
+
+	puts "=back\n"
+}
+
+
+proc printAttributes {name} {
+	var cl = [lookup [intern name]]
+	var selectors = [sort cmp cl.selectors]
+	var nm = cl.name
+
+	puts "=head2 Attributes\n"
+	puts "=over\n"
+
+	foreach sel in selectors {
+		var doc = [_::docstring_get "$name.$sel"]
 		if (doc) {
 			printMethodDoc doc
 		}
@@ -144,6 +192,8 @@ proc printClasses {} {
 		puts "=item B<$name $sc> $biText\n"
 
 		puts docstring "\n"
+		
+		printAttributes name
 
 		printMethods name
 	}
@@ -165,6 +215,6 @@ proc setup {} {
 
 
 setup
-printFunctions
+#printFunctions
 printClasses
 #printMethods "Lang::Object"

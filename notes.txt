@@ -279,6 +279,7 @@ X		-it's not just 'if'; it's any sub.
 X		-AHA! The string gets treated as a docstring and ignored! The
 X	     sub returns undef (not NIL). Fixed!
 X		-subs shouldn't allow docstrings.
+X	-move 'map' to Lang.dk
 
 
 	-_::say and _::puts should tolerate Perl arguments.
@@ -289,6 +290,7 @@ X				-and see if I can merge string and symbol
 X					-no, 'cuz of inheritance
 X			-need spaceship operator
 X				-and should be a function, dude!
+
 				
 		-docstrings in classes, methods and procs.
 			-map docstrings to global namespace.  Method docstrings go
@@ -296,7 +298,6 @@ X				-and should be a function, dude!
 		-API:
 			_::docstring_keys -- returns list of names as strings
 			_::docstring_get <key> -- returns the doc info in a list:
-
 				[:class <name> <builtin> <superclass> <docstring>]
 				[:proc <name> <builtin> <args> <docstring>]
 				[:method <name> <builtin> <classname> <methodname> 
@@ -327,7 +328,6 @@ X				-and should be a function, dude!
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
 	-maybe make the comparisons other than <= into functions.
-	-move 'map' to Lang.dk
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)
 	-should autosub args be capitalized?

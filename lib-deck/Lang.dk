@@ -928,7 +928,26 @@ mproc reduce {
 
 	return [slice result 0 (index - 1)]
 }
+
+
 			
+mproc map {
+	sub 1 transFn
+	seq
+} {
+	var result = [seq.maker seq.size]
+	var index = 0
+
+	for elem in seq {
+		result@index = [transFn elem]
+		index = index + 1
+	}
+
+	return result
+}
+	
+	
+
 
 
 class Interval Struct {

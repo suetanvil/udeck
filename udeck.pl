@@ -2640,8 +2640,11 @@ sub compile {
 
 #[:method <name> <builtin> <classname> <methodname>
 #	<args> <docstring>]
+#[:attrib <name> <builtin> <class> :read/:write/:readwrite
+#   <docstring>]
 
-# Name is of the form 'class->name'
+# Name is of the form 'class->name'.  Attributes should look like
+# method calls at this point.
 sub addMethodDocString {
   my ($name, $builtin, $args, $docstring) = @_;
 
@@ -2650,6 +2653,27 @@ sub addMethodDocString {
 	unless $methodName;
 
   $args =~ s/\[|\]//g;
+
+  my $tag = 'method';
+
+  if ($methodName =~ s/_([gs]et)$//) {
+	my $mode = $1;
+	$name = "$className.$methodName";
+
+	my $prev = $DocStringHash{$name};
+	if ($prev) {
+	  die "Internal error: '$name' already exists.\n"
+		unless $prev->[0] eq 'attrib';
+
+	  $prev->[4] = 'readwrite' if $prev->[4] ne $mode;
+	  $prev->[5] = $docstring if $mode eq 'get';	# getter trumps setter
+	  return;
+	}
+
+	my $access = ($name eq 'get') ? 'read' : 'write';
+	addDocString($name, 'attrib', $builtin, $className, $access, $docstring);
+	return;
+  }
 
   addDocString ($name, 'method', $builtin, $className, $methodName,
 				$args, $docstring);
@@ -2686,6 +2710,8 @@ sub addDocString {
 
   map { die "addDocString: got ref!\n" if ref($_) } @_;
   $DocStringHash{$name} = [$tag, $name, @values];
+
+  return;
 }
 
 
@@ -3126,14 +3152,6 @@ sub macro_foreachfn {
 				subifyStrict($body, $var)
 			   );
   return LL::List->new(\@result);
-}
-
-sub macro_mapfn {
-  my ($map, $fn, $list) = @_;
-
-  return LL::List->new( [LL::Symbol->new('_::map'),
-						 subifyStrict($fn, 1),
-						 $list] );
 }
 
 
@@ -3733,7 +3751,6 @@ sub initGlobals {
   macro 'while',		\&macro_whilefn;
   macro 'foreach',		\&macro_foreachfn;
   macro 'for',			\&macro_foreachfn;
-  macro 'map',			\&macro_mapfn;
   macro 'macro',		\&macro_macro;
   macro 'mproc',		\&macro_mproc;
   macro 'package',		\&macro_packagefn;
@@ -4351,24 +4368,6 @@ sub builtin_whilefn {
   }
 
   return $body;
-}
-
-
-sub builtin_mapfn {
-  my ($fn, $list) = @_;
-
-  checkNargs("_::map", \@_, 2);
-
-  $list->checkIndexable();
-  $fn->checkFun();
-
-  my @result = ();
-  for my $index (0 .. $list->size() - 1) {
-	my $item = $list->at(LL::Number->new($index));
-	push @result, $fn->($item);
-  }
-
-  return LL::List->new(\@result);
 }
 
 
@@ -4997,6 +4996,16 @@ sub builtin_docstring_get {
 				 LL::String->new($ds->[1]),
 				 boolObj($ds->[2]),
 				 map { LL::String->new($_) } @{$ds}[3..$#{$ds}]
+				];
+	}
+
+	when ('attrib') {
+	  $result = [$type,						# Tag
+				 LL::String->new($ds->[1]),	# Name
+				 boolObj($ds->[2]),			# Builtin
+				 LL::String->new($ds->[3]),	# Class name
+				 LL::Symbol->new($ds->[4]),	# access mode
+				 LL::String->new($ds->[5]),	# docstring
 				];
 	}
 
