@@ -3815,6 +3815,14 @@ sub initGlobals {
 	   return LL::List->new(\@names);
 	 },
 
+	 methods_get	=> sub {
+	   my ($self) = @_; checkNargs('methods_get', \@_, 1);
+	   my @names =
+		 map { LL::Symbol->new($_) }
+		   sort keys %{ $self->{methods} };
+	   return LL::List->new(\@names);
+	 },
+
 	 superclass_get => sub {my ($self)=@_; checkNargs('superclass_get',\@_,1);
 							return $self->{superclass}
 							  if defined($self->{superclass});

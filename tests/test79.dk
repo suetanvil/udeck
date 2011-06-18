@@ -8,8 +8,6 @@ class Foo {
 puts Foo.name
 Foo.name = "bar"
 puts Foo.name
-#puts Foo.selectors
-#puts Foo.class.selectors
 
 puts " --- "
 puts Foo.isNil
@@ -67,4 +65,8 @@ puts "foo".class
 puts "foo".class.superclass
 puts "foo".class.superclass.superclass
 puts "foo".class.superclass.superclass.superclass
+
+puts "---"
+dofor {say "$a "} Foo.selectors; puts
+dofor {say "$a "} Foo.methods; puts
 

@@ -641,6 +641,10 @@ _class_ext Class {
 		"Return a C<List> of C<Symbols>, each one the name of a method
          implemented by this method or one of its superclasses."
 
+	mdoc methods_get {} \
+		"Return a C<List> of C<Symbols>, each one the name of a method
+         implemented by B<this class> and B<not> one of its superclasses."
+
 	mdoc superclass_get {} \
 		"Return a reference to this class's superclass.  This can be C<nil>
          if the class does not have a superclass.  Currently, only C<Object>
