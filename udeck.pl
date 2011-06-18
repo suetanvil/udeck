@@ -2139,7 +2139,6 @@ sub dkwarn {
 # Given a perl object or list of objects, convert it to the equivalent
 # Deck types.
 sub decktype {
-
   if (scalar @_ > 1) {
 	my @result = map { decktype($_) } @_;
 	return LL::List->new(\@result);
@@ -2149,6 +2148,7 @@ sub decktype {
 
   # Handle non-reference scalars.
   return $arg if (blessed($arg) && $arg->can('checkType'));
+  return LL::List->new([]) if (ref($arg) eq 'ARRAY' && scalar @{$arg} == 0);
   return NIL unless defined($arg);
   return LL::Number->new($arg) if looks_like_number($arg);
   return LL::String->new($arg) unless ref($arg);
@@ -2666,12 +2666,13 @@ sub addMethodDocString {
 		unless $prev->[0] eq 'attrib';
 
 	  $prev->[4] = 'public' if $prev->[4] ne $mode;
-	  $prev->[5] = $docstring if $mode eq 'get';	# getter trumps setter
+	  $prev->[6] = $docstring if $mode eq 'get';	# getter trumps setter
 	  return;
 	}
 
-	my $access = ($name eq 'get') ? 'readable' : 'writeable';
-	addDocString($name, 'attrib', $builtin, $className, $access, $docstring);
+	my $access = ($mode eq 'get') ? 'readable' : 'writeable';
+	addDocString($name, 'attrib', $builtin, $className, $access, $methodName,
+				 $docstring);
 	return;
   }
 

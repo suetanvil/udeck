@@ -65,3 +65,9 @@ puts [tjoin 2 3 :a :b :c :d :e :f :g]
 puts [tjoin 2 3 :a :b :c :d :e]
 puts [tjoin 0 3 :a :b :c :d :e :f :g]
 puts [tjoin 2 4 :a :b :c :d :e :f :g]
+puts "---------"
+
+# Test returning an empty array ref.
+perlproc ear {} '''return []'''
+var cc = [ear]
+puts (cc == :[])
