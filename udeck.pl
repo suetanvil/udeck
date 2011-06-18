@@ -2640,8 +2640,8 @@ sub compile {
 
 #[:method <name> <builtin> <classname> <methodname>
 #	<args> <docstring>]
-#[:attrib <name> <builtin> <class> :read/:write/:readwrite
-#   <docstring>]
+#[:attrib <name> <builtin> <class> :readable/:writeable/:public
+#   <attribName> <docstring>]
 
 # Name is of the form 'class->name'.  Attributes should look like
 # method calls at this point.
@@ -2665,12 +2665,12 @@ sub addMethodDocString {
 	  die "Internal error: '$name' already exists.\n"
 		unless $prev->[0] eq 'attrib';
 
-	  $prev->[4] = 'readwrite' if $prev->[4] ne $mode;
+	  $prev->[4] = 'public' if $prev->[4] ne $mode;
 	  $prev->[5] = $docstring if $mode eq 'get';	# getter trumps setter
 	  return;
 	}
 
-	my $access = ($name eq 'get') ? 'read' : 'write';
+	my $access = ($name eq 'get') ? 'readable' : 'writeable';
 	addDocString($name, 'attrib', $builtin, $className, $access, $docstring);
 	return;
   }
@@ -4959,7 +4959,23 @@ sub builtin_lookup {
 }
 
 sub builtin_docstring_keys {
-  my @keys = map { LL::Symbol->new($_) } keys %DocStringHash;
+  my ($tag) = @_;  checkNargs ('_::docstring_keys', \@_, 0, 1);
+
+  my @keys = keys %DocStringHash;
+
+  if ($tag) {
+	$tag->checkSymbol(" in _::docstring_keys");
+	$tag = ${$tag};
+
+	die "Invalid tag type: '$tag'\n"
+	  unless $tag =~ /^(class|proc|method|attrib|macro|mproc)$/;
+
+	@keys = grep { $DocStringHash{$_}->[0] eq $tag } @keys;
+  }
+
+  @keys = sort @keys;
+
+  @keys = map { LL::Symbol->new($_) } @keys;
   return LL::List->new(\@keys);
 }
 
@@ -5005,7 +5021,8 @@ sub builtin_docstring_get {
 				 boolObj($ds->[2]),			# Builtin
 				 LL::String->new($ds->[3]),	# Class name
 				 LL::Symbol->new($ds->[4]),	# access mode
-				 LL::String->new($ds->[5]),	# docstring
+				 LL::String->new($ds->[5]),	# attrib name
+				 LL::String->new($ds->[6]),	# docstring
 				];
 	}
 

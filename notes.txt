@@ -302,8 +302,8 @@ X				-and should be a function, dude!
 				[:proc <name> <builtin> <args> <docstring>]
 				[:method <name> <builtin> <classname> <methodname> 
 					<args> <docstring>]
-				[:attrib <name> <builtin> <class> :read/:write/:readwrite
-	                <docstring>]
+				[:attrib <name> <builtin> <class> :readable/:writeable/:public
+	                <attrib-name> <docstring>]
 				[:macro <name> <builtin> <args> <docstring>]
 				[:mproc <name> <builtin> <args> <docstring>]
 
