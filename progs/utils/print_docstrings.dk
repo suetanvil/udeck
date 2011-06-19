@@ -29,13 +29,15 @@ proc trimSpc {text} {
 =cut
 
 perlproc trimSpc {s} '''
-$s =~ s/\A\s*//gmx;
-$s =~ s/\s*\z//gmx;
+my @paragraphs = split(/\n\n+/, $s);
 
-$s =~ s/([^\n])\n([^\n])/$1 $2/gmx;
-$s =~ s/(\n)[ \t]+/$1/gmx;
-$s =~ s/[ \t]+/ /gmx;
-return $s;
+for my $par (@paragraphs) {
+	$par =~ s/\A\s*//gmx;	
+	$par =~ s/\s*\z//gmx;
+	$par =~ s/\s+/ /gmx;
+}
+
+return join("\n\n", @paragraphs);
 '''
 
 
@@ -121,21 +123,22 @@ proc uniq {aSeq} {
 }
 
 perlproc _attribName{s} '''
-return "" unless $s;
-return "" unless scalar ($s =~ s/_[gs]et$//);
-return $s;'''
+  return "" unless $s;
+  return "" unless scalar ($s =~ s/_[gs]et$//);
+  return $s;
+'''
 
 proc printAttribDoc {doc} {
 	var builtin = (doc@2)
 	var access = [unintern (doc@4)]
 	var attribName = (doc@5)
-	var doc = [trimSpc (doc@6)]
+	var docstr = (doc@6) #[trimSpc (doc@6)]
 	
 	var biText = ""
 	builtin && (biText = " B<(Built-in)>")
 
 	puts "=item B<$access $attribName>$biText\n"
-	puts doc "\n"
+	puts docstr "\n"
 }
 
 proc printAttributes {name} {
@@ -150,7 +153,8 @@ proc printAttributes {name} {
 		return
 	}
 
-	puts "=over Attributes:\n"
+	puts "I<Attributes>\n"
+	puts "=over\n"
 
 	for attr in attributes {
 		var doc = [_::docstring_get "$name.$attr"]
@@ -169,7 +173,7 @@ proc printMethods {name} {
 		return
 	}
 
-	puts "=head2 Methods\n"
+	puts "I<Methods>\n"
 	puts "=over\n"
 
 	foreach sel in selectors {
@@ -222,6 +226,6 @@ proc printClasses {} {
 
 #printFunctions true
 #printFunctions false
-#printClasses
-printAttributes "Lang::Struct"
+printClasses
+#printAttributes "Lang::Function"
 #printMethods "Lang::Interval"

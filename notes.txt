@@ -308,6 +308,8 @@ X				-and should be a function, dude!
 				[:mproc <name> <builtin> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
+	-bug: newlines in strings are doubled.
+	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
 	 difficult to implement.  Either get rid of it or make all classes
@@ -324,6 +326,7 @@ X				-and should be a function, dude!
      class only.
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
+	
 
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
