@@ -2159,7 +2159,12 @@ sub decktype {
 	}
 
 	when ('ARRAY') {
-	  return decktype(@{$arg});
+	  my $deckval = decktype(@{$arg});
+
+	  # Need to distinguish between single argument and one-list argument
+	  return LL::List->new([$deckval]) if scalar @{$arg} == 1;
+
+	  return $deckval;
 	}
 
 	default {
