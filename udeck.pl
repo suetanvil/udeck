@@ -2899,8 +2899,8 @@ sub quoteIfList {
 }
 
 
-sub macro ( $$ ) {
-  my ($name, $transformation) = @_;
+sub macro ( $$$$ ) {
+  my ($name, $transformation, $args, $docstring) = @_;
 
   $Globals->defset($name, LL::Macro->new($transformation));
 }
@@ -3747,14 +3747,35 @@ sub initGlobals {
   }
 
   # Macros
-  macro 'var',			\&macro_varconst;
-  macro 'const',		\&macro_varconst;
-  macro 'proc',			\&macro_proc;
-  macro 'mproc',		\&macro_mproc;
-  macro 'set',			\&macro_assign;
-  macro '=',			\&macro_assign;
-  macro 'sub',			\&macro_subfn;
-  macro 'if',			\&macro_iffn;
+  macro 'var',			\&macro_varconst,		'args',
+	"Declares one or more variables in the local scope.";
+  macro 'const',		\&macro_varconst,		'args',
+	"Declares one or more constants in the local scope.";
+  macro 'proc',			\&macro_proc,			'name args body',
+	"Declares a procedure in the current module scope.";
+  macro 'mproc',		\&macro_mproc,			'name args body',
+	"Declares an mproc in the current module scope.";
+  macro 'set',			\&macro_assign,			'dest value',
+	"Assigns C<value> to C<dest>.  C<dest> is either a bare name, a
+     list access (C<@>) expression or an attribute (C<.>) expression.  This
+     is an alias for C<=>.";
+  macro '=',			\&macro_assign,			'dest = value',
+	"Assigns RHS C<value> to LHS C<value>.  C<dest> is either a bare name, a
+     list access (C<@>) expression or an attribute (C<.>) expression.  This
+     is an alias for C<set>.";
+  macro 'sub',			\&macro_subfn,			'args body',
+	"Create a C<sub> (i.e. a closure) in the local scope and return it.
+     C<args> is the list of arguments (in any of the acceptable formal
+     argument formats) and C<body> is a LoL containing the sub's source code.";
+  macro 'if',			\&macro_iffn,			'cond trueBlock else falseBlock',
+	"Evaluate a sequence of instructions conditionally.  Evaluates C<cond> and
+     if the result is true, then evaluates C<trueBlock>.  Otherwise, it
+     evaluates C<falseBlock> if present (it is optional).
+
+     C<cond> can be C<subified> or C<delayed>; C<trueBlock> and C<falseBlock>
+     are always subified.  C<falseBlock> is optional. C<else> is the word
+     'else'; it is always optional and should be omitted if C<falseBlock> is
+     also absent.";
   macro 'while',		\&macro_whilefn;
   macro 'foreach',		\&macro_foreachfn;
   macro 'for',			\&macro_foreachfn;

@@ -132,7 +132,7 @@ proc printAttribDoc {doc} {
 	var builtin = (doc@2)
 	var access = [unintern (doc@4)]
 	var attribName = (doc@5)
-	var docstr = (doc@6) #[trimSpc (doc@6)]
+	var docstr = [trimSpc (doc@6)]
 	
 	var biText = ""
 	builtin && (biText = " B<(Built-in)>")
@@ -224,8 +224,9 @@ proc printClasses {} {
 }
 
 
-#printFunctions true
-#printFunctions false
+printFunctions true
+printFunctions false
+
 printClasses
 #printAttributes "Lang::Function"
 #printMethods "Lang::Interval"
