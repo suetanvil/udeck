@@ -1853,6 +1853,7 @@ sub readLoL {
 		# A single '\' is the line continuation
 		$line =~ s{^\\ \s* (\#.*)? $}{}x and do {
 		  $line = getLine();
+		  chomp $line;
 		  next;
 		};
 

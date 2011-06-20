@@ -280,6 +280,7 @@ X		-AHA! The string gets treated as a docstring and ignored! The
 X	     sub returns undef (not NIL). Fixed!
 X		-subs shouldn't allow docstrings.
 X	-move 'map' to Lang.dk
+X	-bug: newlines in strings are doubled.
 
 
 	-_::say and _::puts should tolerate Perl arguments.
@@ -308,7 +309,6 @@ X				-and should be a function, dude!
 				[:mproc <name> <builtin> <args> <docstring>]
 
 		-figure out how to integrate this with POD support.
-	-bug: newlines in strings are doubled.
 	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but

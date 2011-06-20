@@ -9,3 +9,8 @@ puts "Hello
 Newline\n
 World!"
 
+puts \
+	"Hello
+     World
+!"
+
