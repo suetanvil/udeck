@@ -307,7 +307,7 @@ X				-and should be a function, dude!
 				[:macro <name> <builtin> <args> <docstring>]
 				[:mproc <name> <builtin> <args> <docstring>]
 		-need to explain subify and delay.
-
+	-need to alias macros.
 	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
@@ -325,7 +325,7 @@ X				-and should be a function, dude!
      class only.
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
-	
+	-prefix - with one argument must be tolerated by the compiler.
 
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later

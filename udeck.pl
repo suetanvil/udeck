@@ -3383,6 +3383,9 @@ sub defclass ($$$) {
 sub op_method ($$) {
   my ($operator, $method) = @_;
 
+  my $od = $operator;
+  $od =~ s/([<>])/'E<'.($1 eq '<' ? 'lt' : 'gt').'>'/eg;
+
   macro $operator, sub {
 	my ($name, $left, $right) = @_;
 	checkNargs($operator, \@_, 3);
@@ -3392,7 +3395,7 @@ sub op_method ($$) {
 								LL::Symbol->new($method)]);
 
 	return LL::List->new([$lookup, $right]);
-  };
+  }, "left right", "Expands to C<[left${od}$method right]>.";
 }
 
 
@@ -3656,7 +3659,12 @@ sub initGlobals {
 
   prim ('quote',
 		"obj",
-		"Return a Quote object wrapping C<obj>.",
+		"Return a Quote object wrapping C<obj>.
+
+         Note: this does B<not> in any way affect the evaluation of
+         of its argument.  C<quote> is B<not> a special form.  If you
+         want to delay normal evaluation of an expression, use the quote
+         operator (C<:>).",
 		sub { my ($obj) = @_; checkNargs('quote',\@_,1);
 			  return LL::Quote->new($obj)} );
 
@@ -3770,29 +3778,90 @@ sub initGlobals {
   macro 'if',			\&macro_iffn,			'cond trueBlock else falseBlock',
 	"Evaluate a sequence of instructions conditionally.  Evaluates C<cond> and
      if the result is true, then evaluates C<trueBlock>.  Otherwise, it
-     evaluates C<falseBlock> if present (it is optional).
+     evaluates C<falseBlock> if present (it is optional).  This is the standard
+     C<if> statement.
 
      C<cond> can be C<subified> or C<delayed>; C<trueBlock> and C<falseBlock>
      are always subified.  C<falseBlock> is optional. C<else> is the word
      'else'; it is always optional and should be omitted if C<falseBlock> is
      also absent.";
-  macro 'while',		\&macro_whilefn;
-  macro 'foreach',		\&macro_foreachfn;
-  macro 'for',			\&macro_foreachfn;
-  macro 'macro',		\&macro_macro;
-  macro 'mproc',		\&macro_mproc;
-  macro 'package',		\&macro_packagefn;
-  macro 'use',			\&macro_usefn;
-  macro 'perlproc',		\&macro_perlproc;
-  macro 'perluse',		\&macro_perluse;
-  macro 'class',		\&macro_class;
-  macro '_class_ext',	\&macro_class_ext;
-  macro '->',			\&macro_methodLookupOp;
-  macro '.',			\&macro_fieldget;
-  macro '&&',			\&macro_logand;
-  macro '||',			\&macro_logor;
-  macro '=>',			\&macro_suboper;
-  macro '-',			\&macro_minus;
+  macro 'while',		\&macro_whilefn,		'cond block',
+	"Repeatedly evaluate C<cond> followed by C<block> until the first time
+     C<cond> evaluates false.  This is the standard C<while> loop.
+
+	 C<cond> can be C<subified> or C<delayed>; C<block> is always subified.";
+  macro 'foreach',		\&macro_foreachfn,		'item in list body',
+	"Evaluates C<body> over each element in C<list> from start to end with
+     a local variable C<item> set to reference the element.  The second
+     argument must be the word C<in>.  This implements the standard C<foreach>
+     loop.  Argument C<body> is subified.";
+  macro 'for',			\&macro_foreachfn,		'item in list body',
+	"Alias for C<foreach>.";
+  macro 'macro',		\&macro_macro,			'name args body',
+	"Declares a macro in the current module scope.";
+  macro 'mproc',		\&macro_mproc,			'name args body',
+	"Defines an mproc in teh current module scope.";
+  macro 'package',		\&macro_packagefn,		'moduleName',
+	"Declare this file to be the package named by word C<moduleName>.
+     This is really a compiler directive and it is an error to use anywhere
+     other than the first (non-trivial) line of a module.";
+  macro 'use',			\&macro_usefn,			'moduleName mode items',
+	"Import the module named by word C<moduleName> into the current namespace.
+     C<items> is the optional list of items to import, ignore or rename and
+     C<mode> must be one of C<with>, C<without> or C<rename>.  The last two
+     arguments are optional.";
+  macro 'perlproc',		\&macro_perlproc,		'name args body',
+	"Define a Perl function plus bindings to Deck.  C<name> and C<args> are
+     identical to C<proc> and friends but C<body> is a string constant
+     containing Perl code.";
+  macro 'perluse',		\&macro_perluse,		'name',
+	"Force the Perl interpreter running udeck to load the Perl module named
+     by C<name> via the C<require> statement.  This module must be accessed
+     via C<perlproc> functions.";
+  macro 'class',		\&macro_class,			'name superclass body',
+	"Define a class named by word C<name>.  Word C<superclass> is the name
+     of the superclass and may be ommitted, in which case C<Struct> is assumed.
+     C<body> is the class body and is expected to be a LoL.";
+  macro '_class_ext',	\&macro_class_ext,		'name body',
+	"Defines extra methods and documentation for builtin classes.  Do not
+     use.";
+  macro '->',			\&macro_methodLookupOp,	'object message',
+	"Performs a method lookup of RHS C<message> on LHS C<object> and returns
+     the matching C<MethodLookup> object.  If C<object> is the word C<super>,
+     C<self> is used instead but the method search starts at the object's
+     superclass.
+
+     Note that syntactic sugar in the compiler will implicitly wrap any
+     bare C<-E<gt>> expression at the start of an infix expression with round
+     brackets, making it infix.  Hence, C<[foo->bar 1]> becomes
+     C<[(foo->bar) 1]>.";
+  macro '.',			\&macro_fieldget,		'object attribute',
+	"Performs an attribute lookup.  C<object.attribute> expands to
+     C<[object->attribute_get].  However, the assignment macros C<=> and
+     C<set> will expand to an C<attribute_set> call if the destination of the
+     assignment is a C<.> expression.
+
+     In addition, the synactic sugar in the compiler will automatically wrap
+     any C<expression . word> sequence in an infix expression with round
+     brackets, making them infix.  Hence, C<[add a.val b.val]> becomes
+     C<[add (a.val) (b.val)]>.";
+  macro '&&',			\&macro_logand,			'left right',
+	"Perform a short-circuited logical AND.  C<right> will only be evaluated
+     if C<left> has evaluated to true.";
+  macro '||',			\&macro_logor,			'left right',
+	"Perform a short-circuited logical Or operation.  C<right> is evaluated
+     only if C<left> has evaluated to false.";
+  macro '=>',			\&macro_suboper,		'args body',
+	"Creates a C<sub>.  C<args> and C<body> must be list constants of the
+     sorts allowed by C<sub>.
+
+     Note that syntactic sugar in the compiler will automatically wrap any
+     C<=E<gt>> expression in an infix expression with round brackets.  Hence,
+     C<[map {a} => {value (a*a)} l]> becomes C<[map ({a} => {value (a*a)}) l]>.";
+  macro '-',			\&macro_minus,			'left maybeRight',
+	"If given two arguments, expands to C<[left->op_Sub maybeRight]>
+     (i.e. ordinary subtraction).  If C<maybeRight> is ommitted, expands to
+     C<[neg left]> (i.e. negation).";
 
   # Operator-to-method mappings
   op_method '+',  'op_Add';
