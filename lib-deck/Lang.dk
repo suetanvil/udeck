@@ -954,6 +954,13 @@ mproc map {
 	return result
 }
 	
+mproc do {
+	sub fn
+} {
+	"Evaluate C<fn> once and return its result."
+	return [fn]
+}
+
 
 mproc dofor {
 	sub 1 fn
@@ -1119,6 +1126,34 @@ proc concat {args} {
 }
 
 
+proc lolcat {args} {
+	"CREATE LoL CONTAININ TEH LISTS IN ALL ELEMENTS.  EACH ARGUMENT
+     MUST ALSO BE LoL."
+
+	var resultLen = 0
+	dofor {resultLen = resultLen + a.size} args
+
+	var result = [listSized resultLen]
+	var index = 0
+	var arg = 0
+	for lol in args {
+		(lol.class == List) || \
+			[die "lolcat: expecting list, got " lol.class.printable]
+
+		for elem in lol {
+			(elem.class == List) || \
+				[die "lolcat: found non-List in argument '$elem' in $arg."]
+			result@index = elem
+			index = index + 1
+		}
+
+		arg = arg + 1
+	}
+
+	return result
+}
+
+
 perlproc _rand {} ''' return rand(1); '''
 
 proc rand {max} {
@@ -1165,5 +1200,28 @@ proc puts {args} {
 	say "\n"
 }
 
+
+#macro nfor {for elem in list body} {
+
+proc _nfor_body {for elem in seq body} {
+
+	if (in != :in) {
+		die "Invalid value for nfor 'in' field: '$in'"
+	}
+
+	if (elem.class != Symbol) {
+		die "nfor variable name '$elem' is not a symbol."
+	}
+
+	var bodySub = [subify body 0]
+
+	var outerBody = [list bodySub :[set index [+ index 1]]]
+	var forLoop = [list :for elem :in list outerBody]
+
+	var result = [lolcat {var ndxInit = 0} forLoop]
+	result = [list :do result]
+
+	return result
+}
 
 

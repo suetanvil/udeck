@@ -24,13 +24,14 @@ for r in (5 .. 1) {
 }
 puts
 
-# Test splice and concat
+# Test splice, concat and lolcat
 var foo = [concat (1 .. 10)]
 puts foo
 
 var bar = [concat foo foo (20 .. 23)]
 puts bar
 
+puts [lolcat {a; b; d} {foo 1 2 3; bar quux baz; bobo} {1}]
 
 # uncomment!  waiting for || to work.
 
