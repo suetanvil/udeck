@@ -1,4 +1,3 @@
-
 # Test macro definitions
 
 macro foo {args} {
@@ -14,4 +13,10 @@ proc bar {args} {
 
 foo 1 2 3 4 5
 
+
+# Also test 'subify'
+puts [subify :(a + 1) 1]
+puts [subify :(foo + 1) :[foo]]
+puts [subify :(foo + 1) :[bobo]]
+puts [subify {var x = 42; return (a + b + x)} 3]
 

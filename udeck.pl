@@ -3608,6 +3608,28 @@ sub initGlobals {
 					"Return a list containing the docstring information for" .
 					" the object named by symbol C<key>.",
 					\&builtin_docstring_get],
+
+
+				   ['subify',			"exprList args",
+					"From the given arguments, create a list which will, when
+                     evaluated as an expression, return a sub.  It is intended
+                     to aid in writing macros and provides standard argument
+                     handling for many system macros already.
+
+                     C<exprList> is the body of the sub and must be a
+                     list or LoL.  If it is not a LoL, it is
+                     automatically wrapped with another list, making
+                     it into a LoL.
+
+                     C<args> can be a list of symbols or a number.  If it is
+                     a list of symbols, those symbols form the sub's formal
+                     argument list.  If it is a number, the argument list is
+                     generated with that many arguments named C<a> through
+                     C<z>.  Naturally, C<args> must be between 0 and 26.
+
+                     Note that C<subify> does no syntax checking at all.  If
+                     you provide garbage input, you'll get garbage output.",
+					\&builtin_subify],
 				  ) {
 	# Sanity assertion:
 	die "Missing field in '@{$special}'\n"
@@ -5154,4 +5176,25 @@ sub builtin_docstring_get {
   }
 
   return LL::List->new($result);
+}
+
+
+sub builtin_subify {
+  my ($expr, $args) = @_;
+
+  my @args = ();
+
+  if ($args->isNumber()) {
+	push @args, ${$args};
+  } else {
+	$args->checkList();
+	for my $elem (@{$args}) {
+	  $elem->checkSymbol(" in 'subify'.");
+	  push @args, $elem;
+	}
+  }
+
+  my $result = subify($expr, @args);
+  return $result if $result != $expr;
+  return $expr;
 }
