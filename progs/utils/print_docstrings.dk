@@ -91,6 +91,35 @@ proc printFunctions {mproc} {
 }
 
 
+proc printMacros {} {
+	var keys = [_::docstring_keys :macro]
+
+	puts "=head1 Macros\n"
+	puts "=over\n\n"
+
+	for key in keys {
+		var doc = [_::docstring_get key]
+
+		var ftag = (doc@0)
+		var fname = (doc@1)
+		var fbuiltin = (doc@2)
+		var fnargs = (doc@3)
+		var fdoc = [trimSpc (doc@4)]
+
+		var biText = ""
+		fbuiltin && (biText = " B<(Built-in)>")
+
+		puts "=item B<macro $fname {$fnargs}>$biText\n"
+
+		puts fdoc "\n"
+	}
+
+	puts "\n\n=back\n"
+}
+
+
+
+
 proc printMethodDoc {doc} {
 	var builtin = (doc@2)
 	var methodName = (doc@4)
@@ -226,7 +255,9 @@ proc printClasses {} {
 
 printFunctions true
 printFunctions false
-
+printMacros
 printClasses
+
+
 #printAttributes "Lang::Function"
 #printMethods "Lang::Interval"

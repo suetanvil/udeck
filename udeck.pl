@@ -2694,6 +2694,15 @@ sub addClassDocString {
 }
 
 
+# Add a macro docstring
+sub addMacroDocString {
+  my ($name, $builtin, $args, $docstring) = @_;
+
+#  $args =~ s/\[|\]//g;
+
+  addDocString($name, 'macro', $builtin, $args, $docstring);
+}
+
 # Add a proc docstring
 sub addProcDocString {
   my ($name, $builtin, $args, $docstring) = @_;
@@ -2903,6 +2912,7 @@ sub macro ( $$$$ ) {
   my ($name, $transformation, $args, $docstring) = @_;
 
   $Globals->defset($name, LL::Macro->new($transformation));
+  addMacroDocString($name, 1, $args, $docstring);
 }
 
 
@@ -5128,6 +5138,15 @@ sub builtin_docstring_get {
 				 LL::Symbol->new($ds->[4]),	# access mode
 				 LL::String->new($ds->[5]),	# attrib name
 				 LL::String->new($ds->[6]),	# docstring
+				];
+	}
+
+	when ('macro') {
+	  $result = [$type,						# Tag
+				 LL::String->new($ds->[1]),	# Name
+				 boolObj($ds->[2]),			# Builtin,
+				 LL::String->new($ds->[3]),	# Arguments
+				 LL::String->new($ds->[4])	# Docstring
 				];
 	}
 
