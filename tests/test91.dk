@@ -1,0 +1,20 @@
+# Test the 'object' macro
+
+object foo Struct {
+	public x
+	method printable_get {} {return "foo: $x"}
+}
+
+
+foo.x = 42
+puts foo.x
+puts foo
+
+object bar foo.class {
+	method printable_get {} {return "bar, the object!"}
+}
+
+puts bar.x
+bar.x = 11
+puts bar.x
+puts bar

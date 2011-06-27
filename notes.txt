@@ -371,3 +371,4 @@ X				-and should be a function, dude!
 	-file I/O
 	-should 'for/foreach' also define 'index' as a const?
 	-interpolated strings should allow for "$foo.bar".
+	-if macro should allow multiple 'elseif' clauses

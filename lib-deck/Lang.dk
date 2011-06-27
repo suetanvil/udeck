@@ -1203,25 +1203,42 @@ proc puts {args} {
 
 #macro nfor {for elem in list body} {
 
-proc _nfor_body {for elem in seq body} {
+# proc _nfor_body {for elem in seq body} {
 
-	if (in != :in) {
-		die "Invalid value for nfor 'in' field: '$in'"
-	}
+# 	if (in != :in) {
+# 		die "Invalid value for nfor 'in' field: '$in'"
+# 	}
 
-	if (elem.class != Symbol) {
-		die "nfor variable name '$elem' is not a symbol."
-	}
+# 	if (elem.class != Symbol) {
+# 		die "nfor variable name '$elem' is not a symbol."
+# 	}
 
-	var bodySub = [subify body 0]
+# 	var bodySub = [subify body 0]
 
-	var outerBody = [list bodySub :[set index [+ index 1]]]
-	var forLoop = [list :for elem :in list outerBody]
+# 	var outerBody = [list bodySub :[set index [+ index 1]]]
+# 	var forLoop = [list :for elem :in list outerBody]
 
-	var result = [lolcat {var ndxInit = 0} forLoop]
-	result = [list :do result]
+# 	var result = [lolcat {var ndxInit = 0} forLoop]
+# 	result = [list :do result]
+
+# 	return result
+# }
+
+
+macro object {object name superClass body} {
+	"Define a class and declare a single instance of it in the current
+     context.  C<name> is the const which references the new object.
+     C<superClass> is the class from which the new object's class is derived.
+     C<body> is a LoL defining the class.  The format is identical to the body
+     of C<class>."
+
+	(name.class == Symbol) || \
+		[die "Malformed object declaration: got '$name' instead of a symbol."]
+
+	var classDecl = [list :_::class superClass body "class of $name"]
+	var objDecl = [list :new classDecl]
+	var result = [list :const name := objDecl]
 
 	return result
 }
-
 
