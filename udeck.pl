@@ -3601,13 +3601,60 @@ sub initGlobals {
 					\&builtin_lookup],
 
 				   ['_::docstring_keys',"",
-					"Return a list containing the keys (i.e. names) of all" .
-					" document objects in memory.  The keys are symbols.",
+					"Return a list containing the keys (i.e. names) of all
+					 documented objects in memory.  The list is sorted
+                     using Perl's C<cmp> operator.  Keys are symbols and
+                     generally correspond to global variable names.",
 					\&builtin_docstring_keys],
 
 				   ['_::docstring_get',	"key",
-					"Return a list containing the docstring information for" .
-					" the object named by symbol C<key>.",
+					"Return a list containing the docstring information for
+					 the object named by symbol C<key>.  C<key> is typically
+                     a global variable.
+
+                     The result is a list in one of the following forms:
+
+                     =over
+
+				     [:class I<name> I<builtin> I<superclass> I<docstring>]
+
+				     [:proc I<name> I<builtin> I<args> I<docstring>]
+
+				     [:method I<name> I<builtin> I<classname> I<methodname>
+					     I<args> I<docstring>]
+
+				     [:attrib I<name> I<builtin> I<classname>
+                         :readable/:writeable/:public I<attrib-name>
+                         I<docstring>]
+
+				     [:macro I<name> I<builtin> I<args> I<docstring>]
+
+				     [:mproc I<name> I<builtin> I<args> I<docstring>]
+
+                     =back
+
+                     The first field is always a symbol and identifies the
+                     type of object being referenced and, by extension, the
+                     format of the rest of the list.
+
+                     The second item is its name.  The third (I<builtin>) is
+                     a boolean that indicates whether the object is built into
+                     the interpreter.
+
+                     I<args> is the formal argument list and I<docstring> is
+                     a string containing the long-form POD-formatted
+                     documentation for the object.
+
+                     I<superclass> and I<classname> are references to classes
+                     that may be associated with the object.  Note that not
+                     all classes are named or are named correctly.  However,
+                     this generally only happens to classes that do not contain
+                     docstrings.
+
+                     Attributes also have the I<attrib-name> field, which is
+                     the name of the attribute, as opposed to the get/set
+                     method which implements it.  In addition, its fifth
+                     item indicates its access mode.",
 					\&builtin_docstring_get],
 
 
