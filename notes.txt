@@ -307,9 +307,8 @@ X				-and should be a function, dude!
 				[:macro <name> <builtin> <args> <docstring>]
 				[:mproc <name> <builtin> <args> <docstring>]
 		-need to explain subify and delay.
-		-need to properly sort non-alnum method keys
+X		-need to properly sort non-alnum method keys
 		-need to launder POD codes from macro names
-	-need to alias macros.
 	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
@@ -328,9 +327,10 @@ X				-and should be a function, dude!
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
 	-prefix - with one argument must be tolerated by the compiler.
-
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
+
+	-need to alias macros.
 	-maybe make the comparisons other than <= into functions.
 	-need to either 1) abandon negative indexes or 2) put the fixup
 	 code in a common place (e.g. @)

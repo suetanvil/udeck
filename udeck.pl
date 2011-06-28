@@ -3393,8 +3393,9 @@ sub defclass ($$$) {
 sub op_method ($$) {
   my ($operator, $method) = @_;
 
+  my $sym = {'<' => 'lt', '>' => 'gt', '|' => 'verbar', '/' => 'sol'};
   my $od = $operator;
-  $od =~ s/([<>])/'E<'.($1 eq '<' ? 'lt' : 'gt').'>'/eg;
+  $od =~ s{([<>|/])}{'E<'.$sym->{$1}.'>'}eg;
 
   macro $operator, sub {
 	my ($name, $left, $right) = @_;
@@ -3405,7 +3406,7 @@ sub op_method ($$) {
 								LL::Symbol->new($method)]);
 
 	return LL::List->new([$lookup, $right]);
-  }, "left right", "Expands to C<[left${od}$method right]>.";
+  }, "left right", "Expands to C<[left-E<gt>$method right]>.";
 }
 
 
@@ -5116,7 +5117,7 @@ sub builtin_docstring_keys {
 	@keys = grep { $DocStringHash{$_}->[0] eq $tag } @keys;
   }
 
-  @keys = sort @keys;
+  @keys = sort { $a cmp $b } @keys;
 
   @keys = map { LL::Symbol->new($_) } @keys;
   return LL::List->new(\@keys);

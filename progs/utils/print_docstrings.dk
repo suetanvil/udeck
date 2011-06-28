@@ -29,15 +29,22 @@ proc trimSpc {text} {
 =cut
 
 perlproc trimSpc {s} '''
-my @paragraphs = split(/\n\n+/, $s);
+    my @paragraphs = split(/\n\n+/, $s);
 
-for my $par (@paragraphs) {
-	$par =~ s/\A\s*//gmx;	
-	$par =~ s/\s*\z//gmx;
-	$par =~ s/\s+/ /gmx;
-}
+    for my $par (@paragraphs) {
+	    $par =~ s/\A\s*//gmx;	
+	    $par =~ s/\s*\z//gmx;
+	    $par =~ s/\s+/ /gmx;
+    }
 
-return join("\n\n", @paragraphs);
+    return join("\n\n", @paragraphs);
+'''
+
+perlproc podClean {s} '''
+my $r = {'<' => 'lt', '>' => 'gt', '|' => 'verbar', '/' => 'sol'};
+$s =~ s{([<>|/])}{"E<".$r->{$1}.">"}eg;
+
+return $s;
 '''
 
 
@@ -101,7 +108,7 @@ proc printMacros {} {
 		var doc = [_::docstring_get key]
 
 		var ftag = (doc@0)
-		var fname = (doc@1)
+		var fname = [podClean (doc@1)]
 		var fbuiltin = (doc@2)
 		var fnargs = (doc@3)
 		var fdoc = [trimSpc (doc@4)]
