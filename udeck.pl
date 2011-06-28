@@ -2698,7 +2698,7 @@ sub addClassDocString {
 sub addMacroDocString {
   my ($name, $builtin, $args, $docstring) = @_;
 
-#  $args =~ s/\[|\]//g;
+  $args =~ s/\[|\]//g;
 
   addDocString($name, 'macro', $builtin, $args, $docstring);
 }
@@ -4452,9 +4452,15 @@ sub builtin_macro {
   die "'macro' expects 3 arguments: got @{[scalar @_]}\n"
 	unless scalar @_ == 3;
 
-  $name->checkSymbol();
-  $args->checkList();
-  $body->checkList();
+  $name->checkSymbol(" in macro name.");
+  $args->checkList(" in macro '${$name}' argument list.");
+  $body->checkLoL(" in macro '${$name}' body.");
+
+  my $docstring = $body->stripDocString();
+  if ($docstring) {
+	my $mostArgs = LL::List->new([ @{$args}[1..$#{$args}] ]);
+	addMacroDocString(${$name}, 0, $mostArgs->printStr(), $docstring);
+  }
 
   my $longName = $Globals->normalizeName(${$name});
   my $macro = compile ($Globals, $args, $body, 'macro', $longName);

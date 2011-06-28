@@ -307,6 +307,8 @@ X				-and should be a function, dude!
 				[:macro <name> <builtin> <args> <docstring>]
 				[:mproc <name> <builtin> <args> <docstring>]
 		-need to explain subify and delay.
+		-need to properly sort non-alnum method keys
+		-need to launder POD codes from macro names
 	-need to alias macros.
 	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
