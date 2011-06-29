@@ -4,3 +4,7 @@ bar called with '[1 2 3 4 5]'
 [_::sub :[foo] :[[+ foo 1]]]
 [_::sub :[bobo] :[[+ foo 1]]]
 [_::sub :[a b c] :[[[var x = 42] [return [+ [+ a b] x]]]]]
+[_::sub :[] :[[+ a 1]]]
+[_::sub :[] :[[[var x = 42] [return [+ [+ a b] x]]]]]
+[_::sub :[] :[[_::value 42]]]
+[_::sub :[] :[[_::value someVariable]]]

@@ -20,3 +20,10 @@ puts [subify :(foo + 1) :[foo]]
 puts [subify :(foo + 1) :[bobo]]
 puts [subify {var x = 42; return (a + b + x)} 3]
 
+# And subifyOrDelay
+puts [subifyOrDelay :(a + 1)]
+puts [subifyOrDelay {var x = 42; return (a + b + x)}]
+puts [subifyOrDelay 42]
+puts [subifyOrDelay :someVariable]
+
+

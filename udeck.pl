@@ -3678,6 +3678,14 @@ sub initGlobals {
                      Note that C<subify> does no syntax checking at all.  If
                      you provide garbage input, you'll get garbage output.",
 					\&builtin_subify],
+
+				   ['subifyOrDelay',	'expr',
+					"Create a list which, when evaluated as an expression, will
+                     return a sub that evaluates C<expr>.  If C<expr> is a
+                     list, C<subifyOrDelay> will behave exactly like C<subify>.
+                     Otherwise, the sub will evaluate and return C<expr>,
+                     whatever it is.",
+					\&builtin_subifyOrDelay],
 				  ) {
 	# Sanity assertion:
 	die "Missing field in '@{$special}'\n"
@@ -5251,4 +5259,11 @@ sub builtin_subify {
   my $result = subify($expr, @args);
   return $result if $result != $expr;
   return $expr;
+}
+
+
+sub builtin_subifyOrDelay {
+  my ($expr) = @_;
+
+  return subifyOrDelay($expr);
 }

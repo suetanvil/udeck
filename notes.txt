@@ -291,24 +291,27 @@ X				-and see if I can merge string and symbol
 X					-no, 'cuz of inheritance
 X			-need spaceship operator
 X				-and should be a function, dude!
-				
-		-docstrings in classes, methods and procs.
-			-map docstrings to global namespace.  Method docstrings go
-			 in <class>-><method> or <class>.<method>.
-		-API:
-			_::docstring_keys -- returns list of names as strings
-			_::docstring_get <key> -- returns the doc info in a list:
-				[:class <name> <builtin> <superclass> <docstring>]
-				[:proc <name> <builtin> <args> <docstring>]
-				[:method <name> <builtin> <classname> <methodname> 
-					<args> <docstring>]
-				[:attrib <name> <builtin> <class> :readable/:writeable/:public
-	                <attrib-name> <docstring>]
-				[:macro <name> <builtin> <args> <docstring>]
-				[:mproc <name> <builtin> <args> <docstring>]
-		-need to explain subify and delay.
+X	-class.methods -- list of names of methods implemented by this
+X    class only.
+X		-docstrings in classes, methods and procs.
+X			-map docstrings to global namespace.  Method docstrings go
+X			 in <class>-><method> or <class>.<method>.
+X		-API:
+X			_::docstring_keys -- returns list of names as strings
+X			_::docstring_get <key> -- returns the doc info in a list:
+X				[:class <name> <builtin> <superclass> <docstring>]
+X				[:proc <name> <builtin> <args> <docstring>]
+X				[:method <name> <builtin> <classname> <methodname> 
+X					<args> <docstring>]
+X				[:attrib <name> <builtin> <class> :readable/:writeable/:public
+X	                <attrib-name> <docstring>]
+X				[:macro <name> <builtin> <args> <docstring>]
+X				[:mproc <name> <builtin> <args> <docstring>]
+X		-need to explain subify and delay.
 X		-need to properly sort non-alnum method keys
-		-need to launder POD codes from macro names
+X		-need to launder POD codes from macro names
+
+
 	-bug: var overriding an argument isn't an error.
 	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
@@ -322,8 +325,6 @@ X		-need to properly sort non-alnum method keys
 	 sequence classes.
 	-_class_ext should be in '_::'
 	-'dnu' should be '_dnu'
-	-class.methods -- list of names of methods implemented by this
-     class only.
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
 	-prefix - with one argument must be tolerated by the compiler.
