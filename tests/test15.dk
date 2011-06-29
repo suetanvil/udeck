@@ -101,7 +101,7 @@ puts
 
 class Yup {method op_Equals {other} {return true}}
 
-var f = [Yup->new]
+f = [Yup->new]
 var g = [Yup->new]
 xcmp f g
 xcmp f 42

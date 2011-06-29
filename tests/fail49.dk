@@ -1,6 +1,6 @@
 
-# Test recursive macro definitions
-var foo
+# Test recursive macro definitions.  Just an undefined var. reference.
+# I *think* this is no longer possible as its own case.
 macro foo {args} {
 	puts "Macro 'foo' called with " args
 

@@ -31,6 +31,5 @@ puts (x === z)
 puts "Is z indexable? " z.isIndexable
 
 # More explicit test of the return value of return-less methods.
-var x
 x = [z->retself]
 puts (x === z)

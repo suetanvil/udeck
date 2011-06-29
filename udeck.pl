@@ -108,6 +108,9 @@ sub def {
   $self->checkName($name);
   $self->checkScopeFor($name);
 
+  die "Redefinition of name '$name'.\n"
+	if exists($self->{$name});
+
   return $self->{$name} = main::NIL;
 }
 
@@ -2463,7 +2466,6 @@ sub ensureVarsDeclared {
 
   $scratchContext->def('return') if $mode =~ /^(method|proc|macro)$/;
   $scratchContext->def('subreturn') if $mode eq 'sub';
-  $scratchContext->def('self') if $mode eq 'method';
   $scratchContext->def('args') if $isVararg;
 
   for my $arg (@{$args}) {
@@ -3437,9 +3439,6 @@ sub initGlobals {
 
   $Globals->defsetconst ('nil', NIL);
 
-  # Temp. definition of Struct.  Fix later.  XXX
-  $Globals->defset('Struct', NIL);
-
   # Externally-defined primitive functions
   for my $special (
 #				   ['_::storestr',			\&builtin_storestr],
@@ -3887,8 +3886,6 @@ sub initGlobals {
 	"Alias for C<foreach>.";
   macro 'macro',		\&macro_macro,			'name args body',
 	"Declares a macro in the current module scope.";
-  macro 'mproc',		\&macro_mproc,			'name args body',
-	"Defines an mproc in teh current module scope.";
   macro 'package',		\&macro_packagefn,		'moduleName',
 	"Declare this file to be the package named by word C<moduleName>.
      This is really a compiler directive and it is an error to use anywhere
@@ -4278,6 +4275,7 @@ sub builtin_var {
 	my $value = shift @argPairs;
 
 	$name->checkSymbol(" in 'var' argument.");
+	
 	$context->defset(${$name}, $value);
   }
 
