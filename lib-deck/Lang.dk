@@ -58,25 +58,6 @@ _class_ext Object {
 		return (self === other)
 	}
 
-
-	method at {index} {
-		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		 must be contiguous and start at zero."
-		die "Not indexable."
-	}
-
-	method atPut {index value} {
-		"Sequence Protocol: If this object is indexable, store C<value> at
-		 position C<index> and return C<value>.  Indexes start at zero and
-		 must be contiguous."
-		die "Not indexable."
-	}
-
-	method size_get {} {
-		"Sequence Protocol: Return the number of items in this object."
-		die self.class " is not indexable."
-	}
-
 	method maker_get {} {
 		"Sequence protocol: return a function which will create a collection
 		 suitable for holding the contents of self and which takes one

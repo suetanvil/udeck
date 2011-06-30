@@ -44,5 +44,5 @@ class Stringlike
 class Object
 nil
 ---
-_init at atPut bar class_get copy doesNotUnderstand isIndexable_get isNil_get isTrue_get last_get maker_get op_Equals op_Gt op_Gte op_Lt op_Lte printable_get self_get shallowCopy size_get 
+_init bar class_get copy doesNotUnderstand isIndexable_get isNil_get isTrue_get last_get maker_get op_Equals op_Gt op_Gte op_Lt op_Lte printable_get self_get shallowCopy 
 bar 

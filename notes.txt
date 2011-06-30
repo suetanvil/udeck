@@ -313,6 +313,8 @@ X		-need to launder POD codes from macro names
 X	-bug: var overriding an argument isn't an error.
 X		-looks like redefinition of var isn't caught.
 X	-'@' should be a macro
+X	-The 'die' implementations of sequence protocol should only be in
+X	 sequence classes.
 
 
 	-need to figure out what to do with negative indexes: handy but
@@ -322,9 +324,6 @@ X	-'@' should be a macro
 	     Sequence trait when we have traits.
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.
-	-The 'die' implementations of sequence protocol should only be in
-	 sequence classes.
-	-_class_ext should be in '_::'
 	-'dnu' should be '_dnu'
 	-class->can method -- test if class responds to given message
 		-also need to do something about argument counts.
@@ -332,6 +331,7 @@ X	-'@' should be a macro
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
 
+	-_class_ext should be in '_::'
 	-need to alias macros.
 	-maybe make the comparisons other than <= into functions.
 	-need to either 1) abandon negative indexes or 2) put the fixup

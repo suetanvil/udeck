@@ -1,1 +1,1 @@
-<class 'Nil'> is not indexable.
+Unknown method 'size_get' in class 'Nil'
