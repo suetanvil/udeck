@@ -310,11 +310,11 @@ X				[:mproc <name> <builtin> <args> <docstring>]
 X		-need to explain subify and delay.
 X		-need to properly sort non-alnum method keys
 X		-need to launder POD codes from macro names
+X	-bug: var overriding an argument isn't an error.
+X		-looks like redefinition of var isn't caught.
+X	-'@' should be a macro
 
 
-	-bug: var overriding an argument isn't an error.
-		-looks like redefinition of var isn't caught.
-	-'@' should be a macro
 	-need to figure out what to do with negative indexes: handy but
 	 difficult to implement.  Either get rid of it or make all classes
 	 (including Interval) do it.

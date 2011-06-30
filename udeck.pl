@@ -3711,14 +3711,6 @@ sub initGlobals {
 		" they were given.",
 		sub { return LL::List->new(\@_) });
 
-
-  prim ('@',
-		"seq index",
-		"Look up a value in a sequence.  (Specifically, performs a" .
-		" [seq->at index] expression.)",
-		sub { my ($l, $ndx) = @_;  checkNargs('@', \@_, 2);
-							  return $l->at($ndx) } );
-
   prim ('byteArray',
 		"args",
 		"Return a ByteArray containing the arguments.  Arguments must" .
@@ -3949,6 +3941,7 @@ sub initGlobals {
      C<[neg left]> (i.e. negation).";
 
   # Operator-to-method mappings
+  op_method '@',  'at';
   op_method '+',  'op_Add';
   op_method '%',  'op_Mod';
   op_method '*',  'op_Mult';
