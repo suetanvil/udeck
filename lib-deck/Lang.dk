@@ -631,6 +631,10 @@ _class_ext Class {
          if the class does not have a superclass.  Currently, only C<Object>
          is like that."
 
+	mdoc can {message} \
+		"Test if this class implements a method named by C<message>.
+         C<message> must be  a symbol."
+
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		var nm = self.name

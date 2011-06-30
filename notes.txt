@@ -315,6 +315,8 @@ X		-looks like redefinition of var isn't caught.
 X	-'@' should be a macro
 X	-The 'die' implementations of sequence protocol should only be in
 X	 sequence classes.
+X	-class->can method -- test if class responds to given message
+X		-also need to do something about argument counts.
 
 
 	-need to figure out what to do with negative indexes: handy but
@@ -322,15 +324,13 @@ X	 sequence classes.
 	 (including Interval) do it.
 		-maybe put 'normalizeIndex' in Object, then move to the
 	     Sequence trait when we have traits.
-	-there should be some way to query a MethodCall to see if it's a
-	 :doesNotUnderstand call.
 	-'dnu' should be '_dnu'
-	-class->can method -- test if class responds to given message
-		-also need to do something about argument counts.
 	-prefix - with one argument must be tolerated by the compiler.
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
 
+	-there should be some way to query a MethodCall to see if it's a
+	 :doesNotUnderstand call.
 	-_class_ext should be in '_::'
 	-need to alias macros.
 	-maybe make the comparisons other than <= into functions.

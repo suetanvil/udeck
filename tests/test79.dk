@@ -70,3 +70,11 @@ puts "---"
 dofor {say "$a "} Foo.selectors; puts
 dofor {say "$a "} Foo.methods; puts
 
+puts "---"
+puts ["".class->can :lowercase]
+puts [nil.class->can :lowercase]
+puts [nil.class->can :maker_get]
+puts [42.class->can :maker_get]
+puts ["42".class->can :maker_get]
+
+

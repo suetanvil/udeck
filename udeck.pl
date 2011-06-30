@@ -4003,6 +4003,11 @@ sub initGlobals {
 							  if defined($self->{superclass});
 							return NIL},
 
+	 can			=> sub {my ($self, $msg) = @_; checkNargs('can', \@_, 2);
+							$msg->checkSymbol(" in method 'can'.");
+							return TRUE
+							  if defined($self->{methodCache}->{${$msg}});
+							return NIL},
 	};
 
   defclass 'List',			'Object',
