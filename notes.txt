@@ -317,17 +317,19 @@ X	-The 'die' implementations of sequence protocol should only be in
 X	 sequence classes.
 X	-class->can method -- test if class responds to given message
 X		-also need to do something about argument counts.
+X	-need to figure out what to do with negative indexes: handy but
+X	 difficult to implement.  Either get rid of it or make all classes
+X	 (including Interval) do it.
+X		-maybe put 'normalizeIndex' in Object, then move to the
+X	     Sequence trait when we have traits.
+X			-ended up adding private method _sanitizeIndex
+        
 
-
-	-need to figure out what to do with negative indexes: handy but
-	 difficult to implement.  Either get rid of it or make all classes
-	 (including Interval) do it.
-		-maybe put 'normalizeIndex' in Object, then move to the
-	     Sequence trait when we have traits.
 	-'dnu' should be '_dnu'
 	-prefix - with one argument must be tolerated by the compiler.
 	-hashes keyed on strings, symbols or numbers
 		-we can do other types later
+	-replace all uses of 'function' with 'procedure' or 'closure'.
 
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.

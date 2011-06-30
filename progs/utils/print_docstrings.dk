@@ -131,13 +131,13 @@ proc printMethodDoc {doc} {
 	var builtin = (doc@2)
 	var methodName = (doc@4)
 	var args = (doc@5)
-	var doc = [trimSpc (doc@6)]
+	var fdoc = [trimSpc (doc@6)]
 	
 	var biText = ""
 	builtin && (biText = " B<(Built-in)>")
 
 	puts "=item B<method $methodName {$args}>$biText\n"
-	puts doc "\n"
+	puts fdoc "\n"
 }
 
 

@@ -79,6 +79,27 @@ _class_ext Object {
 		return (self.size - 1)
 	}
 
+	method _sanitizeIndex {index} {
+		"Sequence Protocol: Given an index into a sequence, return the normal
+         index for the object (i.e. an integer between 0 and the last index or
+         die with an error if it cannot be mapped to a valid index.
+
+         In particular, C<_sanitizeIndex> replaces a negative index with the
+         matching positive index.  (Negative indexes are relative to the end
+         of the sequence.)"         
+
+		index = [int index]
+
+		if (index < 0) {
+			index = self.size + index
+		}
+		
+		(index >= self.size) && [die "Index '$index' is out of range."]
+
+		return index
+	}
+
+
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		var cl = self.class.name
@@ -277,12 +298,13 @@ _class_ext List {
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		must be contiguous and start at zero."
+		 must be contiguous and start at zero.  Negative indexes are
+         subtracted from the list's size."
 
 	mdoc atPut {index value} \
 		"Sequence Protocol: Store C<value> at position C<index> and
 		 return C<value>.  Indexes start at zero and must be
-		 contiguous."
+		 contiguous.  Negative indexes are subtracted from the list's size."
 
 	mdoc size_get {} \
 		"Sequence Protocol: Return the number of items in this object."
@@ -336,13 +358,14 @@ _class_ext Stringlike {
 
 	mdoc at {index} \
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		must be contiguous and start at zero."
+		must be contiguous and start at zero.  Negative indexes are
+         subtracted from the list's size."
 
 	mdoc atPut {index value} \
 		"Sequence Protocol: Store C<value> at position C<index> and
 		 return C<value>.  Indexes start at zero and must be
-		 contiguous. C<value> must be of a type that can be stored in this
-         object."
+		 contiguous. Negative indexes are subtracted from the list's size.
+         C<value> must be of a type that can be stored in this object."
 
 	mdoc size_get {} \
 		"Sequence Protocol: Return the number of items in this object."
@@ -1025,11 +1048,10 @@ class Interval Struct {
 
 	method at {index} {
 		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		 must be contiguous and start at zero."
-		if (index >= length) {
-			die "Attempted to read past end of interval."
-		}
+		 must be contiguous and start at zero.   Negative indexes are
+         subtracted from the list's size."
 
+		index = [self->_sanitizeIndex index]
 		return (start + (index * incr))
 	}
 
@@ -1054,7 +1076,7 @@ class Interval Struct {
 
 proc \.. {start end} {
 	"Create an C<Interval> for the range from C<start> to C<end> with an 
-	 increment of 1."
+	 increment of 1.  C<range> is an alias for this procedure."
 	var by = 1
 	if (end < start) {
 		by = -1
