@@ -1249,3 +1249,41 @@ macro object {object name superClass body} {
 	return result
 }
 
+
+
+class Exception {
+	public id
+	public message
+	public args
+
+	var throwable
+
+	method _init {thfn} {
+		id = nil
+		message = "Unknown exception."
+		args = :[]
+
+		throwable = thfn
+	}
+
+	method throw {msg} {
+		if (msg) {
+			message = msg
+		}
+
+		throwable self
+	}
+}
+
+const Fatal = \
+	[Exception->new {exc} => {die "Uncaught exception: " exc.message}]
+
+
+# macro _try {try tryBlock args} {
+# 	(args.size == 0 || (args.size == 2 && args@0 == :catch)) || \
+# 		die "Invalid 'try' statement.\n" 
+# 	var catch
+# #	if (arg.size == 2) {
+# }
+
+

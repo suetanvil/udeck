@@ -1,0 +1,33 @@
+
+=head1 MProc Format
+
+
+
+form: mproc <name> [ [strict? (sub (\d+|(\w+)+)|sym|list) <arg>]* ] <body>
+ 
+modifiers:
+	sub [number]	-- If a list, subify's with number arguments.
+	sub arg1..argn  -- If a list, subify's with named arguments.
+	symbol			-- If a symbol, quote
+	list			-- If a list, quote
+	strict			-- Require that the other modifier activate.
+ 		
+so basically, mproc args must be LoLs.
+ 
+ 
+ 
+    mproc map {
+    	strict sub 1 block
+    	items
+    } {
+    	var result = [listSized [block size]]
+    	var index = 0
+    
+    	foreach item in items {
+    		result@index = [block item]
+    		index = index + 1
+    	}
+    
+    	return result
+    }
+

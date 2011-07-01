@@ -283,8 +283,7 @@ X	-move 'map' to Lang.dk
 X	-bug: newlines in strings are doubled.
 
 
-	-_::say and _::puts should tolerate Perl arguments.
-	-make the code self-documenting
+X	-make the code self-documenting
 X		-need sort
 X			-need string comparisions
 X				-and see if I can merge string and symbol
@@ -331,6 +330,7 @@ X	-prefix - with one argument must be tolerated by the compiler.
 		-we can do other types later
 	-replace all uses of 'function' with 'procedure' or 'closure'.
 	-exceptions
+	-_::say and _::puts should tolerate Perl arguments.
 
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.

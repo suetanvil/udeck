@@ -4354,18 +4354,21 @@ sub mk_mproc_macro_argfilter {
 
 	given (${$mod}) {
 	  when ("sub") {
-		my $nargs = 0;
-		if (scalar @{$arg} > 0 && $arg->[0]->isNumber()) {
-		  $nargs = ${ shift @{$arg} };
+		my @sfyArgs = ();
+		if (scalar @{$arg} == 1 && $arg->[0]->isNumber()) {
+		  $sfyArgs[0] = ${ shift @{$arg} };
+		  die "Invalid arg count in mproc: $sfyArgs[0] -- must be between 0 "
+			. "and 26\n"
+			if ($sfyArgs[0] < 0 || $sfyArgs[0] > 26);
+		} elsif (scalar @{$arg} >= 0) {
+		  map { $_->checkSymbol(" in a 'sub' modifier arg. list.") } @{$arg};
+		  @sfyArgs = @{$arg};
 		}
 
-		die "Invalid arg count in mproc: $nargs -- must be between 0 and 26\n"
-		  if ($nargs < 0 || $nargs > 26);
-
 		if ($strict) {
-		  push @argFilter, sub {subifyStrict(shift, $nargs)};
+		  push @argFilter, sub {subifyStrict(shift, @sfyArgs)};
 		} else {
-		  push @argFilter, sub {subify(shift, $nargs)};
+		  push @argFilter, sub {subify(shift, @sfyArgs)};
 		}
 	  }
 
