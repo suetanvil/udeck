@@ -1272,7 +1272,8 @@ class Exception {
      Typical C<Exceptions> wrap a continuation which will return control flow
      to some earlier context.  Calling C<throw> invokes this continuation and
      exits the current function and all other callers up to the C<try> block
-     that created it.
+     that created it.  C<throw> also deletes the continuation, turning
+     subsequent calls to C<throw> into no-ops.
 
      C<throw> takes one argument which is stored in C<message> unless it is
      a boolean false.  This allows you to set the C<message> earlier and
@@ -1316,6 +1317,16 @@ mproc try {
 	word catch [default :catch]
 	strict sub [Error] catchBlock [default {}]
 } {
+	"Evaluate a block, providing it with an C<Exception>.  If the exception is
+     thrown, the rest of the block is not evaluated.  However, the optional
+     second block (following the word 'catch') is evaluated.
+
+     Both blocks are given an argument named C<Error>.  This is the
+     C<Exception>.  It may be treated as any other object--passed to functions,
+     stored in global variables, etc.--but it is a fatal runtime error if
+     its C<throw> is called (for the first time) after the first block has
+     finished executing.
+"
 	var exc
 	var thrown = true
 	do {
