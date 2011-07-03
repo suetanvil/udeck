@@ -27,10 +27,11 @@ mproc mp2 {
 	word and [default :and]
 	strict sub [x] fn2 [default {}]
 } {
-	puts fn and fn2
+	puts [fn 1] " " and " " [fn2 2]
 }
 
 mp2 {value 42}
 mp2 {value 42} and
+mp2 {value 42} and {value 5}
 
 	

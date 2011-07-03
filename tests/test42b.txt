@@ -28,5 +28,6 @@ xxx
 nil
 42
 ---
-<function>:and<function>
-<function>:and<function>
+42 :and nil
+42 :and nil
+42 :and 5

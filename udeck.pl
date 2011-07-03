@@ -2813,7 +2813,9 @@ sub subify {
   if ($expr->isQtLoL()) {
 	$body = $expr;
   } elsif ($expr->isList()) {
-	my $outer = LL::List->new([$expr]);
+	my $outer = ($expr->size() == 0) ?  # Tolerate empty lists.
+	  $expr :
+		LL::List->new([$expr]);
 	$body = LL::Quote->new($outer);
   } else {
 	return $expr;
@@ -4331,7 +4333,6 @@ sub builtin_proc {
 # transformations on the matching argument.
 sub mk_mproc_macro_argfilter {
   my ($argList, $name) = @_;
-
   my @filters = ();
   my $needDefault = 0;	# Indicates need/presence of default value
   my $numDefaults = 0;
