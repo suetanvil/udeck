@@ -19,6 +19,7 @@ try {
 } catch {
 	puts "Caught exception: " Error.id " " Error.args " " Error.message
 	puts "Done."
+	Error->throw "nothing should happen here"
 }
 
 
