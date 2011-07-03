@@ -495,9 +495,10 @@ _class_ext Symbol {
 	 C<atPut> method will fail.
 
 	 C<Symbols> can be converted to and from strings via the C<intern> and 
-	 C<unintern> functions.  Symbol constants are tokens beginning with the
-	 C<:> character, e.g. C<:foo>.  Note that while this is analagous to
-     quoting (see class Quote), a Symbol literal is not a Quote expression."
+	 C<unintern> functions.  Symbol literals are created by prefixing the
+     symbol with the C<:> character, e.g. C<:foo>.  This works as expected,
+     with the quote delaying evaluation and so yielding the symbol instead of
+     the variable it would represent."
 
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
@@ -670,8 +671,7 @@ _class_ext Class {
 _class_ext Quote {
 	"C<Quote> instances are used to represent quotation in Deck expressions.
      They are typically represented in Deck source code via the colon operator
-     (C<:>).  (Note that a quote expression is analogous to but different from
-     a literal C<Symbol>.)
+     (C<:>).
 
 	 Each C<Quote> contains a single data value which may be retrieved using
 	 the C<value> attribute.  A C<Quote> in an expression evaluates to its
@@ -689,7 +689,8 @@ _class_ext Quote {
 
      will evaluate to C<[a b c]>, a C<List> of C<Symbols>.
 
-     Instances are created with the function C<quote>.
+     Instances are created with the function C<quote> (but note that C<quote>
+     is B<not> a special form; its argument is evaluated normally.)
 
      In practice, you will rarely find references to C<Quote> in everyday code.
      Their purpose is to affect compilation and that's generally over with

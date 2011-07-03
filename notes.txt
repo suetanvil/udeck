@@ -49,6 +49,10 @@ Notes:
 
 	- 'val' has been renamed to 'value'.
 
+	- quote semantics: ':' <value> denotes a quote object, which the
+      compiler handles as it will.  ':<symbol>' becomes a symbol
+	  object this way.
+
 Functions Todo:
 X	-listSized
 
