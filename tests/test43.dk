@@ -1,0 +1,15 @@
+# Test mproc with named arguments
+
+
+mproc zot {
+	sub [first second third] fn
+} {
+	return [fn 1 2 3]
+}
+
+
+
+puts [zot {value (first + second + third)}]
+
+
+

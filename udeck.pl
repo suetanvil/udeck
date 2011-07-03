@@ -2838,7 +2838,7 @@ sub subify {
 	$arglist = LL::Quote->new( LL::List->new(\@autoArgs) );
   } else {
 	# Case 3: we have a list of args.
-	map { $_->checkSymbol() } @args;
+	map { $_->checkSymbol(" in 'subify'.") } @args;
 	$arglist = LL::Quote->new( LL::List->new(\@args) );
   }
 
@@ -4355,15 +4355,25 @@ sub mk_mproc_macro_argfilter {
 	given (${$mod}) {
 	  when ("sub") {
 		my @sfyArgs = ();
-		if (scalar @{$arg} == 1 && $arg->[0]->isNumber()) {
-		  $sfyArgs[0] = ${ shift @{$arg} };
-		  die "Invalid arg count in mproc: $sfyArgs[0] -- must be between 0 "
-			. "and 26\n"
-			if ($sfyArgs[0] < 0 || $sfyArgs[0] > 26);
-		} elsif (scalar @{$arg} >= 0) {
-		  map { $_->checkSymbol(" in a 'sub' modifier arg. list.") } @{$arg};
-		  @sfyArgs = @{$arg};
+
+		# The argument can be either a number or list of names
+		if (scalar @{$arg} == 1) {
+		  if ($arg->[0]->isNumber()) {
+			$sfyArgs[0] = ${ shift @{$arg} };
+			die "Invalid arg count in mproc: $sfyArgs[0] -- must be " .
+			  "between 0 and 26\n"
+				if ($sfyArgs[0] < 0 || $sfyArgs[0] > 26);
+		  } elsif ($arg->[0]->isList()) {
+			map { $_->checkSymbol(" in a 'sub' modifier arg. list.") }
+			  @{$arg->[0]};
+			@sfyArgs = @{$arg->[0]};
+		  } else {
+			die "Malformed 'sub' mproc argument modifier.\n";
+		  }
 		}
+
+		die "Malformed 'sub' mproc argument: invalid arg specifier.\n"
+		  unless scalar @{$arg} <= 1;
 
 		if ($strict) {
 		  push @argFilter, sub {subifyStrict(shift, @sfyArgs)};
