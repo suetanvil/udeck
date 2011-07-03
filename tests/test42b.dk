@@ -1,0 +1,28 @@
+# Test mprocs with default arguments
+
+mproc mp1 {
+	word foo
+	sub 0 fn
+	list ls [default :[a b c]]
+	nothing [default nil]
+	someNum [default 42]
+} {
+	puts foo
+	puts fn
+	puts ls
+	puts nothing
+	puts someNum
+	puts "---"
+}
+
+mp1 foo {} [1 2 3] "some text" 1
+mp1 foo {}
+mp1 foo {} [this is a list]
+mp1 foo {} [this is another list] "xxx"
+mp1 foo {} [this is another list] nil
+
+
+
+
+
+	

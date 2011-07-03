@@ -1,15 +1,12 @@
 #!/usr/bin/perl
 
-# Interpreter for a minimal implementation of Deck
-#
+# Initial implementation of the Deck language.  Very, very slow.
+
 # The turtle lives 'twixt plated decks
 # Which practically conceal its sex.
 # I think it clever of the turtle
 # In such a fix to be so fertile.
 # 		-- Ogden Nash
-
-
-
 
 
 
@@ -4333,12 +4330,54 @@ sub mk_mproc_macro_argfilter {
   my ($argList, $name) = @_;
 
   my @filters = ();
+  my $needDefault = 0;	# Indicates need/presence of default value
+  my $numDefaults = 0;
+  my $argNum = 0;
   for my $arg (@{$argList}) {
 	my @argFilter = ();
 
 	$arg->checkList(" in mproc argument list.");
 
-	# First, get the actual argument name
+	++$argNum;
+
+	# First, check for the presence of a default value
+	my $default;
+	my $dfExpr = $arg->[-1];
+
+	if ($dfExpr->isList()        &&
+		$dfExpr->size() == 2     &&
+		$dfExpr->[0]->isSymbol() &&
+		${ $dfExpr->[0] } eq 'default') {
+
+	  $needDefault = 1;
+	  $default = $dfExpr->[1];
+
+	  my $msg="Illegal default value for argument $argNum of mproc '$name'.\n";
+	  if (!$default->isLiteral()) {
+		if ($default->isSymbol() && ${$default} eq 'nil') {
+		  $default = NIL;
+
+		} elsif ($default->isQuote()) {
+		  $default = $default->value();
+		  die $msg
+			unless $default->isSymbol() || $default->isList();
+
+		} else {
+		  die $msg;
+		}
+	  }
+
+	  pop @{$arg};	# remove it from the arg. list.
+	} else {
+	  # And if there was previously a default, then there needs to be
+	  # one here as well.
+	  die "Argument '$argNum' must have a default value.\n"
+		if $needDefault;
+	}
+
+	++$numDefaults if $needDefault;
+
+	# Next, get the actual argument name
 	my $argName = pop @{$arg};
 	$argName->checkSymbol(" in mproc argument.");
 	$argName = ${$argName};
@@ -4378,24 +4417,45 @@ sub mk_mproc_macro_argfilter {
 		die "Malformed 'sub' mproc argument: invalid arg specifier.\n"
 		  unless scalar @{$arg} <= 1;
 
+		# Ensure default type is a list.  (LoL?)
+		die "Default argument is not a list in argument $argNum of " .
+		  "mproc '$name' despite 'sub' modifier.\n"
+			if ($needDefault && !$default->isList());
+
+
 		if ($strict) {
-		  push @argFilter, sub {subifyStrict(shift, @sfyArgs)};
+		  push @argFilter, sub {subifyStrict(shift() || $default, @sfyArgs)};
 		} else {
-		  push @argFilter, sub {subify(shift, @sfyArgs)};
+		  push @argFilter, sub {subify(shift() || $default, @sfyArgs)};
 		}
 	  }
 
 	  when ("symbol") {
-		push @argFilter, sub {quoteIfSym(shift, $strict)};
+		die "Default argument is not a symbol in argument $argNum of " .
+		  "mproc '$name' despite 'symbol' modifier.\n"
+			if ($needDefault && !$default->isSymbol());
+
+		push @argFilter, sub {quoteIfSym(shift() || $default, $strict)};
 	  }
 
 	  when ("list") {
-		push @argFilter, sub {quoteIfList(shift, $strict)};
+		die "Default argument is not a list in argument $argNum of " .
+		  "mproc '$name' despite 'list' modifier.\n"
+			if ($needDefault && !$default->isList());
+
+		push @argFilter, sub {quoteIfList(shift() || $default, $strict)};
 	  }
 
 	  when ("word") {
+		die "Default argument is not the symbol '$argName' of ".
+		  "mproc '$name' despite 'word' modifier.\n"
+			if ($needDefault && (!$default->isSymbol() ||
+								 ${$default} ne $argName));
+
 		push @argFilter,
 		  sub {my ($param) = @_;
+			   $param ||= $default;
+
 			   $param->checkSymbol(" in mproc argument '$argName' " .
 								   "for '$name'.");
 			   die "Expecting word '$argName', got '${$param}'\n"
@@ -4406,7 +4466,11 @@ sub mk_mproc_macro_argfilter {
 	  }
 
 	  when ('') {
-		# no modifiers.  Carry on.
+		if ($needDefault) {
+		  push @argFilter, sub {return shift() || $default}
+		} else {
+		  push @argFilter, sub {return shift()};
+		}
 	  }
 
 	  default {
@@ -4417,7 +4481,7 @@ sub mk_mproc_macro_argfilter {
 	push @filters, \@argFilter;
   }
 
-  return \@filters;
+  return (\@filters, $numDefaults);
 }
 
 
@@ -4428,13 +4492,14 @@ sub mk_mproc_macro {
 
   my $resultName = LL::Symbol->new($procName);
 
-  my $filters = mk_mproc_macro_argfilter($args, $name);
+  my ($filters, $defaults) = mk_mproc_macro_argfilter($args, $name);
 
   my $macro = sub {
 	my ($givenName, @args) = @_;
 	my @newArgs = ();
 	die "Arg count mismatch in call to mproc '${$givenName}'\n"
-	  unless scalar @args == scalar @{$filters};
+	  if (scalar @args > scalar @{$filters} ||
+		  scalar @args < scalar @{$filters} - $defaults);
 
 	push @newArgs, $resultName;
 
@@ -4484,7 +4549,10 @@ sub builtin_mproc {
   my @pargs = ();
   for my $elem (@{$args}) {
 	$elem->checkList(" in mproc argument.");
+
 	my $argName = $elem->[-1];
+	$argName = $elem->[-2] unless $argName->isSymbol();	# skip [default xxx]
+
 	push @pargs, $argName;
   }
 

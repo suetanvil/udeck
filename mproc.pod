@@ -3,7 +3,9 @@
 
 
 
-form: mproc <name> [ [strict? (sub (\d+|(\w+)+)|sym|list|word) <arg>]* ] <body>
+form: mproc <name> [
+ [strict? [default <literal>]? (sub (\d+|(\w+)+)|sym|list|word) <arg>]*
+] <body>
  
 modifiers:
 	sub number 	    -- If a list, subify's with number arguments.
@@ -13,11 +15,13 @@ modifiers:
 	list			-- If a list, quote
     word            -- Must be the exact symbol as the arg. name.
 	strict			-- Require that the other modifier activate.
- 		
+	default         -- Provide a default value, making this argument optional.
+                       Default value must be a number, string, quoted list,
+                       symbol or nil.
+
 so basically, mproc args must be LoLs.
  
- 
- 
+  
     mproc map {
     	strict sub 1 block
     	items
@@ -33,3 +37,18 @@ so basically, mproc args must be LoLs.
     	return result
     }
 
+
+
+	mproc foo {
+		strict sub op
+		strict sub 0 getVal [default {value 42}] 
+		symbol name [default :thingy]
+	} {
+		...
+	}
+
+=head2 default
+
+To implement default:
+
+	1) 

@@ -1,0 +1,30 @@
+:foo
+<function>
+[1 2 3]
+some text
+1
+---
+:foo
+<function>
+[a b c]
+nil
+42
+---
+:foo
+<function>
+[this is a list]
+nil
+42
+---
+:foo
+<function>
+[this is another list]
+xxx
+42
+---
+:foo
+<function>
+[this is another list]
+nil
+42
+---

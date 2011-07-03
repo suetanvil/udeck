@@ -1,3 +1,5 @@
+# Test word argument mismatch
+
 mproc foo {
 	word bar
 } {
