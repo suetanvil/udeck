@@ -33,5 +33,14 @@ mproc mp2 {
 mp2 {value 42}
 mp2 {value 42} and
 mp2 {value 42} and {value 5}
+puts "---"
 
-	
+
+mproc mp3 {
+	strict sub [x] fn [default {value (x+11)}]
+} {
+	puts [fn 1]
+}
+
+mp3 {value (x + 33)}
+mp3

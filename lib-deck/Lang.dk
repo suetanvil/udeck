@@ -1277,14 +1277,26 @@ class Exception {
 }
 
 const Fatal = \
-	[Exception->new {exc} => {die "Uncaught exception: " exc.message}]
+	[Exception->new {exc} => {die "Fatal exception: " exc.message}]
 
 
-# macro _try {try tryBlock args} {
-# 	(args.size == 0 || (args.size == 2 && args@0 == :catch)) || \
-# 		die "Invalid 'try' statement.\n" 
-# 	var catch
-# #	if (arg.size == 2) {
-# }
+mproc try {
+	strict sub [Error] tryBlock
+	word catch [default :catch]
+	strict sub [Error] catchBlock [default {}]
+} {
+
+	var exc
+	var thrown = true
+	do {
+		exc = [Exception->new subreturn]
+		tryBlock exc
+		thrown = false
+	}
+
+	if thrown {
+		catchBlock exc
+	}
+}
 
 

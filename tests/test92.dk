@@ -1,0 +1,37 @@
+# Test the exception system
+
+proc bar
+
+proc foo {ex} {
+	bar ex
+	puts "Unthrown!"
+}
+
+proc bar {ex} {
+	ex.id = :cuzIfeltLikeIt
+	ex->throw "Exception thrown."
+}
+
+try {
+	puts "Pre-throw:"
+	foo Error
+	puts "Post-throw."		# unreached
+} catch {
+	puts "Caught exception: " Error.id " " Error.args " " Error.message
+	puts "Done."
+}
+
+
+try {
+	puts "Pre-throw 2:"
+	foo Error
+	puts "Post-throw 2."		# unreached
+}
+
+
+try {
+	puts "Pre-throw 3:"
+	foo Error
+	puts "Post-throw 3."		# unreached
+} catch			# dangling catch.  Allowed but ugly.
+

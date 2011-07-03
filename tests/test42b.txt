@@ -31,3 +31,6 @@ nil
 42 :and nil
 42 :and nil
 42 :and 5
+---
+34
+12
