@@ -1,0 +1,1 @@
+Default argument is not a list in argument 1 of mproc 'Main::foo' despite 'list' modifier.

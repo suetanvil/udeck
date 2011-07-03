@@ -1,0 +1,9 @@
+# Default arg. with incompatible type for modifier
+
+mproc foo {
+	sub [x y z] fn2 [default 42]
+} {
+	puts 42
+}
+
+	

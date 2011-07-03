@@ -1,0 +1,1 @@
+Default argument is not the symbol 'w' of mproc 'Main::foo' despite 'word' modifier.
