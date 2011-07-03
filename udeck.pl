@@ -4361,6 +4361,9 @@ sub mk_mproc_macro_argfilter {
 		if ($default->isSymbol() && ${$default} eq 'nil') {
 		  $default = NIL;
 
+		} elsif ($default->isQtLoL()) {
+		  # Leave $default as is
+
 		} elsif ($default->isQuote()) {
 		  $default = $default->value();
 		  die $msg
@@ -4424,7 +4427,7 @@ sub mk_mproc_macro_argfilter {
 		# Ensure default type is a list.  (LoL?)
 		die "Default argument is not a list in argument $argNum of " .
 		  "mproc '$name' despite 'sub' modifier.\n"
-			if ($needDefault && !$default->isList());
+			if ($needDefault && !$default->isList() && !$default->isQtLoL());
 
 
 		if ($strict) {
