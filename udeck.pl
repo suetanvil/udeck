@@ -2405,7 +2405,7 @@ sub checkForScopeViolations {
 	return;
   }
 
-  return unless $expr->isList();
+  return unless $expr->isList() && $expr->size() > 0;
 
   # Assignments are a special case
   checkForScopeViolations($expr->[1]->value(), $name)
@@ -2423,6 +2423,9 @@ sub checkForScopeViolations {
 # var or const declaration, first adds the names to $context.
 sub ensureVarsDeclaredRecursively {
   my ($expr, $context) = @_;
+
+  # Skip empty lists
+  return unless $expr->size() > 0;
 
   # If this is a var or const declaration, add the elements to $context
   if ($expr->[0]->isSymbol() && ${ $expr->[0] } =~ /^_::(var|const)$/) {

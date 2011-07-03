@@ -22,7 +22,15 @@ mp1 foo {} [this is another list] "xxx"
 mp1 foo {} [this is another list] nil
 
 
+mproc mp2 {
+	strict sub [x] fn
+	word and [default :and]
+	strict sub [x] fn2 [default {}]
+} {
+	puts fn and fn2
+}
 
-
+mp2 {value 42}
+mp2 {value 42} and
 
 	

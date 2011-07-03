@@ -28,3 +28,5 @@ xxx
 nil
 42
 ---
+<function>:and<function>
+<function>:and<function>
