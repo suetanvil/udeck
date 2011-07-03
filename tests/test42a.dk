@@ -1,4 +1,4 @@
-# Test mproc with named arguments
+# Test mproc with named sub arguments, literals
 
 
 mproc zot {
@@ -7,9 +7,15 @@ mproc zot {
 	return [fn 1 2 3]
 }
 
-
-
 puts [zot {value (first + second + third)}]
 
 
+mproc foo {
+	word bar
+} {
+	puts bar
+}
+
+puts "---"
+foo bar
 

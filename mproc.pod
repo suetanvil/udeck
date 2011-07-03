@@ -3,7 +3,7 @@
 
 
 
-form: mproc <name> [ [strict? (sub (\d+|(\w+)+)|sym|list) <arg>]* ] <body>
+form: mproc <name> [ [strict? (sub (\d+|(\w+)+)|sym|list|word) <arg>]* ] <body>
  
 modifiers:
 	sub number 	    -- If a list, subify's with number arguments.
@@ -11,6 +11,7 @@ modifiers:
 	sub [arg1..argn]-- If a list, subify's with named arguments.
 	symbol			-- If a symbol, quote
 	list			-- If a list, quote
+    word            -- Must be the exact symbol as the arg. name.
 	strict			-- Require that the other modifier activate.
  		
 so basically, mproc args must be LoLs.

@@ -1,0 +1,7 @@
+mproc foo {
+	word bar
+} {
+	puts bar
+}
+
+foo baz

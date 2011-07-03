@@ -4330,7 +4330,7 @@ sub builtin_proc {
 # arrays of functions (one per arg.) which performs the necessary
 # transformations on the matching argument.
 sub mk_mproc_macro_argfilter {
-  my ($argList) = @_;
+  my ($argList, $name) = @_;
 
   my @filters = ();
   for my $arg (@{$argList}) {
@@ -4338,16 +4338,19 @@ sub mk_mproc_macro_argfilter {
 
 	$arg->checkList(" in mproc argument list.");
 
+	# First, get the actual argument name
 	my $argName = pop @{$arg};
 	$argName->checkSymbol(" in mproc argument.");
 	$argName = ${$argName};
 
 	die "Invalid mproc argument name '$argName'\n"
-	  if $argName =~ /^(sub|sym|list|strict)$/;
+	  if $argName =~ /^(sub|sym|list|strict|word)$/;
 
+	# Now, test for strictness
  	my $strict = (scalar @{$arg} > 0 && ${$arg->[0]} eq 'strict');
  	shift @{$arg} if $strict;
 
+	# And get the modifier
 	my $mod = LL::Symbol->new('');
 	$mod = shift @{$arg} if scalar @{$arg};
 	$mod->checkSymbol() if $mod;
@@ -4390,6 +4393,18 @@ sub mk_mproc_macro_argfilter {
 		push @argFilter, sub {quoteIfList(shift, $strict)};
 	  }
 
+	  when ("word") {
+		push @argFilter,
+		  sub {my ($param) = @_;
+			   $param->checkSymbol(" in mproc argument '$argName' " .
+								   "for '$name'.");
+			   die "Expecting word '$argName', got '${$param}'\n"
+				 unless ${$param} eq $argName;
+
+			   return quoteIfSym($param, 1);
+			 };
+	  }
+
 	  when ('') {
 		# no modifiers.  Carry on.
 	  }
@@ -4409,11 +4424,11 @@ sub mk_mproc_macro_argfilter {
 # Return a macro (i.e. blessed Perl sub) which performs mproc argument
 # munging on its argument list.  $args is dismantled.
 sub mk_mproc_macro {
-  my ($procName, $args) = @_;
+  my ($procName, $args, $name) = @_;
 
   my $resultName = LL::Symbol->new($procName);
 
-  my $filters = mk_mproc_macro_argfilter($args);
+  my $filters = mk_mproc_macro_argfilter($args, $name);
 
   my $macro = sub {
 	my ($givenName, @args) = @_;
@@ -4481,7 +4496,7 @@ sub builtin_mproc {
 
   if (!$forward || $body->isNil()) {
 	# Create the wrapper macro.
-	my $macro = mk_mproc_macro($procName, $args);
+	my $macro = mk_mproc_macro($procName, $args, $fullName);
 
 	# Give the macro a name.
 	$Globals->defsetconst($fullName, $macro);
