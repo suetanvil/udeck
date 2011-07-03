@@ -1253,6 +1253,34 @@ macro object {object name superClass body} {
 
 
 class Exception {
+	"Instances of C<Exception> represent error conditions and are used to
+     recover from them or bring the program to a graceful halt.  Instances
+     are typically created by the C<try> mproc.
+
+     C<Exception> has three public fields:
+
+     =over
+
+     =item C<message> is a human-readable description of the error.
+
+     =item C<id> is a machine-parsable error message, typically a symbol.
+
+     =item C<args> is a C<List> of associated arguments.
+
+     =back
+
+     Typical C<Exceptions> wrap a continuation which will return control flow
+     to some earlier context.  Calling C<throw> invokes this continuation and
+     exits the current function and all other callers up to the C<try> block
+     that created it.
+
+     C<throw> takes one argument which is stored in C<message> unless it is
+     a boolean false.  This allows you to set the C<message> earlier and
+     invoke C<throw> without altering it.
+
+     The global C<const> C<Fatal> references an Exception which will cause
+     the current program to exit with an error."
+
 	public id
 	public message
 	public args
@@ -1285,7 +1313,6 @@ mproc try {
 	word catch [default :catch]
 	strict sub [Error] catchBlock [default {}]
 } {
-
 	var exc
 	var thrown = true
 	do {
