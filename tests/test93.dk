@@ -1,0 +1,10 @@
+# Text the Hash class.
+
+var h1 = [Hash->new "a" 1 "b" 2 "c" [list 42.5 :xxx "Hello, world"]]
+
+puts h1.size
+puts h1.keys
+puts [h1->exists "a"]
+puts [h1->exists :a]
+puts h1.values
+puts h1.keysAndValues

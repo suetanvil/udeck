@@ -260,6 +260,13 @@ _class_ext Number {
 		"Return a human-readable textual represention of this object."
 		return "$self"
 	}
+
+	method hashKey_get {} {
+		"Deprecated.  Return a string suitable for representing this object
+         as the key in a Perl hash.  Used in class C<Hash>."
+		return "n.$self"
+	}
+
 }
 
 _class_ext Nil {
@@ -470,6 +477,11 @@ _class_ext String {
 		return [_str_lte self other]
 	}
 
+	method hashKey_get {} {
+		"Deprecated.  Return a string suitable for representing this object
+         as the key in a Perl hash.  Used in class C<Hash>."
+		return "s.$self"
+	}
 }
 
 
@@ -539,6 +551,12 @@ _class_ext Symbol {
          argument, a number specifying the size.  In this case, it's
          C<stringSized>."
 		return stringSized
+	}
+
+	method hashKey_get {} {
+		"Deprecated.  Return a string suitable for representing this object
+         as the key in a Perl hash.  Used in class C<Hash>."
+		return "y.$self"
 	}
 }
 
@@ -1325,8 +1343,8 @@ mproc try {
      C<Exception>.  It may be treated as any other object--passed to functions,
      stored in global variables, etc.--but it is a fatal runtime error if
      its C<throw> is called (for the first time) after the first block has
-     finished executing.
-"
+     finished executing."
+
 	var exc
 	var thrown = true
 	do {
@@ -1337,6 +1355,120 @@ mproc try {
 
 	if thrown {
 		catchBlock exc
+	}
+}
+
+
+
+# Perl functions used by Hash.  We currently use Perl hashes to do the
+# heavy lifting and these functions provide access to a Perl hash.
+
+perlproc _ph_new {} '''
+    return LL::PerlObj->new({});
+'''
+
+perlproc _ph_add {hash key value} '''
+    $hash->{$key} = $value
+'''
+
+perlproc _ph_get {hash key} '''
+    return $hash->{$key};
+'''
+
+perlproc _ph_keys {hash} '''
+    return map { $_->[0] } values %{$hash};
+'''
+
+perlproc _ph_values {hash} '''
+    return map { $_->[1] } values %{$hash};
+'''
+
+perlproc _ph_size {hash} '''
+    return scalar (keys %{$hash});
+'''
+
+perlproc _ph_exists {hash key} '''
+    return LL::Main::boolObj(defined($hash->{$key}));
+'''
+
+perlproc _ph_remove {hash key} '''
+    return unset($hash->{$key});
+'''
+
+
+
+
+class Hash {
+
+	var perlHash
+
+	method _init {args} {
+		self->_initState
+		self->_setInitialValues args
+	}
+
+	method _initState {} {
+		perlHash = [_ph_new]
+	}
+
+	method _setInitialValues {values} {
+		(values.size % 2 == 0) || \
+			[die "Odd number of arguments to 'Hash->new'."]
+
+		var index = 0
+		while (index < values.size) {
+			var key = values@index
+			var value = values@(index+1)
+
+			self@key = value
+
+			index = index + 2
+		}
+	}
+
+	method at {key} {
+		var hashKey = key.hashKey
+
+		[_ph_exists perlHash hashKey] || [die "No key '$key' in hash."]
+
+		var elem = [_ph_get perlHash hashKey]
+		return (elem@1)
+	}
+
+	method atPut {key value} {
+		_ph_add perlHash key.hashKey [perlobj [list key value]]
+	}
+
+	method size_get {} {
+		return [_ph_size perlHash]
+	}
+
+	method keys_get {} {
+		return [_ph_keys perlHash]
+	}
+
+	method values_get {} {
+		return [_ph_values perlHash]
+	}
+
+	method keysAndValues_get {} {
+		var result = [listSized self.size]
+		
+		var index = 0
+		for key in self.keys {
+			result@index = [list key (self@key)]
+			index = index + 1
+		}
+
+		return result
+	}
+
+	method exists {key} {
+		return [_ph_exists perlHash key.hashKey]
+	}
+
+	method removeKey {key} {
+		_ph_remove key.hashKey
 	}
 }
 
