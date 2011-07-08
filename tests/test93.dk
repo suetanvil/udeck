@@ -26,6 +26,12 @@ puts "---"
 
 puts h1.printable
 puts h2.printable
+puts "---"
+
+h2->removeKey "c"
+puts h2.printable
+h2->removeKey "some unused key"
+puts h2.printable
 
 
 

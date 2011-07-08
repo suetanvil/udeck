@@ -1369,7 +1369,6 @@ mproc try {
 
 # Perl functions used by Hash.  We currently use Perl hashes to do the
 # heavy lifting and these functions provide access to a Perl hash.
-
 perlproc _ph_new {} '''
     return LL::PerlObj->new({});
 '''
@@ -1399,7 +1398,8 @@ perlproc _ph_exists {hash key} '''
 '''
 
 perlproc _ph_remove {hash key} '''
-    return unset($hash->{$key});
+    delete $hash->{$key};
+    return undef;
 '''
 
 
@@ -1411,19 +1411,42 @@ class Hash {
      C<at> and C<atPut> methods so the C<@> operator can be used to access the
      contents.
 
-"
+     Someday, any object will be a valid key but for now, the key must be
+     a String, Symbol or Number.
+
+     (Actually, any object which implements the readable attribute C<hashKey>
+     will work if the implementation returns a string and guarantees that the
+     the strings are equal if and only if the objects are equal.  This is
+     deprecated, however as it will break the planned future implementation of
+     Hash.  Instead, you should compute the string and explicitly use it as the
+     key.  The current implementation is like this so I can use Perl hashes to
+     do the heavy lifting.  This let me slap together a useful Hash class in
+     a few hours.)
+
+     (Also, I know that C<Hash> is a bad name for this class because it implies
+     a specific underlying implementation, which is a no-no in OOP.  I did it
+     anyway because the term 'hash' has become common shorthand for
+     associative arrays and C<Hash> is probably clearer to most programmers
+     than C<Dictionary> or C<AssociativeArray>.  It's also easier to type."
+
 	var perlHash
 
 	method _init {args} {
+		"Object initializer."
 		self->_initState
 		self->_setInitialValues args
 	}
 
 	method _initState {} {
+		"Initialize C<perlHash>.  It holds a reference to a Perl hash, which
+         does the actual work."
 		perlHash = [_ph_new]
 	}
 
 	method _setInitialValues {values} {
+		"Given a list of key/value pairs, store each value in C<self> with the
+         associated key."
+
 		(values.size % 2 == 0) || \
 			[die "Odd number of arguments to 'Hash->new'."]
 
@@ -1439,6 +1462,9 @@ class Hash {
 	}
 
 	method at {key} {
+		"Retrieve the object in C<self> stored at C<key>.  C<key> must
+         be present or it is a fatal error.  C<key> must be one of the
+         supported key types."
 		var hashKey = key.hashKey
 
 		[_ph_exists perlHash hashKey] || [die "No key '$key' in hash."]
@@ -1448,22 +1474,30 @@ class Hash {
 	}
 
 	method atPut {key value} {
+		"Store C<value> in C<self> at C<key>.  C<key> must be one of the
+         supported key types."
 		_ph_add perlHash key.hashKey [perlobj [list key value]]
 	}
 
 	method size_get {} {
+		"Return the number of items (i.e. key/value pairs) in C<self>."
 		return [_ph_size perlHash]
 	}
 
 	method keys_get {} {
+		"Return a list containing all of the keys in C<self>."
 		return [_ph_keys perlHash]
 	}
 
 	method values_get {} {
+		"Return a list containing all of the values in C<self>."
 		return [_ph_values perlHash]
 	}
 
 	method keysAndValuePairs_get {} {
+		"Return a list of 2-element lists, one for each item stored in C<self>
+         with the first element in each pair being the key and the second being
+         the value."
 		var result = [listSized self.size]
 		
 		var index = 0
@@ -1476,6 +1510,8 @@ class Hash {
 	}
 
 	method keysAndValues_get {} {
+		"Return a list containing each key in C<self> immediately followed by
+         the associated value."
 		var result = [listSized (2 * self.size)]
 		
 		var index = 0
@@ -1489,11 +1525,13 @@ class Hash {
 	}
 
 	method exists {key} {
+		"Test if C<key> is present in C<self>.  Returns true if present, false
+         if not."
 		return [_ph_exists perlHash key.hashKey]
 	}
 
 	method removeKey {key} {
-		_ph_remove key.hashKey
+		_ph_remove perlHash key.hashKey
 	}
 
 	method shallowCopy {} {
