@@ -143,6 +143,13 @@ _class_ext Object {
 		"Operator C<E<gt>=>: Test if self is greater than or equal to C<obj>."
 		return (self > obj || self == obj)
 	}
+
+	method hashKey_get {} {
+		"Deprecated.  Return a string suitable for representing this object
+         as the key in a Perl hash.  By default, calling this is an error."
+		die "Attempted to use '$self' as a hash key."
+	}
+
 }
 
 _class_ext Number {

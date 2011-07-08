@@ -1,0 +1,4 @@
+# Test what happens if you use an illegal hash key
+
+var h1 = [Hash->new "a" 1 "b" 2 "c" [list 42.5 :xxx "Hello, world"]]
+h1@:[1 2 3] = 42
