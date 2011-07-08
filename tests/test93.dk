@@ -22,6 +22,10 @@ puts "---"
 
 puts [h2->exists "xxx"]
 puts [h2->exists :xxx]
+puts "---"
+
+puts h1.printable
+puts h2.printable
 
 
 

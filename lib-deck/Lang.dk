@@ -1406,7 +1406,12 @@ perlproc _ph_remove {hash key} '''
 
 
 class Hash {
+	"Instances of Hash are associative arrays (aka 'dictionaries' or 'hash
+     tables') which map keys to values.  The contents are accessed using the
+     C<at> and C<atPut> methods so the C<@> operator can be used to access the
+     contents.
 
+"
 	var perlHash
 
 	method _init {args} {
@@ -1507,6 +1512,12 @@ class Hash {
 		}
 
 		return true
+	}
+
+	method printable_get {} {
+		var pbl = self.keysAndValues.printable
+		pbl@0 = " "
+		return "[Hash->new$pbl"
 	}
 }
 

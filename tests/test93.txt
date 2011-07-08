@@ -13,3 +13,6 @@ nil
 ---
 1
 nil
+---
+[Hash->new b 2 a 1 c [42.5 xxx Hello, world]]
+[Hash->new xxx 42 a 1 b .. [42.5 xxx Hello, world]]
