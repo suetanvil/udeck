@@ -338,6 +338,7 @@ X	-exceptions
 		-we can do other types later
 	-replace all uses of 'function' with 'procedure' or 'closure'.
 	-_::say and _::puts should tolerate Perl arguments.
+	-get rid of/privatize 'shallowCopy'.
 
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.

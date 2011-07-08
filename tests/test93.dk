@@ -8,3 +8,10 @@ puts [h1->exists "a"]
 puts [h1->exists :a]
 puts h1.values
 puts h1.keysAndValues
+puts h1.keysAndValuePairs
+
+var h2 = [h1->shallowCopy]
+puts h2.keysAndValues
+puts (h2 == h1)
+
+

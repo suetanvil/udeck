@@ -1073,7 +1073,7 @@ sub stripDocString {
 sub _sanitizeIndex {
   my ($self, $index) = @_;
 
-  $index->checkNumber();
+  $index->checkNumber(" as list index.");
   die "Index out of range: ${$index}\n"
 	if (int(${$index}) > $#{$self} || int(${$index}) < -scalar(@{$self}));
 
@@ -3724,7 +3724,7 @@ sub initGlobals {
 		"Create an empty (zero-initialized) ByteArray that is C<size>" .
 		" bytes long.",
 		sub { my ($size) = @_;  checkNargs('bytesSized',\@_,1);
-			  $size->checkNumber();
+			  $size->checkNumber(" as 'byteSized' argument.");
 			  die "Invalid byteArray size: ${$size}\n"
 				unless ${$size} >= 0;
 			  return LL::ByteArray->newSized(${$size})} );

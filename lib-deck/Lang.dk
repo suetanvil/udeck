@@ -1451,7 +1451,7 @@ class Hash {
 		return [_ph_values perlHash]
 	}
 
-	method keysAndValues_get {} {
+	method keysAndValuePairs_get {} {
 		var result = [listSized self.size]
 		
 		var index = 0
@@ -1463,12 +1463,43 @@ class Hash {
 		return result
 	}
 
+	method keysAndValues_get {} {
+		var result = [listSized (2 * self.size)]
+		
+		var index = 0
+		for key in self.keys {
+			result@index = key
+			result@(index + 1) = self@key
+			index = index + 2
+		}
+
+		return result
+	}
+
 	method exists {key} {
 		return [_ph_exists perlHash key.hashKey]
 	}
 
 	method removeKey {key} {
 		_ph_remove key.hashKey
+	}
+
+	method shallowCopy {} {
+		return [apply [getMethod self.class :new] self.keysAndValues]
+	}
+
+	method op_Equals {obj} {
+		(obj.class == self.class) || [return false]
+
+		var sk = self.keys
+		var ok = obj.keys
+
+		(sk.size == ok.size) || [return false]
+		for k in sk {
+			([obj->exists k] && (obj@k == self@k)) || [return false]
+		}
+
+		return true
 	}
 }
 
