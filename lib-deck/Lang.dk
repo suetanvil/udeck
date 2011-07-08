@@ -1531,14 +1531,18 @@ class Hash {
 	}
 
 	method removeKey {key} {
+		"Remove the key/value pair associated with C<key> from C<self>."
 		_ph_remove perlHash key.hashKey
 	}
 
 	method shallowCopy {} {
+		"Create a new hash with the same contents."
 		return [apply [getMethod self.class :new] self.keysAndValues]
 	}
 
 	method op_Equals {obj} {
+		"Implements the C<==> operator: tests for equality.  Hashes are equal
+         if their keys and associated values are all equal."
 		(obj.class == self.class) || [return false]
 
 		var sk = self.keys
@@ -1553,6 +1557,7 @@ class Hash {
 	}
 
 	method printable_get {} {
+		"Return a human-readable textual represention of this object."
 		var pbl = self.keysAndValues.printable
 		pbl@0 = " "
 		return "[Hash->new$pbl"
