@@ -1,0 +1,15 @@
+3
+[b a c]
+1
+nil
+[2 1 [42.5 xxx Hello, world]]
+[b 2 a 1 c [42.5 xxx Hello, world]]
+[[b 2] [a 1] [c [42.5 xxx Hello, world]]]
+[a 1 b 2 c [42.5 xxx Hello, world]]
+1
+---
+nil
+[[xxx 42] [a 1] [b 2] [c [42.5 xxx Hello, world]]]
+---
+1
+nil

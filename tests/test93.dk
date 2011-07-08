@@ -13,5 +13,15 @@ puts h1.keysAndValuePairs
 var h2 = [h1->shallowCopy]
 puts h2.keysAndValues
 puts (h2 == h1)
+puts "---"
+
+h2@'xxx' = 42
+puts (h2 == h1)
+puts h2.keysAndValuePairs
+puts "---"
+
+puts [h2->exists "xxx"]
+puts [h2->exists :xxx]
+
 
 
