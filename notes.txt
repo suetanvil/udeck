@@ -337,7 +337,7 @@ X	-replace all uses of 'function' with 'procedure'
 X		-also rename class 'Function' to class 'Procedure'
 X	-_::say and _::puts should tolerate Perl arguments.
 X	-get rid of/privatize 'shallowCopy'.
-X		-renamed to _shallowCopy
+X		-Only in Struct.  Writing your own is now mandatory.
 
 	-reorganize directory structure
 		-notes and docs to separate subdirs

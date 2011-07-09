@@ -4150,7 +4150,8 @@ sub initGlobals {
 
   defclass 'Struct',		'Object',
   {
-   shallowCopy	=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
+   _structShallowCopy
+				=> sub {my ($self) = @_; checkNargs('_structShallowCopy',\@_,1);
 						return $self->shallowCopy()},
   };
 

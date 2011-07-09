@@ -641,10 +641,20 @@ _class_ext Struct {
 	 C<Struct> subclasses are typically instantiated using the C<new> method or
 	 procedure."
 
-	mdoc shallowCopy {} \
+	mdoc _structShallowCopy {} \
 		"Return a copy of C<self> with all instance variables referencing
-         the same objects the original references.  Subclasses should
-         override this if that is not the correct behaviour."         
+         the same objects the original references.  A subclass should use this
+         to implement C<shallowCopy> only if the new copy does not interfere
+         with the internal state of the original."
+
+	method shallowCopy {} {
+		"Create a suitably shallow copy of self such that the copy cannot
+         interfere with the operation of the original.  (For example, if the
+         original contains a private list that it modifies, that list should
+         be copied.  Otherwise, both instances will modify the same (formerly)
+         private list.)"
+		die "Class '" self.class.printable "' does not implement shallowCopy."
+	}
 }
 
 
@@ -1097,6 +1107,11 @@ class Interval Struct {
 		"This object's truth value.  Like other sequences, true unless empty."
 		return (self.size > 0)
 	}
+
+	method shallowCopy {} {
+		"Make a copy of this C<Interval>."
+		return [self->_structShallowCopy]
+	}
 }
 
 
@@ -1331,6 +1346,13 @@ class Exception {
 
 		currentThrowable self
 	}
+
+	method shallowCopy {} {
+		"Make a copy of this C<Exception>.  Note that all fields are shared
+         across both instances."
+		return [self->_structShallowCopy]
+	}
+
 }
 
 const Fatal = \
