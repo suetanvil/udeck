@@ -1,1 +1,1 @@
-docstring found in a sub.
+Unexpected docstring.

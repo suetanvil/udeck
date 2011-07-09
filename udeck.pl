@@ -2496,9 +2496,9 @@ sub fixProcBody {
 	  $first = 0;
 
 	  if ($expr->size() == 1 && $expr->[0]->isString()) {
-		die "docstring found in a $mode.\n" unless $allowDocstring;
+		die "Unexpected docstring.\n" unless $allowDocstring;
 		
-		$docString = ${ $expr->[0] };
+		$docstring = ${ $expr->[0] };
 		next;
 	  }
 	}
@@ -2551,7 +2551,7 @@ sub compile {
   my $namespace = $isProc ? $Globals->getNamespace : undef;
 
   # Expand all macros (and also check for scope violations)
-  my ($fixedBody, $docstring) = fixProcBody($body, $name, 1);
+  my ($fixedBody, $docstring) = fixProcBody($body, $name, !($isTop || $isSub));
 
   # Find undeclared variables.
   ensureVarsDeclared($outerContext, $args, $fixedBody, $name, $mode,
