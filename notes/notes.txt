@@ -55,6 +55,8 @@ Notes:
 
 	- "a.b && [other expr]" doesn't autoparen the '.'.  Note this.
 
+	- 'subreturn' now called 'next'.
+
 
 Functions Todo:
 X	-listSized
@@ -340,19 +342,24 @@ X	-get rid of/privatize 'shallowCopy'.
 X		-Only in Struct.  Writing your own is now mandatory.
 X	-reorganize directory structure
 X		-notes and docs to separate subdirs
+X	-need to either 1) abandon negative indexes or 2) put the fixup
+X	 code in a common place (e.g. @)
+X		-added common method to clean that up
+X	- subify builtin
+X	-renamed subReturn to 'next'.
 
 	-docs:
 		-brochure
 		-language reference
+	-final blocks in procedures and methods
+	-basic file I/O
 		
-
+	-if macro should allow multiple 'elseif' clauses
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.
 	-_class_ext should be in '_::'
 	-need to alias macros.
 	-maybe make the comparisons other than <= into functions.
-	-need to either 1) abandon negative indexes or 2) put the fixup
-	 code in a common place (e.g. @)
 	-should autosub args be capitalized?
 	-maybe make Symbol a subclass of String
 	-deepCopy
@@ -360,7 +367,6 @@ X		-notes and docs to separate subdirs
 	-boolean xor
 	- static variables
 	- integers
-	- subify builtin
 	- rewrite compiler
 		- make the context a PerlObj in itself and pass it to
 		  var/const/sub/set.
@@ -392,4 +398,3 @@ X		-notes and docs to separate subdirs
 	-file I/O
 	-should 'for/foreach' also define 'index' as a const?
 	-interpolated strings should allow for "$foo.bar".
-	-if macro should allow multiple 'elseif' clauses

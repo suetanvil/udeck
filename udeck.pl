@@ -2465,7 +2465,7 @@ sub ensureVarsDeclared {
   my $scratchContext = LL::Context->new($outerContext);
 
   $scratchContext->def('return') if $mode =~ /^(method|proc|macro)$/;
-  $scratchContext->def('subreturn') if $mode eq 'sub';
+  $scratchContext->def('next') if $mode eq 'sub';
   $scratchContext->def('args') if $isVararg;
 
   for my $arg (@{$args}) {
@@ -2609,7 +2609,7 @@ sub compile {
 
 	my $retname =
 	  ($isProc || $isMethod || $isMacro) ? 'return' :
-	  ($isSub)                           ? 'subreturn' : '';
+	  ($isSub)                           ? 'next' : '';
 	my $ret = sub {
 	  my ($retval) = @_;
 	  $retval ||= NIL;

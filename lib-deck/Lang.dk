@@ -1377,7 +1377,7 @@ mproc try {
 	var exc
 	var thrown = true
 	do {
-		exc = [Exception->new subreturn]
+		exc = [Exception->new next]
 		tryBlock exc
 		thrown = false
 	}
