@@ -4202,20 +4202,22 @@ sub mkModPath {
 
 
 sub builtin_puts {
-  for my $obj (@_) {
-	die "builtin_puts: Not an object: '$obj'\n"
-	  unless (ref($obj) && isa($obj, 'LL::Object'));
-	print $obj->printStr();
-  }
+  builtin_say(@_);
   print "\n";
-
   return NIL;
 }
 
 sub builtin_say {
   for my $obj (@_) {
+
 	die "Not an object: '$obj'\n"
 	  unless (ref($obj) && isa($obj, 'LL::Object'));
+
+	if (!ref($obj) || !isa($obj, 'LL::Object')) {
+	  print "[Illegal object: $obj]";
+	  next;
+	}
+
 	print $obj->printStr();
   }
 

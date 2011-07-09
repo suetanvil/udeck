@@ -333,12 +333,12 @@ X	-prefix - with one argument must be tolerated by the compiler.
 X	-exceptions
 X	-hashes keyed on strings, symbols or numbers
 X		-we can do other types later
-        
+X	-replace all uses of 'function' with 'procedure'
+X		-also rename class 'Function' to class 'Procedure'
+X	-_::say and _::puts should tolerate Perl arguments.
+X	-get rid of/privatize 'shallowCopy'.
+X		-renamed to _shallowCopy
 
-	-replace all uses of 'function' with 'procedure'
-		-also rename class 'Function' to class 'Procedure'
-	-_::say and _::puts should tolerate Perl arguments.
-	-get rid of/privatize 'shallowCopy'.
 	-reorganize directory structure
 		-notes and docs to separate subdirs
 	-docs:
