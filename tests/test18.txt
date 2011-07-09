@@ -1,4 +1,4 @@
-<function>
+<procedure>
 this is the result
 this is the result
 this is the result

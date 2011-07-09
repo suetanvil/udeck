@@ -6,6 +6,6 @@ PASSED: 42
 PASSED: [quote [1 2 3 4 5]]
 PASSED: nil
 PASSED: <macro>
-PASSED: <function>
+PASSED: <procedure>
 PASSED: <method call>
 PASSED: 1 .. 5

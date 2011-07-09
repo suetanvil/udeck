@@ -759,17 +759,17 @@ _class_ext Macro {
 	}
 }
 
-_class_ext Function {
-	"C<Function> is the class of most Deck procedures (procs, subs, etc)."
+_class_ext Procedure {
+	"C<Procedure> is the class of most Deck procedures (procs, subs, etc)."
 
 	method shallowCopy {} {
-		"C<Functions> are immutable so we just return the same instance."
+		"C<Procedures> are immutable so we just return the same instance."
 		return self
 	}
 
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
-		return "<function>"
+		return "<procedure>"
 	}
 }
 

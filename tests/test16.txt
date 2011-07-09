@@ -5,4 +5,4 @@
 :Nil
 :Quote
 :Macro
-:Function
+:Procedure

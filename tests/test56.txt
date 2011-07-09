@@ -2,7 +2,7 @@
 nil
 42
 1
-<function>
+<procedure>
 nil
 nil
 :_foo defined as bar

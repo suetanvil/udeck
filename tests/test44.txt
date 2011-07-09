@@ -1,8 +1,8 @@
-calling <function> on :foo
+calling <procedure> on :foo
 :foo
-calling <function> on :bar
+calling <procedure> on :bar
 :bar
-calling <function> on :x
+calling <procedure> on :x
 :x
-calling <function> on 42
+calling <procedure> on 42
 42

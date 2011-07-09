@@ -478,7 +478,7 @@ sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
 sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
 sub checkQtLoL  {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
 sub checkLoL    {die "Expected LoL, got @{[ref(shift)]}@_\n"}
-sub checkFun	{die "Expected function, got @{[ref(shift)]}@_\n"}
+sub checkFun	{die "Expected procedure, got @{[ref(shift)]}@_\n"}
 sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
 sub checkStruct	{die "Expected struct, got @{[ref(shift)]}@_\n"}
 sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
@@ -505,7 +505,7 @@ sub isInfixList {return 0}
 sub isQuote {return 0}
 sub isNil {return 0}
 sub isMacro {return 0}
-sub isFunction {return 0}
+sub isProcedure {return 0}
 sub isCallable {return 0}
 sub isTrue {return 1}
 sub isNumber {return 0}
@@ -515,7 +515,7 @@ sub isLoL {return 0}	# Is an list containing only lists
 sub isPerlObj {return 0}
 sub isClass {return 0}
 sub isStruct {return 0}
-sub isUndefinedFunction {return 0}
+sub isUndefinedProcedure {return 0}
 sub matchesOpen {return 0}
 sub storeStr {my ($self) = @_; return "${$self}"}
 sub printStr {my ($self) = @_; return $self->storeStr()};
@@ -1291,27 +1291,27 @@ sub isMacro {return 1}
 sub storeStr {return "<macro>"}
 
 
-package LL::Function;
+package LL::Procedure;
 use base 'LL::Object';
 sub isAtom {return 1}
-sub isFunction {return 1}
+sub isProcedure {return 1}
 sub checkFun {}
 sub isCallable {return 1}
-sub storeStr {return "<function>"}
+sub storeStr {return "<procedure>"}
 sub perlForm {my ($self) = @_; return $self}
 
 package LL::Method;
-use base 'LL::Function';
+use base 'LL::Procedure';
 sub storeStr {return "<method>"}
 
 package LL::MethodCall;
-use base 'LL::Function';
+use base 'LL::Procedure';
 sub storeStr {return "<method call>"}
 
-package LL::UndefinedFunction;
-use base 'LL::Function';
-sub storeStr {return "<undefined function>"}
-sub isUndefinedFunction {return 1}
+package LL::UndefinedProcedure;
+use base 'LL::Procedure';
+sub storeStr {return "<undefined procedure>"}
+sub isUndefinedProcedure {return 1}
 sub new {
   my ($class, $name) = @_;
   die "Expecting a simple Perl string, got @{[ref($name)]}\n"
@@ -1603,7 +1603,7 @@ sub readfile {
 	  $result = $fn->();
 	};
 	if ($@) {
-	  die "Called return continuation on a returned function.\n"
+	  die "Called return continuation on a returned procedure.\n"
 		if $@ =~ /^LL::Context=HASH/;
 	  die $@;
 	}
@@ -1623,7 +1623,7 @@ sub readfile {
 
 
 # Clear all forward declarations in the current namespace and ensure
-# that they all now refer to defined functions.
+# that they all now refer to defined procedures.
 sub clearForwardFns {
   my $ns = $Globals->getNamespace();
 
@@ -1632,7 +1632,7 @@ sub clearForwardFns {
   for my $name (@forwards) {
 	$missing .= "Undefined forward (m)proc declaration '$name' in $ns\n"
 	  if ($Globals->present($name) &&
-		  $Globals->lookup($name)->isUndefinedFunction());
+		  $Globals->lookup($name)->isUndefinedProcedure());
   }
 
   die $missing if $missing;
@@ -2202,7 +2202,7 @@ sub evalExpr {
 
 
 # If $expr is a macro invocation, evaluate it and return the result.
-# Note that macros are allowed to return macro calls so this function
+# Note that macros are allowed to return macro calls so this procedure
 # evaluates $expr itteratively until no macros are present.
 sub applyMacros {
   my ($expr, $context) = @_;
@@ -2250,7 +2250,7 @@ sub applyMacrosRecursively {
 }
 
 
-# Evaluate $expr, which is a function call.
+# Evaluate $expr, which is a procedure call.
 sub evalFuncCall {
   my ($expr, $context) = @_;
 
@@ -2260,7 +2260,7 @@ sub evalFuncCall {
   my @args = map { evalExpr($_, $context) } @{$expr};
   my $fn = shift @args;
 
-  # Functions listed in %fnNeedsContext are special cases and get
+  # Procedures listed in %fnNeedsContext are special cases and get
   # access to the context.
   if (defined($fnNeedsContext{$fn})) {
 	unshift @args, $context;
@@ -2271,11 +2271,11 @@ sub evalFuncCall {
 	my $nm = $fname ? $fname : $fn->storeStr();
 
 	# Give a more useful error message.
-	die "Attempted to call macro '$nm' as a function.  (The macro was\n" .
+	die "Attempted to call macro '$nm' as a procedure.  (The macro was\n" .
 	  "not defined when the expression was compiled).\n"
 		if $fn->isMacro();
 
-	die "Attempted to call non-function '$nm' as a function.\n";
+	die "Attempted to call non-procedure '$nm' as a procedure.\n";
   }
 	
 
@@ -2399,7 +2399,7 @@ sub checkForScopeViolations {
 
   if ($expr->isSymbol()) {
 	my $ns = $Globals->getNamespace();
-	die "Use of a qualified private name ('${$expr}') in function '$name'\n"
+	die "Use of a qualified private name ('${$expr}') in procedure '$name'\n"
 	  unless $Globals->isLegallyAccessible(${$expr});
 
 	return;
@@ -2482,14 +2482,14 @@ sub ensureVarsDeclared {
 
 # Return a blessed func. ref which executes a sub with $args and $body
 # in the given context.  If $context is undef, the $Global context is
-# used, allowing the function to define and set global variables.
+# used, allowing the procedure to define and set global variables.
 # $name is used for error messages and may be omitted.
 sub compile {
   my ($outerContext, $args, $body, $mode, $name) = @_;
   $body->checkLoL();
 
   my $isNamed = !!$name;
-  $name ||= '<unnamed function>';
+  $name ||= '<unnamed procedure>';
 
   die "Unknown compiler mode '$mode'\n"
 	unless $mode =~ /^(macro|proc|sub|method|toplevel)$/;
@@ -2619,7 +2619,7 @@ sub compile {
 	  $lastexpr = $retval;
 	  die "$context\n";
 	};
-	$context->defsetconst($retname, LL::Function->new($ret))
+	$context->defsetconst($retname, LL::Procedure->new($ret))
 	  if $retname;
 
 	eval {
@@ -2641,7 +2641,7 @@ sub compile {
 	return $lastexpr;
   };
 
-  return $isMacro ? LL::Macro->new($fn) : LL::Function->new($fn);
+  return $isMacro ? LL::Macro->new($fn) : LL::Procedure->new($fn);
 }
 
 # ---------------------------------------------------------------------------
@@ -2768,16 +2768,16 @@ sub checkNargs {
 }
 
 
-# Declare a builtin function in the local scope and bind it to the
+# Declare a builtin procedure in the local scope and bind it to the
 # given sub.
 sub prim {
-  my ($name, $args, $docstring, $function) = @_;
+  my ($name, $args, $docstring, $procedure) = @_;
 
   # Assertion:
-  die "Expecting a sub, got '$function'\n"
-	unless ref($function) eq 'CODE';
+  die "Expecting a sub, got '$procedure'\n"
+	unless ref($procedure) eq 'CODE';
 
-  $Globals->defset($name, LL::Function->new($function));
+  $Globals->defset($name, LL::Procedure->new($procedure));
 
   my $longName = $Globals->normalizeName($name);
   addProcDocString($longName, 1, $args, $docstring);
@@ -2965,7 +2965,7 @@ sub macro_proc {
   }
 
   if (defined($body)) {
-	$body->checkQtLoL(" in function body of '${$proc}'.");
+	$body->checkQtLoL(" in procedure body of '${$proc}'.");
   } else {
 	$body = NIL;
   }
@@ -3062,7 +3062,7 @@ sub macro_varconst {
 }
 
 
-# Handle the 'set' and '=' functions.
+# Handle the 'set' and '=' procedures.
 sub macro_assign {
   my ($set, $dest, $value) = @_;
 
@@ -3441,7 +3441,7 @@ sub initGlobals {
 
   $Globals->defsetconst ('nil', NIL);
 
-  # Externally-defined primitive functions
+  # Externally-defined primitive procedures
   for my $special (
 #				   ['_::storestr',			\&builtin_storestr],
 #				   ['show',				\&builtin_show],
@@ -3535,7 +3535,7 @@ sub initGlobals {
 					\&builtin_perluse],
 
 				   ['apply',			"fun argList",
-					"Call function C<fun> with the arguments in list" .
+					"Call procedure C<fun> with the arguments in list" .
 					" C<argList> and returns the result of the call." .
 					" C<argList> B<must> be a standard Deck list and not" .
 					" merely an object that implements the sequence protocol.",
@@ -3700,7 +3700,7 @@ sub initGlobals {
 	alias ("_::$alias", $alias);
   }
 
-  # More complex primitive functions
+  # More complex primitive procedures
   prim ('===',
 		"lhs rhs",
 		"Test if C<lhs> and C<rhs> are the same object.",
@@ -3829,7 +3829,7 @@ sub initGlobals {
   alias ('_::value', 'value');
 
 
-  # Create the hash of functions that take the context as arg. 0.
+  # Create the hash of procedures that take the context as arg. 0.
   for my $name (qw{_::set _::var _::sub _::const lookup defined}) {
 	my $fn = $Globals->lookup($name);
 	$fnNeedsContext{$fn} = 1;
@@ -4135,7 +4135,7 @@ sub initGlobals {
 
   defclass 'Nil',			'Object', {};
   defclass 'Macro',			'Object', {};
-  defclass 'Function',		'Object', {};
+  defclass 'Procedure',		'Object', {};
   defclass 'Method',		'Object', {};
   defclass 'MethodCall',	'Object', {};
 
@@ -4306,7 +4306,7 @@ sub builtin_proc {
 
   $name->checkSymbol();
 
-  $Globals->defsetconst(${$name}, LL::UndefinedFunction->new(${$name}))
+  $Globals->defsetconst(${$name}, LL::UndefinedProcedure->new(${$name}))
 	unless $Globals->present(${$name});
 
   if ($body->isNil()) {
@@ -4318,7 +4318,7 @@ sub builtin_proc {
   $body->checkList();
 
   die "proc: name '${$name}' is already defined.\n"
-	unless $Globals->lookup(${$name})->isUndefinedFunction();
+	unless $Globals->lookup(${$name})->isUndefinedProcedure();
 
   my $longName = $Globals->normalizeName(${$name});
   my $func = compile ($Globals, $args, $body, 'proc', $longName);
@@ -4329,7 +4329,7 @@ sub builtin_proc {
 
 
 # Given an mproc argument list ($args), produce a matching array of
-# arrays of functions (one per arg.) which performs the necessary
+# arrays of procedures (one per arg.) which performs the necessary
 # transformations on the matching argument.
 sub mk_mproc_macro_argfilter {
   my ($argList, $name) = @_;
@@ -4576,8 +4576,8 @@ sub builtin_mproc {
 	# Give the macro a name.
 	$Globals->defsetconst($fullName, $macro);
 
-	# Set the placeholder function
-	$Globals->defsetconst($procName, LL::UndefinedFunction->new($fullName));
+	# Set the placeholder procedure
+	$Globals->defsetconst($procName, LL::UndefinedProcedure->new($fullName));
 
 	# And set the forward declaration
 	$Globals->addForward($fullName, $argSig);
@@ -4591,7 +4591,7 @@ sub builtin_mproc {
   die "Argument mismatch with forward declaration in mproc '$fullName'\n"
 	unless $forward eq $argSig;
 
-  # Create the function to call.
+  # Create the procedure to call.
   my $procArgs = LL::List->new(\@pargs);
   my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body);
 
@@ -4647,8 +4647,8 @@ sub builtin_iffn {
 
   my $result = $test->();
   if ($result->isTrue()) {
-	$result = $trueBlock->() if $trueBlock->isFunction();
-  } elsif ($falseBlock->isFunction()) {
+	$result = $trueBlock->() if $trueBlock->isProcedure();
+  } elsif ($falseBlock->isProcedure()) {
 	$result = $falseBlock->();
   }
 
@@ -4860,7 +4860,7 @@ sub builtin_perlproc {
 
   my $proc = sub {return decktype($sub->(@_))};
 
-  return $Globals->defset(${$name}, LL::Function->new($proc));
+  return $Globals->defset(${$name}, LL::Procedure->new($proc));
 }
 
 
@@ -5215,7 +5215,7 @@ sub builtin_class_ext {
 sub builtin_new {
   my ($class, @args) = @_;
 
-  $class->checkClass(" in function 'new'.");
+  $class->checkClass(" in procedure 'new'.");
 
   my $obj = LL::Struct->new($class);
 
