@@ -59,7 +59,7 @@ _class_ext Object {
 	}
 
 	method maker_get {} {
-		"Sequence protocol: return a function which will create a collection
+		"Sequence protocol: return a procedure which will create a collection
 		 suitable for holding the contents of self and which takes one
          argument,a number specifying the size.  It defaults to C<listSized>."
 		return listSized
@@ -419,7 +419,7 @@ _class_ext String {
 		"Create and return a copy of C<self>."
 
 	method maker_get {} {
-		"Sequence protocol: return a function which will create a collection
+		"Sequence protocol: return a procedure which will create a collection
 		 suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<stringSized>."
@@ -514,7 +514,7 @@ _class_ext Symbol {
 	 C<atPut> method will fail.
 
 	 C<Symbols> can be converted to and from strings via the C<intern> and 
-	 C<unintern> functions.  Symbol literals are created by prefixing the
+	 C<unintern> procedures.  Symbol literals are created by prefixing the
      symbol with the C<:> character, e.g. C<:foo>.  This works as expected,
      with the quote delaying evaluation and so yielding the symbol instead of
      the variable it would represent."
@@ -553,7 +553,7 @@ _class_ext Symbol {
 	}
 
 	method maker_get {} {
-		"Sequence protocol: return a function which will create a collection
+		"Sequence protocol: return a procedure which will create a collection
 		 suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<stringSized>."
@@ -622,7 +622,7 @@ _class_ext ByteArray {
 	}
 
 	method maker_get {} {
-		"Sequence protocol: return a function which will create a collection
+		"Sequence protocol: return a procedure which will create a collection
 		 suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<bytesSized>."
@@ -714,7 +714,7 @@ _class_ext Quote {
 
      will evaluate to C<[a b c]>, a C<List> of C<Symbols>.
 
-     Instances are created with the function C<quote> (but note that C<quote>
+     Instances are created with the procedure C<quote> (but note that C<quote>
      is B<not> a special form; its argument is evaluated normally.)
 
      In practice, you will rarely find references to C<Quote> in everyday code.
@@ -760,7 +760,7 @@ _class_ext Macro {
 }
 
 _class_ext Function {
-	"C<Function> is the class of most Deck functions (procs, subs, etc)."
+	"C<Function> is the class of most Deck procedures (procs, subs, etc)."
 
 	method shallowCopy {} {
 		"C<Functions> are immutable so we just return the same instance."
@@ -809,7 +809,7 @@ _class_ext PerlObj {
 	"C<PerlObj> is a wrapper around some Perl data.  Perl functions created
 	 using C<perlproc> can return Perl data that has no meaningful
 	 representation inside Deck and these can then be passed to other Perl
-	 functions.
+	 procedures.
 
 	 For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
 	 hold a reference to an instance of a class defined in the library.
@@ -911,9 +911,9 @@ proc asList {seq} {
 }
 
 
-perlproc _perlsort {fn ls} '''
-  $fn->checkFun(" in _sort perlfunc.");
-  my $result = [sort {$fn->($a, $b)->perlForm()} @{$ls}];
+perlproc _perlsort {pr ls} '''
+  $pr->checkFun(" in _sort perlfunc.");
+  my $result = [sort {$pr->($a, $b)->perlForm()} @{$ls}];
   return $result;
 '''
 
@@ -928,7 +928,7 @@ mproc sort {
 	 second argument.  (This is the same interface as C<cmp>).
 
 	 C<seq> is an object that implements the sequence protocol and the return
-	 value is constructed by the function returned by C<seq>'s C<maker>
+	 value is constructed by the procedure returned by C<seq>'s C<maker>
 	 attribute."
 
 	var sortList = seq
@@ -950,7 +950,7 @@ mproc reduce {
 	sub 1 filter
 	seq
 } {
-	"Apply function C<filter> to every element of sequence C<seq> and return
+	"Apply procedure C<filter> to every element of sequence C<seq> and return
 	 another sequence containing only the elements on which C<filter> returned
 	 a true value.  The return value's type is compatible with C<seq>'s."
 
@@ -970,10 +970,10 @@ mproc reduce {
 
 			
 mproc map {
-	sub 1 transFn
+	sub 1 transPr
 	seq
 } {
-	"Call function C<transFn> on each element in C<seq> and return another
+	"Call procedure C<transPr> on each element in C<seq> and return another
      sequence containing the results of the calls on the corresponding input
      elements.  The return value's type is compatible with C<seq>'s."
 
@@ -981,7 +981,7 @@ mproc map {
 	var index = 0
 
 	for elem in seq {
-		result@index = [transFn elem]
+		result@index = [transPr elem]
 		index = index + 1
 	}
 
@@ -989,22 +989,22 @@ mproc map {
 }
 	
 mproc do {
-	sub fn
+	sub pr
 } {
-	"Evaluate C<fn> once and return its result."
-	return [fn]
+	"Evaluate C<pr> once and return its result."
+	return [pr]
 }
 
 
 mproc dofor {
-	sub 1 fn
+	sub 1 pr
 	seq
 } {
-	"Call function C<fn> on each element in C<seq>, discarding the result.
+	"Call procedure C<pr> on each element in C<seq>, discarding the result.
      This is a slightly more compact, less flexible form of the C<for> loop."
 
 	for elem in seq {
-		fn elem
+		pr elem
 	}
 }
 
@@ -1296,7 +1296,7 @@ class Exception {
 
      Typical C<Exceptions> wrap a continuation which will return control flow
      to some earlier context.  Calling C<throw> invokes this continuation and
-     exits the current function and all other callers up to the C<try> block
+     exits the current procedure and all other callers up to the C<try> block
      that created it.  C<throw> also deletes the continuation, turning
      subsequent calls to C<throw> into no-ops.
 
@@ -1313,12 +1313,12 @@ class Exception {
 
 	var throwable
 
-	method _init {thfn} {
+	method _init {throwProc} {
 		id = nil
 		message = "Unknown exception."
 		args = :[]
 
-		throwable = thfn
+		throwable = throwProc
 	}
 
 	method throw {msg} {
@@ -1347,7 +1347,7 @@ mproc try {
      second block (following the word 'catch') is evaluated.
 
      Both blocks are given an argument named C<Error>.  This is the
-     C<Exception>.  It may be treated as any other object--passed to functions,
+     C<Exception>.  It may be treated as any other object--passed to procedures,
      stored in global variables, etc.--but it is a fatal runtime error if
      its C<throw> is called (for the first time) after the first block has
      finished executing."
@@ -1367,8 +1367,8 @@ mproc try {
 
 
 
-# Perl functions used by Hash.  We currently use Perl hashes to do the
-# heavy lifting and these functions provide access to a Perl hash.
+# Perl procedures used by Hash.  We currently use Perl hashes to do the
+# heavy lifting and these procedures provide access to a Perl hash.
 perlproc _ph_new {} '''
     return LL::PerlObj->new({});
 '''
