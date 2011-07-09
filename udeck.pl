@@ -2479,6 +2479,44 @@ sub ensureVarsDeclared {
 
 }
 
+=pod xxx
+
+# Expand all macros (and also check for scope violations)
+sub fixProcBody {
+  my ($body, $name, $allowDocstring) = @_;
+
+  my @fixedBody;
+  my $docstring;
+
+  my $first = 1;
+  for my $expr (@{$body}) {
+
+	# If the first item is a docstring, handle it.  For now, that
+	# means just skipping it.
+	if ($first) {
+	  $first = 0;
+
+	  if ($expr->size() == 1 && $expr->[0]->isString()) {
+		die "docstring found in a $mode.\n" unless $allowDocstring;
+		
+		$docString = ${ $expr->[0] };
+		next;
+	  }
+	}
+
+	my $newExpr = applyMacrosRecursively ($expr, $Globals);
+	
+	$newExpr->unescapeAllOperators();
+	checkForScopeViolations($newExpr, $name);
+
+	push @fixedBody, $newExpr;
+  }
+
+  return (\@fixedBody, $docstring);
+}
+
+=cut
+
 
 # Return a blessed func. ref which executes a sub with $args and $body
 # in the given context.  If $context is undef, the $Global context is
@@ -2515,7 +2553,7 @@ sub compile {
   my $namespace = $isProc ? $Globals->getNamespace : undef;
 
   # Expand all macros (and also check for scope violations)
-  my @fixedBody;
+  my $fixedBody;
   {
 	my $first = 1;
 	for my $expr (@{$body}) {
@@ -2544,15 +2582,15 @@ sub compile {
 
 	  checkForScopeViolations($newExpr, $name);
 
-	  push @fixedBody, $newExpr;
+	  push @{$fixedBody}, $newExpr;
 	}
   }
 
   # Find undeclared variables.
-  ensureVarsDeclared($outerContext, $args, [@fixedBody], $name, $mode,
+  ensureVarsDeclared($outerContext, $args, $fixedBody, $name, $mode,
 					 $isVararg);
 
-  print "$name: ", LL::List->new(\@fixedBody)->storeStr(), "\n"
+  print "$name: ", LL::List->new($fixedBody)->storeStr(), "\n"
 	if $dumpExpr;
 
   my $fn = sub {
@@ -2623,7 +2661,7 @@ sub compile {
 	  if $retname;
 
 	eval {
-	  for my $expr (@fixedBody) {
+	  for my $expr (@{$fixedBody}) {
 		$lastexpr = evalExpr($expr, $context);
 	  }
 	};
