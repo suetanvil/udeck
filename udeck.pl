@@ -2479,7 +2479,6 @@ sub ensureVarsDeclared {
 
 }
 
-=pod xxx
 
 # Expand all macros (and also check for scope violations)
 sub fixProcBody {
@@ -2515,7 +2514,6 @@ sub fixProcBody {
   return (\@fixedBody, $docstring);
 }
 
-=cut
 
 
 # Return a blessed func. ref which executes a sub with $args and $body
@@ -2553,38 +2551,7 @@ sub compile {
   my $namespace = $isProc ? $Globals->getNamespace : undef;
 
   # Expand all macros (and also check for scope violations)
-  my $fixedBody;
-  {
-	my $first = 1;
-	for my $expr (@{$body}) {
-
-	  # If the first item is a docstring, handle it.  For now, that
-	  # means just skipping it.
-	  if ($first) {
-		$first = 0;
-		if ($expr->size() == 1 && $expr->[0]->isString()) {
-		  die "docstring found in a $mode.\n" if ($isTop || $isSub);
-
-		  my $docString = ${ $expr->[0] };
-
-		  my $astr = $args->printStr();
-		  $astr .= 'args' if $isVararg;		# Bad formatting, fixed later
-
-		  addProcDocString($name, 0, $astr, $docString)
-			if $isProc;
-		  next;
-		}
-	  }
-
-	  my $newExpr = applyMacrosRecursively ($expr, $Globals);
-
-	  $newExpr->unescapeAllOperators();
-
-	  checkForScopeViolations($newExpr, $name);
-
-	  push @{$fixedBody}, $newExpr;
-	}
-  }
+  my ($fixedBody, $docstring) = fixProcBody($body, $name, 1);
 
   # Find undeclared variables.
   ensureVarsDeclared($outerContext, $args, $fixedBody, $name, $mode,
