@@ -1,0 +1,29 @@
+
+=head1 Final Blocks
+
+Deck procedures need to have optional final blocks.  These are blocks
+which execute after the function returns, regardless of how it
+returns (i.e. even if through a continuation.)
+
+=head2 Implementation
+
+1) Factor out processing steps (e.g. macro appliction) from compile.
+
+2) Add 'finalBlock' argument.
+
+3) Apply processing steps to both body and finalBlock.
+
+4) In sub:
+
+	a) first eval @fixedBody, trapping return.
+
+	b) next, eval @fixedFinalBlock.  Die if there's a return.
+
+	c) return the result.
+
+5) Add final block support to the callers.
+
+
+	
+
+
