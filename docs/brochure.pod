@@ -1,0 +1,33 @@
+
+=head1 Deck: The Two Page Overview
+
+Deck is a Lispish general-purpose programming language that combines
+all of the advantages of Lisp dialects with the features of modern
+programming languages.  In particular, Deck has:
+
+=over
+
+=item First-class functions and closures
+
+=item Dynamically-typed variables
+
+=item Automatic memory management and memory safety
+
+=item Macros and easy manipulation of code by code
+
+=over
+
+It also has:
+
+=over
+
+=item Infix expressions and a readable syntax
+
+=item A pervasive, modern object system
+
+=item Namespaces and packages
+
+=item Continuations and exceptions
+
+=back
+
