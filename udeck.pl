@@ -1596,7 +1596,7 @@ sub readfile {
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
-	my $fn = compile($Globals, $args, $expr, 'toplevel', "*top*");
+	my $fn = compile($Globals, $args, $expr, undef, 'toplevel', "*top*");
 
 	my $result;
 	eval {
@@ -1604,7 +1604,7 @@ sub readfile {
 	};
 	if ($@) {
 	  die "Called return continuation on a returned procedure.\n"
-		if $@ =~ /^LL::Context=HASH/;
+		if ref($@) && $@->isa('LL::Context');
 	  die $@;
 	}
 
@@ -2455,7 +2455,7 @@ sub ensureVarsDeclaredRecursively {
 
 # Search $body for uses of undeclared variables.
 sub ensureVarsDeclared {
-  my ($outerContext, $args, $body, $name, $mode, $isVararg) = @_;
+  my ($outerContext, $args, $body, $final, $name, $mode, $isVararg) = @_;
 
   # We skip toplevel expressions because a) it complicates this hack and
   # b) compile() will detect this stuff soon enough anyway.
@@ -2473,7 +2473,7 @@ sub ensureVarsDeclared {
 	$scratchContext->def(${$arg});
   }
 
-  for my $entry (@{$body}) {
+  for my $entry (@{$body}, @{$final}) {
 	ensureVarsDeclaredRecursively($entry, $scratchContext);
   }
 
@@ -2521,8 +2521,11 @@ sub fixProcBody {
 # used, allowing the procedure to define and set global variables.
 # $name is used for error messages and may be omitted.
 sub compile {
-  my ($outerContext, $args, $body, $mode, $name) = @_;
-  $body->checkLoL();
+  my ($outerContext, $args, $body, $final, $mode, $name) = @_;
+  $final ||= LL::List->new([]);
+
+  $body->checkLoL(" in a procedure body.");
+  $final->checkLoL(" in a procedure finalizer body.");
 
   my $isNamed = !!$name;
   $name ||= '<unnamed procedure>';
@@ -2550,14 +2553,14 @@ sub compile {
   # Determine the default namespace if needed.
   my $namespace = $isProc ? $Globals->getNamespace : undef;
 
-  # Expand all macros (and also check for scope violations)
+  # Expand all macros (and also check for scope violations) for the main body
   my ($fixedBody, $docstring) = fixProcBody($body, $name, !($isTop || $isSub));
+  my ($fixedFinal) = fixProcBody($final, $name, 0);
+  ensureVarsDeclared($outerContext, $args, $fixedBody, $fixedFinal,
+					 $name, $mode, $isVararg);
 
-  # Find undeclared variables.
-  ensureVarsDeclared($outerContext, $args, $fixedBody, $name, $mode,
-					 $isVararg);
-
-  print "$name: ", LL::List->new($fixedBody)->storeStr(), "\n"
+  print "$name: ", LL::List->new($fixedBody)->storeStr(), " final:",
+	LL::List->new($fixedFinal)->storeStr(), "\n"
 	if $dumpExpr;
 
   my $fn = sub {
@@ -2622,26 +2625,41 @@ sub compile {
 	  die "Too many arguments to $retname\n" unless scalar @_ <= 1;
 
 	  $lastexpr = $retval;
-	  die "$context\n";
+	  die $context;
 	};
 	$context->defsetconst($retname, LL::Procedure->new($ret))
 	  if $retname;
 
+	# Evaluate the main body.
 	eval {
 	  for my $expr (@{$fixedBody}) {
 		$lastexpr = evalExpr($expr, $context);
 	  }
 	};
-	if ($@ && $@ ne "$context\n") {
-	  die $@;
-	}
+	my $mainStatus = $@;
+	die $mainStatus  # Actual fatal error
+	  if $mainStatus &&
+		!(blessed($mainStatus) && $mainStatus->isa('LL::Context'));
 
+	# Evaluate the finalizer
+	eval {
+	  for my $expr (@{$fixedFinal}) {
+		evalExpr($expr, $context);
+	  }
+	};
+	die "Called return continuation from a final block.\n"
+	  if blessed($@) && $@->isa('LL::Context');
+	die $@ if $@;	# Actual fatal error
+
+	# If we exited from an outer caller's return, rethrow.
+	die $mainStatus if $mainStatus && $mainStatus ne $context;
+	
 	# Procs return NIL by default.  Only explicit returns return a
 	# value.
-	return NIL if ($isProc && !$@);
+	return NIL if ($isProc && !$mainStatus);
 
 	# Methods return 'self' by default.
-	return $mthSelf if ($isMethod && !$@);
+	return $mthSelf if ($isMethod && !$mainStatus);
 
 	return $lastexpr;
   };
@@ -4329,7 +4347,7 @@ sub builtin_proc {
 	unless $Globals->lookup(${$name})->isUndefinedProcedure();
 
   my $longName = $Globals->normalizeName(${$name});
-  my $func = compile ($Globals, $args, $body, 'proc', $longName);
+  my $func = compile ($Globals, $args, $body, undef, 'proc', $longName);
   $Globals->setGlobalConst(${$name}, $func);
 
   return $func;
@@ -4626,7 +4644,7 @@ sub builtin_macro {
   }
 
   my $longName = $Globals->normalizeName(${$name});
-  my $macro = compile ($Globals, $args, $body, 'macro', $longName);
+  my $macro = compile ($Globals, $args, $body, undef, 'macro', $longName);
 
   $Globals->defset(${$name}, $macro);
 
@@ -4642,7 +4660,7 @@ sub builtin_subfn {
   $args->checkList();
   $body->checkList();
 
-  return compile ($context, $args, $body, 'sub');
+  return compile ($context, $args, $body, undef, 'sub');
 }
 
 
@@ -5035,7 +5053,7 @@ sub mk_method {
   my $fieldsContext = LL::Context->new($Globals);
   for my $key (keys %{$fields}) {$fieldsContext->def($key);}
 
-  my $code = compile($fieldsContext, $args, $body, 'method', ${$name});
+  my $code = compile($fieldsContext, $args, $body, undef, 'method', ${$name});
   return LL::Method->new($code);
 }
 
