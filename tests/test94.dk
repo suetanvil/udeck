@@ -16,6 +16,14 @@ proc bar {} {
 	return 0
 }
 
+proc quux {p} {
+	puts "ho hum"
+	return "quux return value"
+} {
+	puts "Calling quux{p}:"
+	p
+}
+
 
 foo {} => {puts "w00t!"}
 puts "---"
@@ -26,3 +34,5 @@ puts "---"
 puts [bar]
 puts "---"
 
+puts [quux {}=>{puts "y0"}]
+puts "---"

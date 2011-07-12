@@ -1,0 +1,5 @@
+Called return continuation from a final block.
+foo calling p: 
+w00t!
+nil
+foo done.

@@ -17,3 +17,8 @@ bye!
 foo finalizer called.
 bar return value
 ---
+ho hum
+Calling quux{p}:
+y0
+quux return value
+---
