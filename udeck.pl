@@ -2522,7 +2522,7 @@ sub fixProcBody {
 # $name is used for error messages and may be omitted.
 sub compile {
   my ($outerContext, $args, $body, $final, $mode, $name) = @_;
-  $final ||= LL::List->new([]);
+  $final ||= LL::List->new([]);	# XXX remove when not used
 
   $body->checkLoL(" in a procedure body.");
   $final->checkLoL(" in a procedure finalizer body.");
@@ -2976,29 +2976,30 @@ sub fixFormalArgs {
 
 
 sub macro_proc {
-  my ($proc, $name, $args, $body) = @_;
-  checkNargs('proc', \@_, '-', 1, 3);
+  my ($proc, $name, $args, $body, $finalizer) = @_;
+  checkNargs('proc', \@_, '-', 1, 3, 4);
 
   $name->checkSymbol(" in '${$proc}' arg 1");
 
-  if (defined($args)) {
+  if (defined($body)) {
 	$args = fixFormalArgs($args);
+	$body->checkQtLoL(" in procedure body of '${$proc}'.");
+	
+	$finalizer = LL::Quote->new(LL::List->new([]))
+	  unless defined($finalizer);
+
+	$finalizer->checkQtLoL(" in procedure finalizer body of '${$proc}'.");
   } else {
 	$args = NIL;
-  }
-
-  if (defined($body)) {
-	$body->checkQtLoL(" in procedure body of '${$proc}'.");
-  } else {
 	$body = NIL;
+	$finalizer = NIL;
   }
 
-  my $procOrMethod = ${$proc} eq 'method' ? '_::method' : '_::proc';
-
-  return LL::List->new([LL::Symbol->new($procOrMethod),
+  return LL::List->new([LL::Symbol->new('_::proc'),
 						LL::Quote->new($name),
 						$args,
-						$body]);
+						$body,
+						$finalizer]);
 }
 
 
@@ -4324,11 +4325,8 @@ sub builtin_const {
 
 
 sub builtin_proc {
-  my ($name, $args, $body) = @_;
-
-  # Argument checking.
-  die "'proc' expects 3 arguments: got @{[scalar @_]}\n"
-	unless scalar @_ == 3;
+  my ($name, $args, $body, $finalizer) = @_;
+  checkNargs('_::proc', \@_, 4);
 
   $name->checkSymbol();
 
@@ -4341,13 +4339,14 @@ sub builtin_proc {
   }
 
   $args->checkList();
-  $body->checkList();
+  $body->checkLoL(" in proc body.");
+  $finalizer->checkLoL(" in proc finalizer body.");
 
   die "proc: name '${$name}' is already defined.\n"
 	unless $Globals->lookup(${$name})->isUndefinedProcedure();
 
   my $longName = $Globals->normalizeName(${$name});
-  my $func = compile ($Globals, $args, $body, undef, 'proc', $longName);
+  my $func = compile ($Globals, $args, $body, $finalizer, 'proc', $longName);
   $Globals->setGlobalConst(${$name}, $func);
 
   return $func;
@@ -4619,7 +4618,8 @@ sub builtin_mproc {
 
   # Create the procedure to call.
   my $procArgs = LL::List->new(\@pargs);
-  my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body);
+  my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body, 
+						   LL::List->new([]));
 
   return $proc;
 }
