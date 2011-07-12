@@ -1,0 +1,19 @@
+foo calling p: 
+w00t!
+nil
+foo done.
+foo finalizer called.
+---
+foo calling p: 
+y4h00!
+block return value
+foo done.
+foo finalizer called.
+foo return value
+---
+Calling 'foo'.
+foo calling p: 
+bye!
+foo finalizer called.
+bar return value
+---
