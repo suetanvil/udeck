@@ -57,6 +57,10 @@ Notes:
 
 	- 'subreturn' now called 'next'.
 
+	- see 'bugs' in final.pod
+
+
+
 
 Functions Todo:
 X	-listSized

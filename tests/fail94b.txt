@@ -1,0 +1,6 @@
+Unknown variable: 'thingy'
+narf:
+narf arg!
+42
+narf:
+narf arg 2!

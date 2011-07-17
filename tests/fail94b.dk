@@ -1,0 +1,19 @@
+# Test a wierd failure condition.  Current behaviour is a tolerated bug.
+
+# If 'f' does not call return, then 'thingy' is declared.  If 'f'
+# *does* call return, thingy is never declared and there's an
+# undeclared variable error in the finalizer block.
+
+proc narf {f} {
+	puts "narf:"
+
+	f return
+  
+	var thingy = 44
+	thingy = thingy - 2
+} {
+	puts thingy
+}
+
+narf {r} => {puts "narf arg!"}
+narf {r} => {puts "narf arg 2!"; r 42}

@@ -28,9 +28,3 @@ foo calling p:
 foo finalizer called.
 bobo return value
 ---
-narf:
-narf arg!
-42
-narf:
-narf arg 2!
-44
