@@ -2525,7 +2525,7 @@ sub compile {
   $final ||= LL::List->new([]);	# XXX remove when not used
 
   $body->checkLoL(" in a procedure body.");
-  $final->checkLoL(" in a procedure finalizer body.");
+  $final->checkLoL(" in a procedure final block.");
 
   my $isNamed = !!$name;
   $name ||= '<unnamed procedure>';
@@ -2990,7 +2990,7 @@ sub macro_proc {
 	$finalizer = LL::Quote->new(LL::List->new([]))
 	  unless defined($finalizer);
 
-	$finalizer->checkQtLoL(" in procedure finalizer body of '${$proc}'.");
+	$finalizer->checkQtLoL(" in procedure final block of '${$proc}'.");
   } else {
 	$args = NIL;
 	$body = NIL;
@@ -4350,7 +4350,7 @@ sub builtin_proc {
 
   $args->checkList();
   $body->checkLoL(" in proc body.");
-  $finalizer->checkLoL(" in proc finalizer body.");
+  $finalizer->checkLoL(" in proc final block.");
 
   die "proc: name '${$name}' is already defined.\n"
 	unless $Globals->lookup(${$name})->isUndefinedProcedure();
@@ -4671,7 +4671,7 @@ sub builtin_subfn {
   $body->checkLoL(" in body of sub definition.");
 
   $finalizer = LL::List->new([]) if $finalizer->isNil();
-  $finalizer->checkLoL(" in finalizer of sub definition.");
+  $finalizer->checkLoL(" in final block of sub definition.");
 
   return compile ($context, $args, $body, $finalizer, 'sub');
 }
@@ -5059,18 +5059,23 @@ sub class_fields {
 
 
 sub mk_method {
-  my ($name, $args, $fields, $body) = @_;
+  my ($name, $args, $fields, $body, $finalizer) = @_;
 
   # Create a scratch LL::Context to keep the compiler happy.  (Should
   # this be an LL::Struct?)
   my $fieldsContext = LL::Context->new($Globals);
   for my $key (keys %{$fields}) {$fieldsContext->def($key);}
 
-  my $code = compile($fieldsContext, $args, $body, undef, 'method', ${$name});
+  my $code = compile($fieldsContext, $args, $body, $finalizer,
+					 'method', ${$name});
   return LL::Method->new($code);
 }
 
 
+# Search $body for method definitions (with fields defined in
+# $fields), compile them and return a dictionary mapping name to
+# method.  If $methodsOnly is true, do not allow non-method fields in
+# $body.  If $allowDoc is true, *do* allow mdoc statements.
 sub class_methods {
   my ($body, $fields, $methodsOnly, $className, $allowDoc) = @_;
 
@@ -5090,12 +5095,19 @@ sub class_methods {
 	die "Malformed method declaration: '@{[$entry->printStr()]}'.\n"
 	  unless scalar @{$entry} == 4;
 
-	my ($method, $name, $args, $body) = @{$entry};
+	my ($method, $name, $args, $body, $finalizer) = @{$entry};
 	$name->checkSymbol(" in method name.");
 	$args = fixFormalArgs($args)->value();
 
 	$body->checkQtLoL(" in method definition.");
-	$body = $body->value();	# There's no more eval so drop the quote
+
+	$finalizer = LL::Quote->new(LL::List->new([]))
+	  unless $finalizer;
+	$finalizer->checkQtLoL(" in method final block definition.");
+
+	# There's no more eval so drop the quotes
+	$body = $body->value();
+	$finalizer = $finalizer->value();
 
 	# Extract the docstring (if any)
 	if ($className) {
@@ -5105,7 +5117,7 @@ sub class_methods {
 	}
 
 
-	$methods{${$name}} = mk_method($name, $args, $fields, $body);
+	$methods{${$name}} = mk_method($name, $args, $fields, $body, $finalizer);
   }
 
   return \%methods;
