@@ -1,0 +1,82 @@
+# Test finalizers in methods
+
+class Foo {
+
+	# Test basic finalizer, possibly with early return
+	method foo {p} {
+		puts "foo calling p: "
+		puts [p]
+		puts "foo done."
+		return "foo return value"
+	} {
+		puts "foo finalizer called."
+	}
+	
+	# Test finalizer with early return of foo
+	method bar {} {
+		puts "Calling 'foo'."
+		self->foo {} => {puts "bye!"; return "bar return value"}
+		return 0
+	}
+
+	# Test hook call inside finalizer
+	method quux {p} {
+		puts "ho hum"
+		return "quux return value"
+	} {
+		puts "Calling quux{p}:"
+		p
+	}
+
+	# Test return by continuation from block defined inside finalizer
+	method bobo {} {
+		puts "called bobo"
+		return "bobo return value"
+	} {
+		do {puts "xxx"; self->foo next; puts "yyy"}
+	}
+
+	# Test ability to access locals from final block
+	method narf {f} {
+		puts "narf:"
+		
+		var thingy = 44
+		f return
+		
+		thingy = thingy - 2
+	} {
+		puts thingy
+	}
+
+	# Test ability to access locals from final block after it's been
+	# returned
+	method sneep {} {
+		var l = 42
+		return l
+	} {
+		puts l
+	}
+}
+
+var o = [new Foo]
+
+o->foo {} => {puts "w00t!"}
+puts "---"
+
+puts [o->foo {} => {puts "y4h00!"; next "block return value"; value 42}]
+puts "---"
+
+puts [o->bar]
+puts "---"
+
+puts [o->quux {}=>{puts "y0"}]
+puts "---"
+
+puts [o->bobo]
+puts "---"
+
+o->narf {r} => {puts "narf arg!"}
+o->narf {r} => {puts "narf arg 2!"; r 42}
+puts "---"
+
+puts [o->sneep]

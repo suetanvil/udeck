@@ -5093,7 +5093,7 @@ sub class_methods {
 	}
 
 	die "Malformed method declaration: '@{[$entry->printStr()]}'.\n"
-	  unless scalar @{$entry} == 4;
+	  unless scalar @{$entry} == 4 || scalar @{$entry} == 5;
 
 	my ($method, $name, $args, $body, $finalizer) = @{$entry};
 	$name->checkSymbol(" in method name.");
