@@ -1,0 +1,81 @@
+
+=pod
+
+This module provides a first attempt at file I/O.
+
+=cut
+
+package IO
+
+
+
+class FileHandle {
+	readable errorException
+	readable canRead
+	readable canWrite
+
+
+	method _init {name mode exception} {
+		errorException = exception
+		self->_exceptionSanityCheck
+
+
+	}
+
+	method close {} {
+	}
+
+	method exception_set {e} {
+		"Get/set the error exception.  This is the exception that gets thrown
+         if there is an I/O error."
+
+		errorException = e
+		self->_exceptionSanityCheck
+	}
+
+	method _exceptionSanityCheck {} {
+		[errorException.class->can :throw] || \
+			[die "Attempted to store non-exception as FileHandle exception."]
+	}
+
+
+	method eof_get {} {
+	}
+
+
+	method getLine {} {
+	}
+
+	method getChar {} {
+		return [self->getChars 1]
+	}
+
+	method getChars {count} {
+	}
+
+	method getUpTo {charOrSub} {
+
+	}
+
+	method put {string} {
+
+	}
+
+	method puts {args} {
+		for obj in args {
+			self->put obj.printable
+		}
+		self->put "\n"
+	}
+
+
+	method pos_get {} {
+	}
+
+	method seek {pos} {
+	}
+
+
+
+}
+

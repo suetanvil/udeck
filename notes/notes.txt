@@ -355,9 +355,10 @@ X	-renamed subReturn to 'next'.
 	-docs:
 		-brochure
 		-language reference
-	-final blocks in procedures and methods
+X	-final blocks in procedures and methods
 	-basic file I/O
-		
+	
+	-module docstrings	
 	-if macro should allow multiple 'elseif' clauses
 	-there should be some way to query a MethodCall to see if it's a
 	 :doesNotUnderstand call.
