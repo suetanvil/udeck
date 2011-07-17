@@ -2869,7 +2869,8 @@ sub subify {
 
   return  LL::List->new([	LL::Symbol->new('_::sub'),
 							$arglist,
-							$body
+							$body,
+							NIL
 						]);
 }
 
@@ -2911,6 +2912,7 @@ sub delayed {
   return LL::List->new([LL::Symbol->new('_::sub'),
 						LL::Quote->new(LL::List->new([])),
 						LL::Quote->new(LL::List->new([$expr])),
+						NIL,
 					   ]);
 }
 
@@ -3132,8 +3134,8 @@ sub macro_assign {
 
 
 sub macro_subfn {
-  my ($sub, $args, $body) = @_;
-  checkNargs ('sub', \@_, 3, 2);
+  my ($sub, $args, $body, $finalizer) = @_;
+  checkNargs ('sub', \@_, 2, 3, 4);
 
   # If args are omitted, add them.
   if (scalar @_ == 2) {
@@ -3141,11 +3143,14 @@ sub macro_subfn {
 	$args = LL::Quote->new(LL::List->new([]));
   }
 
+  $finalizer = NIL if (scalar @_ < 4);
+
   $args = fixFormalArgs($args);
 
   return LL::List->new([LL::Symbol->new('_::sub'),
 						$args,
-						$body]);
+						$body,
+						$finalizer]);
 }
 
 
@@ -3375,7 +3380,8 @@ sub macro_suboper {
 
   return LL::List->new([LL::Symbol->new('_::sub'),
 						$left,
-						$right]);
+						$right,
+						NIL]);
 }
 
 
@@ -3483,12 +3489,12 @@ sub initGlobals {
 					" will work on objects with a defective C<printable_get>.",
 					\&builtin_say],
 
-				   ['_::proc',			"name args body",
+				   ['_::proc',			"name args body final",
 					"Defines a proc described by the arguments.  Should only".
 					" be invoked by the C<proc> macro.",
 					\&builtin_proc],
 
-				   ['_::sub',			"args body",
+				   ['_::sub',			"args body final",
 					"Defines a sub.",
 					\&builtin_subfn],
 
@@ -3864,8 +3870,10 @@ sub initGlobals {
 	"Declares one or more variables in the local scope.";
   macro 'const',		\&macro_varconst,		'args',
 	"Declares one or more constants in the local scope.";
-  macro 'proc',			\&macro_proc,			'name args body',
-	"Declares a procedure in the current module scope.";
+  macro 'proc',			\&macro_proc,			'name args body final',
+	"Declares a procedure in the current module scope.  C<final> is
+     optional.  If C<body> and C<args> are also omitted, the statement instead
+     creates a forward declaration of the procedure.";
   macro 'mproc',		\&macro_mproc,			'name args body',
 	"Declares an mproc in the current module scope.";
   macro 'set',			\&macro_assign,			'dest value',
@@ -3876,10 +3884,12 @@ sub initGlobals {
 	"Assigns RHS C<value> to LHS C<value>.  C<dest> is either a bare name, a
      list access (C<@>) expression or an attribute (C<.>) expression.  This
      is an alias for C<set>.";
-  macro 'sub',			\&macro_subfn,			'args body',
+  macro 'sub',			\&macro_subfn,			'args body final',
 	"Create a C<sub> (i.e. a closure) in the local scope and return it.
      C<args> is the list of arguments (in any of the acceptable formal
-     argument formats) and C<body> is a LoL containing the sub's source code.";
+     argument formats) and C<body> is a LoL containing the sub's source code.
+     C<args> and C<final> are both optional but if C<final> is
+     present, C<args> B<must> also be present.";
   macro 'if',			\&macro_iffn,			'cond trueBlock else falseBlock',
 	"Evaluate a sequence of instructions conditionally.  Evaluates C<cond> and
      if the result is true, then evaluates C<trueBlock>.  Otherwise, it
@@ -4653,14 +4663,17 @@ sub builtin_macro {
 
 
 sub builtin_subfn {
-  my ($context, $args, $body) = @_;
+  my ($context, $args, $body, $finalizer) = @_;
 
-  checkNargs('(unnamed)', \@_, 3);
+  checkNargs('_::sub', \@_, 4);
 
   $args->checkList();
-  $body->checkList();
+  $body->checkLoL(" in body of sub definition.");
 
-  return compile ($context, $args, $body, undef, 'sub');
+  $finalizer = LL::List->new([]) if $finalizer->isNil();
+  $finalizer->checkLoL(" in finalizer of sub definition.");
+
+  return compile ($context, $args, $body, $finalizer, 'sub');
 }
 
 
