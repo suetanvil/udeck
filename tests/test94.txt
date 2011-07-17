@@ -34,3 +34,6 @@ narf arg!
 narf:
 narf arg 2!
 44
+---
+42
+42

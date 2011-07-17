@@ -45,10 +45,13 @@ proc narf {f} {
 	puts thingy
 }
 
-
-# todo: ensure finalizer has access to locals.
-
-# todo: test local after returning it
+proc sneep {} {
+	var l = 42
+	return l
+} {
+	puts l
+}
+	
 
 foo {} => {puts "w00t!"}
 puts "---"
@@ -67,4 +70,6 @@ puts "---"
 
 narf {r} => {puts "narf arg!"}
 narf {r} => {puts "narf arg 2!"; r 42}
+puts "---"
 
+puts [sneep]
