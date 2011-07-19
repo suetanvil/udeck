@@ -8,21 +8,78 @@ This module provides a first attempt at file I/O.
 package IO
 
 
+# Interface to Perl file support:
+perluse IO::File
+
+perlproc _newfh {path mode} '''
+    my $fh = IO::File->new($path, $mode);
+    return $fh unless $fh;
+    $fh->binmode(":raw");
+    return $fh;
+'''
+
+perlproc _closefh {fh} '''
+    $fh->close();
+    return;
+'''
+
+perlproc _eof {fh} '''return $fh->eof();'''
+
+perlproc _getline {fh eol} '''
+    local $/ = $eol;
+    my $line = <$fh>
+    return $line;
+'''
+
+
+const _FILEMODES = :[ [read "<"]
+					  [write ">"]
+					  [readwrite "+<"] ]
+			  
 
 class FileHandle {
 	readable errorException
-	readable canRead
-	readable canWrite
+	public eol
 
+	var fh
+	var mode
 
-	method _init {name mode exception} {
+	method _init {name modeSymbol exception} {
 		errorException = exception
 		self->_exceptionSanityCheck
 
+		eol = "\x0A"
 
+		mode = modeSymbol
+		self->_checkMode
+
+		self->_openFh name
 	}
 
+	method _openFh {name} {
+		fh = _newfh name [self->_modeStr]
+		fh || [exception->throw "Unable to open file '$file'." :openError]
+	}
+
+	method _checkMode {} {
+		for legalMode in _FILEMODES {
+			(legalMode@0 == mode) && [return]
+		}
+
+		errorException->throw "Invalid file mode: '$mode'" :badArg mode		
+	}
+
+	method _modeStr {} {
+		for modePair in _FILEMODES {
+			(modePair@0 == mode) || [return (modePair@1)]
+		}
+		die "Internal error: Illegal mode symbol: $mode"
+	}
+	
+
 	method close {} {
+		fh && [_closefh fh]
+		fh = nil
 	}
 
 	method exception_set {e} {
@@ -39,12 +96,34 @@ class FileHandle {
 	}
 
 
-	method eof_get {} {
+	method canRead_get {} {
+		return (mode != :write)
 	}
 
+	method canWrite_get {} {
+		return (mode != :read)
+	}
+
+	method eof_get {} {
+		fh || [return false]
+		return [_eof fh].isTrue
+	}
 
 	method getLine {} {
+		self.eof && [return ""]
+
+		(eol.class == String && eol != "") \
+			|| [die "Illegal line separator: '$eol'."]
+
+		return [_getline fh eol]
 	}
+
+	method slurp {} {
+		self.eof && [return ""]
+
+		return [_getline fh nil]
+	}
+
 
 	method getChar {} {
 		return [self->getChars 1]
@@ -53,9 +132,6 @@ class FileHandle {
 	method getChars {count} {
 	}
 
-	method getUpTo {charOrSub} {
-
-	}
 
 	method put {string} {
 
@@ -66,6 +142,15 @@ class FileHandle {
 			self->put obj.printable
 		}
 		self->put "\n"
+	}
+
+
+	method write {bytes} {
+
+	}
+
+	method read {numBytes} {
+
 	}
 
 
