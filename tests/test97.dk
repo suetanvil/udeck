@@ -1,0 +1,31 @@
+# Test the IO module.
+
+use IO
+
+
+var t1 = "iotest1.tmp"
+
+var m1 = "Hello, world!\n";
+var m2 = "Hello, world 2!\n";
+ 
+
+# Write the first test file
+var fh
+fh = [new FileHandle t1 :write Fatal]
+fh->put m1
+fh->put m2
+fh->close
+
+
+# Read it back and compare
+fh = [new FileHandle t1 :read Fatal]
+var l1 = [fh->getLine]
+var l2 = [fh->getLine]
+
+say (l1 == m1) " " l1
+say (l2 == m2) " " l2
+
+puts fh.eof
+
+fh->close
+

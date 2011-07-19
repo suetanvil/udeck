@@ -79,7 +79,7 @@ class FileHandle {
 		errorException = exception
 		self->_exceptionSanityCheck
 
-		eol = "\x0A"
+		eol = [chr 10]		# The UNIX default
 
 		mode = modeSymbol
 		self->_checkMode
@@ -90,7 +90,7 @@ class FileHandle {
 
 	method _openFh {} {
 		fh = [_newfh filename [self->_modeStr]]
-		fh || [exception->throw "Unable to open file '$filename'." :openError]
+		fh || [self->_throw "Unable to open file '$filename'." :openError]
 	}
 
 	method _checkMode {} {
@@ -98,12 +98,12 @@ class FileHandle {
 			(legalMode@0 == mode) && [return]
 		}
 
-		errorException->throw "Invalid file mode: '$mode'" :badArg mode		
+		self->_throw "Invalid file mode: '$mode'" :badArg mode		
 	}
 
 	method _modeStr {} {
 		for modePair in _FILEMODES {
-			(modePair@0 == mode) || [return (modePair@1)]
+			if (modePair@0 == mode) {return (modePair@1)}
 		}
 		die "Internal error: Illegal mode symbol: $mode"
 	}
@@ -179,7 +179,7 @@ class FileHandle {
 		var line = [_read fh count]
 		if (line == nil) {
 			var errmsg = [_errmsg]
-			errorException->throw "IO Error: $errmsg" :ioErr
+			self->_throw "IO Error: $errmsg" :ioErr
 		}
 
 		return line
@@ -190,14 +190,14 @@ class FileHandle {
 		self->_sanity :write
 
 		[_put fh string] || \
-			[throw "Error writing string to '$filename'."  :ioError]
+			[self->_throw "Error writing string to '$filename'."  :ioError]
 	}
 
 	method puts {args} {
 		for obj in args {
 			self->put obj.printable
 		}
-		self->put "\n"
+		self->put eol
 	}
 
 
@@ -208,7 +208,7 @@ class FileHandle {
 			[die "FileHandle->write argument must be ByteArray."]
 
 		[_put fh string] || \
-			[throw "Error writing ByteArray to '$filename'."  :ioError]
+			[self->_throw "Error writing ByteArray to '$filename'."  :ioError]
 	}
 
 	method read {numBytes} {
@@ -217,7 +217,7 @@ class FileHandle {
 		var line = [_binread fh numBytes]
 		if (line == nil) {
 			var errmsg = [_errmsg]
-			errorException->throw "IO Error: $errmsg" :ioErr
+			self->_throw "IO Error: $errmsg" :ioErr
 		}
 
 		return line
