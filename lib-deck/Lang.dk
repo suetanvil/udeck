@@ -762,7 +762,6 @@ _class_ext Macro {
 		"C<Macros> are immutable so we just return the same instance."
 		return self
 	}
-
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		return "<macro>"
@@ -1305,7 +1304,7 @@ class Exception {
 
      =item C<id> is a machine-parsable error message, typically a symbol.
 
-     =item C<args> is a C<List> of associated arguments.
+     =item C<info> is a C<List> of associated arguments.
 
      =back
 
@@ -1315,35 +1314,66 @@ class Exception {
      that created it.  C<throw> also deletes the continuation, turning
      subsequent calls to C<throw> into no-ops.
 
-     C<throw> takes one argument which is stored in C<message> unless it is
-     a boolean false.  This allows you to set the C<message> earlier and
-     invoke C<throw> without altering it.
-
      The global C<const> C<Fatal> references an Exception which will cause
      the current program to exit with an error."
 
 	public id
 	public message
-	public args
+	public info
 
 	var throwable
 
 	method _init {throwProc} {
 		id = nil
 		message = "Unknown exception."
-		args = :[]
+		info = :[]
 
 		throwable = throwProc
 	}
 
-	method throw {msg} {
+	method throw {msg args} {
+		"Throw this Exception.  If C<msg> is given (i.e. not a false value),
+         store it in the C<message> field.  If it is followed by a symbol
+         (in C<args>), that value is stored in the C<id> field.  The remaining
+         arguments if present are stored in the C<info> field.  Thus
+
+         =over 4
+
+         exc->throw 'Oh no!' :error 1 2 3 4 5
+
+         =back
+
+         is equivalent to
+
+         =over
+
+         exc.message = 'Oh no!'
+         exc.id = :error
+         exc.info = [list 1 2 3 4 5]
+         exc->throw ''
+
+         =back
+         "
+
+		# Set the message if given
 		if (msg) {
 			message = msg
 		}
 
+		# Set the tag if given
+		if (args && (args@0).class == Symbol) {
+			id = args@0
+			args = [slice args 1 args.last]
+		}
+
+		# Set the info list if given
+		args && (info = args)
+
+		# Disable the throwable
 		var currentThrowable = throwable
 		throwable = {s} => {}
 
+		# And throw.
 		currentThrowable self
 	}
 

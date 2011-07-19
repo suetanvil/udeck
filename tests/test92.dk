@@ -17,7 +17,7 @@ try {
 	foo Error
 	puts "Post-throw."		# unreached
 } catch {
-	puts "Caught exception: " Error.id " " Error.args " " Error.message
+	puts "Caught exception: " Error.id " " Error.info " " Error.message
 	puts "Done."
 	Error->throw "nothing should happen here"
 }
@@ -36,3 +36,11 @@ try {
 	puts "Post-throw 3."		# unreached
 } catch			# dangling catch.  Allowed but ugly.
 
+
+try {
+	Error->throw "test throw" :cuzifeltlikeit 1 2 3 4 5
+} catch {
+	puts Error.id
+	puts Error.message
+	puts Error.info
+}

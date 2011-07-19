@@ -3,3 +3,6 @@ Caught exception: :cuzIfeltLikeIt [] Exception thrown.
 Done.
 Pre-throw 2:
 Pre-throw 3:
+:cuzifeltlikeit
+test throw
+[1 2 3 4 5]
