@@ -31,10 +31,40 @@ perlproc _getline {fh eol} '''
     return $line;
 '''
 
+perlproc _read {fh len} '''
+	my $buf = "";
+	my $count = $fh->read($buf, $len);
+	return undef unless defined($count);
+
+	return $buf;	
+'''
+
+perlproc _binread {fh len} '''
+	my $buf = "";
+	my $count = $fh->read($buf, $len);
+	return undef unless defined($count);
+
+    return LL::ByteArray->new(\$buf);
+'''
+
+
+perlproc _errmsg {} '''return "$!";'''
+perlproc _put  {fh str} '''return $fh->print($str);'''
+
+perlproc _seek {fh pos whence} '''return $fh->seek($pos, $whence);'''
+perlproc _tell {fh} '''return $fh->tell();'''
+
+
 
 const _FILEMODES = :[ [read "<"]
 					  [write ">"]
 					  [readwrite "+<"] ]
+
+const {
+	SEEK_SET = 0
+	SEEK_CUR = 1
+	SEEK_END = 2
+};
 			  
 
 class FileHandle {
@@ -43,6 +73,7 @@ class FileHandle {
 
 	var fh
 	var mode
+	var filename
 
 	method _init {name modeSymbol exception} {
 		errorException = exception
@@ -53,12 +84,13 @@ class FileHandle {
 		mode = modeSymbol
 		self->_checkMode
 
-		self->_openFh name
+		filename = name
+		self->_openFh
 	}
 
-	method _openFh {name} {
-		fh = _newfh name [self->_modeStr]
-		fh || [exception->throw "Unable to open file '$file'." :openError]
+	method _openFh {} {
+		fh = _newfh filename [self->_modeStr]
+		fh || [exception->throw "Unable to open file '$filename'." :openError]
 	}
 
 	method _checkMode {} {
@@ -124,17 +156,26 @@ class FileHandle {
 		return [_getline fh nil]
 	}
 
-
 	method getChar {} {
 		return [self->getChars 1]
 	}
 
 	method getChars {count} {
+		self.eof && [return ""]
+
+		var line = [_read fh count]
+		if (line == nil) {
+			var errmsg = [_errmsg]
+			errorException->throw "IO Error: $errmsg" :ioErr
+		}
+
+		return line
 	}
 
 
 	method put {string} {
-
+		[_put fh string] || \
+			[throw "Error writing string to '$filename'."  :ioError]
 	}
 
 	method puts {args} {
@@ -146,21 +187,33 @@ class FileHandle {
 
 
 	method write {bytes} {
+		bytes.class == ByteArray || \
+			[die "FileHandle->write argument must be ByteArray."]
 
+		[_put fh string] || \
+			[throw "Error writing ByteArray to '$filename'."  :ioError]
 	}
 
 	method read {numBytes} {
+		self.eof && [return [bytesSized 0]]
 
+		var line = [_binread fh count]
+		if (line == nil) {
+			var errmsg = [_errmsg]
+			errorException->throw "IO Error: $errmsg" :ioErr
+		}
+
+		return line
 	}
 
 
 	method pos_get {} {
+		fh || [return -1]
+		return [_tell fh]		
 	}
 
-	method seek {pos} {
+	method seek {pos whence} {
+		return [_seek fh pos whence]		
 	}
-
-
-
 }
 

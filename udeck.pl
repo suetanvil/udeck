@@ -882,7 +882,6 @@ sub checkLoL {
 
 sub perlForm {
   my ($self) = @_;
-
   my @result = map { $_->perlForm() } @{$self};
   return \@result;
 }
