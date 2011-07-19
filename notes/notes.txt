@@ -357,6 +357,9 @@ X	-renamed subReturn to 'next'.
 		-language reference
 X	-final blocks in procedures and methods
 	-basic file I/O
+		FileHandle
+			-need fail-by-retval and exceptions both
+		Dir
 	
 	-module docstrings	
 	-if macro should allow multiple 'elseif' clauses

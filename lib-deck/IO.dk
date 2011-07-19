@@ -27,7 +27,7 @@ perlproc _eof {fh} '''return $fh->eof();'''
 
 perlproc _getline {fh eol} '''
     local $/ = $eol;
-    my $line = <$fh>
+    my $line = <$fh>;
     return $line;
 '''
 
@@ -89,7 +89,7 @@ class FileHandle {
 	}
 
 	method _openFh {} {
-		fh = _newfh filename [self->_modeStr]
+		fh = [_newfh filename [self->_modeStr]]
 		fh || [exception->throw "Unable to open file '$filename'." :openError]
 	}
 
@@ -142,7 +142,7 @@ class FileHandle {
 	}
 
 	method getLine {} {
-		self.eof && [return ""]
+		(self.eof) && [return ""]
 
 		(eol.class == String && eol != "") \
 			|| [die "Illegal line separator: '$eol'."]
@@ -151,7 +151,7 @@ class FileHandle {
 	}
 
 	method slurp {} {
-		self.eof && [return ""]
+		(self.eof) && [return ""]
 
 		return [_getline fh nil]
 	}
@@ -161,7 +161,7 @@ class FileHandle {
 	}
 
 	method getChars {count} {
-		self.eof && [return ""]
+		(self.eof) && [return ""]
 
 		var line = [_read fh count]
 		if (line == nil) {
@@ -187,7 +187,7 @@ class FileHandle {
 
 
 	method write {bytes} {
-		bytes.class == ByteArray || \
+		(bytes.class == ByteArray) || \
 			[die "FileHandle->write argument must be ByteArray."]
 
 		[_put fh string] || \
@@ -195,9 +195,9 @@ class FileHandle {
 	}
 
 	method read {numBytes} {
-		self.eof && [return [bytesSized 0]]
+		(self.eof) && [return [bytesSized 0]]
 
-		var line = [_binread fh count]
+		var line = [_binread fh numBytes]
 		if (line == nil) {
 			var errmsg = [_errmsg]
 			errorException->throw "IO Error: $errmsg" :ioErr
