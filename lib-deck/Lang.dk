@@ -418,6 +418,12 @@ _class_ext String {
 	mdoc shallowCopy {} \
 		"Create and return a copy of C<self>."
 
+	mdoc ord_get {} \
+		"Return the numeric code of the first character of self.  If self is
+         empty, returns 0.  Note that while Deck currently encodes strings
+         in ASCII or some variant, it is not safe to assume that this will
+         continue in later versions."
+
 	method maker_get {} {
 		"Sequence protocol: return a procedure which will create a collection
 		 suitable for holding the contents of self and which takes one

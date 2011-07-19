@@ -3857,6 +3857,15 @@ sub initGlobals {
 		sub { return NIL unless scalar @_; return $_[-1]} );
   alias ('_::value', 'value');
 
+  prim ('chr',
+		"number",
+		"Return the character represented by C<number> in the character set.
+         If C<number> is not valid character in the current encoding, returns
+         an empty string instead.",
+		sub {my ($num) = @_; checkNargs('chr', \@_, 1);
+			 $num->checkNumber(" in 'chr'.");
+			 my $str = $ {$num} <= 0xFF ? chr(${$num}) : "";
+			 return LL::String->new($str)});
 
   # Create the hash of procedures that take the context as arg. 0.
   for my $name (qw{_::set _::var _::sub _::const lookup defined}) {
@@ -4077,6 +4086,8 @@ sub initGlobals {
 						return boolObj(${$self} eq ${$other})},
 	 shallowCopy=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
 						return LL::String->new (${$self})},
+	 ord_get	=> sub {my ($self) = @_; checkNargs('ord', \@_, 1);
+						return LL::Number->new(ord(${$self}));},
 	};
 
 

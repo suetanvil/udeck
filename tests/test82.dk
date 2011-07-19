@@ -28,6 +28,19 @@ for i in :["a" "e" "i" "o" "u" "y" "x" "w" "z"
 	}
 puts
 
+# Also, chr and ord.
+for c in :[72 101 108 108 111 44 32 87 111 114 108 100 33 10] {
+	say [chr c]
+}
+puts "10 encodes as [" [chr 10] "]"
+puts "12345 encodes as [" [chr 12345] "]"
+
+for s in :["a" "asfd" " asdr" "" "543"] {
+	puts "'$s'.ord == " s.ord
+}
+puts
+
+
 
 # Test isspace
 for s in [list " " "   " "foo" " x " "" " \n" "\t"] {

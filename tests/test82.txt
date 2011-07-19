@@ -24,6 +24,16 @@ ieos is not a vowel
 Ousi is not a vowel
 Uisn is not a vowel
 
+Hello, World!
+10 encodes as [
+]
+12345 encodes as []
+'a'.ord == 97
+'asfd'.ord == 97
+' asdr'.ord == 32
+''.ord == 0
+'543'.ord == 53
+
 ' '.isSpace = 1
 '   '.isSpace = 1
 'foo'.isSpace = nil
