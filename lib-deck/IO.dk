@@ -107,7 +107,21 @@ class FileHandle {
 		}
 		die "Internal error: Illegal mode symbol: $mode"
 	}
-	
+
+	method _sanity {op} {
+		(op == :read && [not self.canRead]) && \
+			[self->_throw "FileHandle not open for reading." :modeErr]
+
+		(op == :write && [not self.canWrite]) && \
+			[self->_throw "FileHandle not open for writing." :modeErr]
+
+		fh || [self->_throw "Attempted operation on closed filehandle."
+			   :closedFhErr]
+	}
+
+	method _throw {msg op args} {
+		apply (errorException->throw) [concat [list msg op] args]
+	}
 
 	method close {} {
 		fh && [_closefh fh]
@@ -142,7 +156,7 @@ class FileHandle {
 	}
 
 	method getLine {} {
-		(self.eof) && [return ""]
+		self->_sanity :read
 
 		(eol.class == String && eol != "") \
 			|| [die "Illegal line separator: '$eol'."]
@@ -151,8 +165,7 @@ class FileHandle {
 	}
 
 	method slurp {} {
-		(self.eof) && [return ""]
-
+		self->_sanity :read
 		return [_getline fh nil]
 	}
 
@@ -161,7 +174,7 @@ class FileHandle {
 	}
 
 	method getChars {count} {
-		(self.eof) && [return ""]
+		self->_sanity :read
 
 		var line = [_read fh count]
 		if (line == nil) {
@@ -174,6 +187,8 @@ class FileHandle {
 
 
 	method put {string} {
+		self->_sanity :write
+
 		[_put fh string] || \
 			[throw "Error writing string to '$filename'."  :ioError]
 	}
@@ -187,6 +202,8 @@ class FileHandle {
 
 
 	method write {bytes} {
+		self->_sanity :write
+
 		(bytes.class == ByteArray) || \
 			[die "FileHandle->write argument must be ByteArray."]
 
@@ -195,7 +212,7 @@ class FileHandle {
 	}
 
 	method read {numBytes} {
-		(self.eof) && [return [bytesSized 0]]
+		self->_sanity :write
 
 		var line = [_binread fh numBytes]
 		if (line == nil) {
@@ -206,13 +223,17 @@ class FileHandle {
 		return line
 	}
 
-
 	method pos_get {} {
 		fh || [return -1]
 		return [_tell fh]		
 	}
 
+	method isOpen_get {} {
+		return [fh.isTrue]
+	}
+
 	method seek {pos whence} {
+		fh || [return]
 		return [_seek fh pos whence]		
 	}
 }
