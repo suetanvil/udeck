@@ -44,7 +44,7 @@ perlproc _binread {fh len} '''
 	my $count = $fh->read($buf, $len);
 	return undef unless defined($count);
 
-    return LL::ByteArray->new(\$buf);
+    return LL::ByteArray->newContaining(\$buf);
 '''
 
 
@@ -212,9 +212,10 @@ class FileHandle {
 	}
 
 	method read {numBytes} {
-		self->_sanity :write
+		self->_sanity :read
 
 		var line = [_binread fh numBytes]
+
 		if (line == nil) {
 			var errmsg = [_errmsg]
 			self->_throw "IO Error: $errmsg" :ioErr
@@ -233,8 +234,9 @@ class FileHandle {
 	}
 
 	method seek {pos whence} {
-		fh || [return]
-		return [_seek fh pos whence]		
+		self->_sanity :seek
+		[_seek fh pos whence] || \
+			[self->_throw "Seek error." :seekError]
 	}
 }
 

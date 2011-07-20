@@ -698,7 +698,10 @@ sub newSized {
 sub newContaining {
   my ($class, $contents) = @_;
 
-  my $self = \$contents;
+  die "Expecting scalar reference, got '$contents'\n"
+	unless ref($contents) eq 'SCALAR';
+
+  my $self = $contents;
   return bless $self, $class;
 }
 
@@ -4095,7 +4098,8 @@ sub initGlobals {
   defclass 'ByteArray',		'Stringlike',
 	{
 	 shallowCopy=> sub {my ($self) = @_; checkNargs('shallowCopy', \@_, 1);
-						return LL::ByteArray->newContaining (${$self})},
+						my $copy = ${$self};
+						return LL::ByteArray->newContaining (\$copy)},
 	};
 
   defclass 'Number',		'Object',
