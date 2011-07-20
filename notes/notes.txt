@@ -355,7 +355,10 @@ X	-renamed subReturn to 'next'.
 	-docs:
 		-brochure
 		-language reference
-X	-final blocks in procedures and methods
+X	-final blocks in subs, procedures and methods
+		-also macros
+		-also mprocs
+		-also 'do'
 	-basic file I/O
 		FileHandle
 			-need fail-by-retval and exceptions both

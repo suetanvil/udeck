@@ -307,6 +307,29 @@ class FileHandle {
          C<FileHandle>."
 		return [fh.isTrue]
 	}
-
 }
 
+=pod xxx
+
+mproc dofile {
+	name
+	mode
+	strict sub [fh] fileBlock
+	word catch [default :catch]
+	strict sub [Error] catchBlock [default {}]
+} {
+	var fh = nil
+
+	try {
+		fh = [new FileHandle name mode Error]
+		fileBlock fh
+	} catch {
+		catchBlock Error
+	}
+
+} {
+	fh && [fh->close]
+}
+
+
+=cut
