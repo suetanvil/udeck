@@ -68,6 +68,29 @@ const {
 			  
 
 class FileHandle {
+	"FileHandle represents access to a file on disk.  The filename is passed
+     to the initializer along with a symbol indicating the mode (C<:read>,
+     C<:write> or C<:readwrite>) and an Exception to throw if an error
+     occurs.
+
+     The exception is accessible through the field C<errorException> and may
+     be replaced at any time.
+
+     FileHandle can treat its file as binary or text or some combination of
+     both, depending on how it is accessed.  Methods C<read> and C<write> will
+     read or write the contents as ByteArray instances while C<getChar>,
+     C<getChars>, C<getLine>, C<put>, C<puts> and C<slurp> read and write
+     strings.  Note that although it is currently possible to store any series
+     of bytes in a Deck string, this may not be the case in the future.  If
+     you need to manipulate binary data, use C<ByteArrays>.
+
+     C<FileHandles> need to be closed when they are no longer needed.  There
+     is no finalization mechanism (yet) to close them when they are
+     garbage-collected.
+
+     (To do: Exceptions need to be made optional.)"
+
+
 	readable errorException
 	public eol
 
@@ -124,6 +147,9 @@ class FileHandle {
 	}
 
 	method close {} {
+		"Close the underlying system file handle associated with this
+         file.  After C<close> has been called, this object should no
+         longer be used."
 		fh && [_closefh fh]
 		fh = nil
 	}
@@ -143,25 +169,33 @@ class FileHandle {
 
 
 	method canRead_get {} {
+		"Test if this C<FileHandle> is readable."
 		return (mode != :write)
 	}
 
 	method canWrite_get {} {
+		"Test if this C<FileHandle> is writeable."
 		return (mode != :read)
 	}
 
 	method eof_get {} {
+		"Test if this file handle is at the end of the file."
 		fh || [return false]
 		return [_eof fh].isTrue
 	}
 
 	method getLine {} {
+		"Read one line of text and return it as a String.  The line delimiter
+         is determined by the attribute C<eol>.  It defaults to the UNIX
+         newline (0x0a).  The delimiter is not stripped from the string."
 		self->_sanity :read
 
 		(eol.class == String && eol != "") \
 			|| [die "Illegal line separator: '$eol'."]
 
-		return [_getline fh eol]
+		var line = [_getline fh eol]
+		(line == nil) && [return ""]
+		return line
 	}
 
 	method slurp {} {

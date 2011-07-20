@@ -101,5 +101,13 @@ say [fh->slurp]
 fh->close
 puts "---"
 
+# Test reading past EOF
+fh = [new FileHandle t1 :read Fatal]
+say [fh->getLine]
+say [fh->getLine]
+say [fh->getLine]
+fh->close
+puts "---"
+
 
 
