@@ -3008,17 +3008,16 @@ sub macro_proc {
 
 
 sub macro_mproc {
-  my ($mproc, $name, $args, $body) = @_;
-  checkNargs('mproc', \@_, 3, 4);
+  my ($mproc, $name, $args, $body, $final) = @_;
+  checkNargs('mproc', \@_, 3, 4, 5);
   $body ||= NIL;
+  $final ||= NIL;
 
   $name->checkSymbol();
   my $qname = LL::Quote->new($name);
 
   return LL::List->new([LL::Symbol->new("_::mproc"),
-						$qname,
-						$args,
-						$body]);
+						$qname,	$args, $body, $final]);
 }
 
 
@@ -4578,15 +4577,16 @@ sub mk_mproc_macro {
 
 # Define an mproc or just its forward declaration.
 sub builtin_mproc {
-  my ($name, $args, $body) = @_;
+  my ($name, $args, $body, $final) = @_;
 
   # Argument checking.
-  die "'mproc' expects 3 arguments: got @{[scalar @_]}\n"
-	unless scalar @_ == 3;
+  checkNargs('_::mproc', \@_, 2, 3, 4);
 
   $name->checkSymbol();
-  $args->checkList(" for mproc argument list.");
-  $body->checkList() unless $body->isNil();
+  $args->checkList (" for mproc argument list.");
+  $body->checkLoL (" as mproc body.") unless $body->isNil();
+  $final = LL::List->new([]) if $final->isNil();
+  $final->checkLoL (" for mproc final block.");;
 
   $Globals->ensureMacroNamespace(${$name});
   my $fullName = $Globals->normalizeName(${$name});
@@ -4642,8 +4642,8 @@ sub builtin_mproc {
 
   # Create the procedure to call.
   my $procArgs = LL::List->new(\@pargs);
-  my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body, 
-						   LL::List->new([]));
+  my $proc = builtin_proc (LL::Symbol->new($procName), $procArgs, $body,
+						   $final);
 
   return $proc;
 }
