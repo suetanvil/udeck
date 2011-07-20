@@ -1,0 +1,13 @@
+# Test a macro with a final block.
+
+macro foo {foo args} {
+	puts "Foo called."
+	var result = [concat :[puts] args]
+	puts "Foo expands to '$result'."
+	return result
+} {
+	puts "Foo finalizer called!"
+}
+
+foo 1 2 3 4 5
+

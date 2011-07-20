@@ -356,7 +356,7 @@ X	-renamed subReturn to 'next'.
 		-brochure
 		-language reference
 X	-final blocks in subs, procedures and methods
-		-also macros
+X		-also macros
 X		-also mprocs
 		-also 'do'
 	-basic file I/O

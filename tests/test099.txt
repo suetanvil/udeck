@@ -1,0 +1,4 @@
+Foo called.
+Foo expands to '[puts 1 2 3 4 5]'.
+Foo finalizer called!
+12345
