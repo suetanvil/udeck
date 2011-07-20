@@ -3022,16 +3022,18 @@ sub macro_mproc {
 
 
 sub macro_macro {
-  my ($macro, $name, $args, $body) = @_;
+  my ($macro, $name, $args, $body, $final) = @_;
 
-  $name->checkSymbol();
+  $name->checkSymbol(" as name of macro definition.");
   $args = fixFormalArgs($args);
-  $body->checkQtLoL();
+  $body->checkQtLoL(" in body of macro definition.");
+  $final->checkQtLoL(" in final block of macro definition.")
+	if defined($final);
+  $final ||= NIL;
 
   return LL::List->new([LL::Symbol->new('_::macro'),
 						LL::Quote->new($name),
-						$args,
-						$body]);
+						$args, $body, $final]);
 }
 
 
@@ -4651,15 +4653,14 @@ sub builtin_mproc {
 
 
 sub builtin_macro {
-  my ($name, $args, $body) = @_;
-
-  # Argument checking.
-  die "'macro' expects 3 arguments: got @{[scalar @_]}\n"
-	unless scalar @_ == 3;
+  my ($name, $args, $body, $final) = @_;
+  checkNargs('_::macro', \@_, 4);
+  $final = LL::List->new([]) if $final == NIL;
 
   $name->checkSymbol(" in macro name.");
   $args->checkList(" in macro '${$name}' argument list.");
   $body->checkLoL(" in macro '${$name}' body.");
+  $final->checkLoL(" in macro '${$name}' final block.");
 
   my $docstring = $body->stripDocString();
   if ($docstring) {
@@ -4668,7 +4669,7 @@ sub builtin_macro {
   }
 
   my $longName = $Globals->normalizeName(${$name});
-  my $macro = compile ($Globals, $args, $body, undef, 'macro', $longName);
+  my $macro = compile ($Globals, $args, $body, $final, 'macro', $longName);
 
   $Globals->defset(${$name}, $macro);
 
