@@ -1007,10 +1007,14 @@ mproc map {
 }
 	
 mproc do {
-	sub pr
+	strict sub body
+	strict sub final [default {}]
 } {
-	"Evaluate C<pr> once and return its result."
-	return [pr]
+	"Evaluate C<body> once and return its result.  If C<final> is given,
+     evaluate it after C<body> finishes."
+	return [body]
+} {
+	final
 }
 
 

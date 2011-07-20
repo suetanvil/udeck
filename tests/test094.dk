@@ -76,3 +76,14 @@ narf {r} => {puts "narf arg 2!"; r 42}
 puts "---"
 
 puts [sneep]
+puts "---"
+
+# Also test the finalizer in 'do'
+do {
+	puts "do body called"
+	next 42
+	puts "You should not see this."
+} {
+	puts "do finalizer called."
+}
+

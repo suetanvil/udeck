@@ -37,3 +37,6 @@ narf arg 2!
 ---
 42
 42
+---
+do body called
+do finalizer called.

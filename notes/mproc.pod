@@ -4,7 +4,7 @@
 
 
 form: mproc <name> [
- [strict? [default <literal>]? (sub (\d+|(\w+)+)|sym|list|word) <arg>]*
+ [strict?  (sub (\d+|(\w+)+)|sym|list|word) <arg> [default <literal>]? ]*
 ] <body>
  
 modifiers:
