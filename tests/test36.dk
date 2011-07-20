@@ -35,5 +35,8 @@ puts
 dofor {puts "byte $a"} b
 puts
 
+repeat 5 {puts "Itteration: $a"}
+puts
+
 
 

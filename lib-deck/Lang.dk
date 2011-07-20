@@ -1024,8 +1024,6 @@ mproc dofor {
 }
 
 
-
-
 class Interval Struct {
 	"Instances of C<Interval> mimic a list containing a consecutive series of
 	 numbers as defined by the C<new> arguments C<startVal>, C<endVal> and
@@ -1130,6 +1128,18 @@ proc \.. {start end} {
 	return [Interval->new start end by]
 }
 const range = \..
+
+
+mproc repeat {
+	count
+	sub 1 pr
+} {
+	"Evaluate procedure C<pr> C<count> times.  C<pr> takes one argument, the
+     itteration number starting from zero."
+	for i in (0 .. count - 1) {
+		pr i
+	}
+}
 
 
 proc slice {seq start end} {

@@ -12,13 +12,15 @@ var m2 = "Hello, world 2!\n";
 # Write the first test file
 var fh
 fh = [new FileHandle t1 :write Fatal]
+puts fh.canRead " " fh.canWrite
 fh->put m1
 fh->put m2
 fh->close
-
+puts "---"
 
 # Read it back and compare
 fh = [new FileHandle t1 :read Fatal]
+puts fh.canRead " " fh.canWrite
 var l1 = [fh->getLine]
 var l2 = [fh->getLine]
 
@@ -26,6 +28,17 @@ say (l1 == m1) " " l1
 say (l2 == m2) " " l2
 
 puts fh.eof
+fh->close
+puts "---"
 
+# Read it back with getChars
+fh = [new FileHandle t1 :read Fatal]
+l1 = [fh->getChars m1.size]
+l2 = [fh->getChars m2.size]
+
+say (l1 == m1) " " l1
+say (l2 == m2) " " l2
+
+puts fh.eof
 fh->close
 
