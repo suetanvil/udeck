@@ -109,5 +109,16 @@ say [fh->getLine]
 fh->close
 puts "---"
 
+fh = [new FileHandle t1 :read Fatal]
+puts [fh->read 100]
+puts [fh->read 100]
+fh->close
+puts "---"
+
+fh = [new FileHandle t1 :read Fatal]
+say [fh->getChars 100]
+puts ">>>" [fh->getChars 100] "<<<"
+fh->close
+puts "---"
 
 

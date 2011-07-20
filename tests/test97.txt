@@ -22,3 +22,9 @@ Howdy, world!
 ---
 Howdy, world!
 ---
+[byteArray 0x48 0x6f 0x77 0x64 0x79 .. 0x0a]
+[byteArray ]
+---
+Howdy, world!
+>>><<<
+---
