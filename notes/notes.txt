@@ -351,16 +351,16 @@ X	 code in a common place (e.g. @)
 X		-added common method to clean that up
 X	- subify builtin
 X	-renamed subReturn to 'next'.
+X	-final blocks in subs, procedures and methods
+X		-also macros
+X		-also mprocs
+X		-also 'do'
 
 	-docs:
 		-brochure
 		-language reference
-X	-final blocks in subs, procedures and methods
-X		-also macros
-X		-also mprocs
-		-also 'do'
 	-basic file I/O
-		FileHandle
+X		FileHandle
 			-need fail-by-retval and exceptions both
 		Dir
 	

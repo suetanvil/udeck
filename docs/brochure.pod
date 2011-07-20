@@ -6,28 +6,153 @@ features:
 
 =over
 
-=item First-class functions and closures
+=item * First-class functions and closures
 
-=item Dynamically-typed variables
+=item * Dynamically-typed variables
 
-=item Automatic memory management and memory safety
+=item * Automatic memory management and memory safety
 
-=item Macros and easy manipulation of code by code
+=item * Macros and easy manipulation of code by code
 
-=over
+=back
 
 It also has:
 
 =over
 
-=item Infix expressions and a readable syntax
+=item * Infix expressions and a readable syntax
 
-=item A pervasive, modern object system
+=item * A pervasive, modern object system
 
-=item Namespaces and packages
+=item * Namespaces and packages
 
-=item Continuations and exceptions
+=item * Continuations
 
 =back
+
+Deck has two goals: to be a useful general-purpose programming
+language on par with Java or Python and to be completely explorable by
+curious novice programmers.  This means that the final Deck
+implementation needs to be a simple program written in Deck.
+
+To accomplish this, Deck is a building-block language.  Outside of a
+tiny core, all of Deck is just libraries written in Deck.
+
+(The current implementation doesn't live up to this goal, but it's
+heading that way.)
+
+=head2 Syntax
+
+Like Lisp, Deck code consists of prefix S-Expressions:
+
+	[+ 2 [* 4 3]]
+
+(Deck uses square brackets instead of round ones.)
+
+These are easy to parse and programmatically manipulate but aren't
+particularly friendly to humans.  The alternative, the full infix
+syntax that most languages use loses that power.  Deck gets the best
+of both worlds by adding extra human-friendly syntax but immediately
+converting it to prefix form in an easy-to-understand way.
+
+There are two special syntaxes, infix expressions and LoLs:
+
+=head3 Infix Expressions
+
+Infix expressions are delimited by round parentheses (C<(> and C<)>).
+This:
+
+	(a + b * c)
+
+is equivalent to
+
+	[+ a [* b c]]
+
+Not only are they equivalent but the parser will immediately turn the
+first form into the second, typically as soon as it finds the closing
+paren.  You can see this in action by printing a quoted numerical
+expression:
+
+    udeck> puts :(a + b + c*d / e)
+    [+ [+ a b] [/ [* c d] e]]
+
+All expressions are S-Expressions by the time they reach your code and
+Deck has no trouble evaluating S-Expressions.
+
+(The C<:> operator is the same as the Scheme single quote--it prevents
+the thing following it from being evaluated.)
+
+
+=head3 LoL
+
+A LoL (short for Line-oriented List or List of Lists) is a special
+syntax for representing a quoted list containing other lists,
+i.e. most Deck source code.
+
+LoLs are delimited by braces (C<{> and C<}>).  Each (non-blank,
+non-comment) line is also turned into a list beginning at the start of
+the line and running to first end-of-line in which all brackets have
+been closed off.
+
+For example:
+
+    proc shuffled {seq} {
+    	var shuffledSeq = [seq->shallowCopy]
+    
+    	for index in (shuffledSeq.last .. 1) {
+    		var pick = [rand (index - 1)]
+    		
+    		var tmp = shuffledSeq@pick
+    		shuffledSeq@pick = shuffledSeq@index
+    		shuffledSeq@index = tmp
+    	}
+    
+    	return shuffledSeq
+    }
+	
+The above is a single logical line because of the LoL at the end of
+the C<proc> statement.  The LoL contains three entries and the second
+entry ends with a LoL containing four entries.
+
+LoL lines are usually parsed as prefix expressions.  However, if they
+look like infix expressions, they are parsed as infix instead.  (If
+they are ambiguous, the parser whines at you until you fix it.)
+
+Toplevel expressions (i.e. the lines you type in at the command prompt
+and in source files) are implicitly lines in a LoL.
+
+The resulting syntax looks like a friendlier version of Tcl, which
+means there's an Emacs mode for it already.
+
+
+
+
+=head2 Macros
+
+Deck has two types of macros: mprocs and real macros.
+
+=head3 Real Macros
+
+A macro in Deck is just a function that gets called by the compiler.
+Its input is the expression and the compiler will attempt to compile
+what it returns.
+
+For example:
+
+	macro foo {foo msg} {
+	    return [list :Lang::puts msg]
+	}
+
+    foo "Hello, world"
+
+When the compiler sees the expresson C<foo "Hello, world">, it calls
+the macro C<foo> on it.  C<foo> returns an expression calling
+C<Lang::puts> on the 
+
+
+
+=head3 MProcs
+
+Mprocs are 
 
 
