@@ -207,7 +207,7 @@ class FileHandle {
 		(bytes.class == ByteArray) || \
 			[die "FileHandle->write argument must be ByteArray."]
 
-		[_put fh string] || \
+		[_put fh bytes] || \
 			[self->_throw "Error writing ByteArray to '$filename'."  :ioError]
 	}
 

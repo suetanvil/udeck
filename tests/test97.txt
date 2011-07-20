@@ -1,0 +1,22 @@
+nil 1
+---
+1 nil
+1 Hello, world!
+1 Hello, world 2!
+1
+---
+1 Hello, world!
+1 Hello, world 2!
+Hello, world! world! world!orld 2!
+6
+---
+[byteArray 0x48 0x65 0x6c 0x6c 0x6f .. 0x77]
+Hello, w
+---
+Hello, world!
+---
+Hello, world!
+---
+Hello
+Howdy, world!
+---

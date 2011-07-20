@@ -39,6 +39,67 @@ l2 = [fh->getChars m2.size]
 say (l1 == m1) " " l1
 say (l2 == m2) " " l2
 
-puts fh.eof
+# Seek back to the start and read the first few characters with
+# getChar
+fh->seek 0 SEEK_SET
+repeat 6 {say [fh->getChar]}
+var pos = fh.pos
+repeat 7 {say [fh->getChar]}
+
+# Seek back to the previous position
+fh->seek pos SEEK_SET
+repeat 7 {say [fh->getChar]}
+
+# Test seek relative to the current position
+fh->seek -7 SEEK_CUR
+repeat 7 {say [fh->getChar]}
+
+# Test seek relative to the end
+fh->seek -8 SEEK_END
+repeat 8 {say [fh->getChar]}
+
+puts pos
 fh->close
+puts "---"
+
+# Test binary reading
+fh = [new FileHandle t1 :read Fatal]
+l1 = [fh->read 8]
+puts l1
+dofor {say [chr a]} l1
+puts
+fh->close 
+puts "---"
+
+
+# Test binary writing
+fh = [new FileHandle t1 :write Fatal]
+l1 = [fh->write [byteArray 72 101 108 108 111 44 32 119 111 114 108 100 33 10]]
+fh->close
+
+fh = [new FileHandle t1 :read Fatal]
+say [fh->slurp]
+fh->close
+puts "---"
+
+# Test binary reading past the end of the file
+fh = [new FileHandle t1 :read Fatal]
+l1 = [fh->read 3000]
+fh->close 
+dofor {say [chr a]} l1
+puts "---"
+
+# Test reading and writing
+fh = [new FileHandle t1 :readwrite Fatal]
+puts [fh->getChars 5]
+fh->seek 0 SEEK_SET
+
+fh->put "Howdy"
+fh->seek 0 SEEK_SET
+
+say [fh->slurp]
+fh->close
+puts "---"
+
+
 
