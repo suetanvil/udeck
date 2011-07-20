@@ -588,20 +588,23 @@ _class_ext ByteArray {
    	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		const MAXSIZE = 5
-		var {count = MAXSIZE}
+		var count = MAXSIZE
 
 		var dotdot = " .. "
-		var last = [sprintf "0x%02x" (self@ -1)]
+		var last
 
 		if (self.size < MAXSIZE + 3) {
 			dotdot = ""
 			last = ""
 			count = self.size
+		} else {
+			last = [sprintf "0x%02x" (self@ -1)]
 		}
 
 		var formatted = [listSized count]
 		var index = 0
 		while (index < count) {
+
 			formatted@index = [sprintf "0x%02x" (self@index)]
 			index = index + 1
 		}
