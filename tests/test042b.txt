@@ -34,3 +34,7 @@ nil
 ---
 34
 12
+mp4: aSymbol
+mp4: someOtherSymbol
+mp4a: notAStrictArg
+mp4a: 42

@@ -44,3 +44,22 @@ mproc mp3 {
 
 mp3 {value (x + 33)}
 mp3
+
+
+mproc mp4 {
+	strict symbol s [default :aSymbol]
+} {
+	puts "mp4: $s"
+}
+
+mp4
+mp4 someOtherSymbol
+
+mproc mp4a {
+	symbol s [default :aSymbol]
+} {
+	puts "mp4a: $s"
+}
+
+mp4a notAStrictArg
+mp4a [value 42]		# see, not strict

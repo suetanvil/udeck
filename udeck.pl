@@ -2924,7 +2924,7 @@ sub delayed {
 sub quoteIfSym {
   my ($sym, $strict) = @_;
 
-  $sym->checkSymbol(" in mproc argument.") if $strict;
+  $sym->checkSymbol(" in strict mproc argument.") if $strict;
   return $sym unless $sym->isSymbol();
   return LL::Quote->new($sym);
 }
@@ -4493,7 +4493,6 @@ sub mk_mproc_macro_argfilter {
 		  "mproc '$name' despite 'sub' modifier.\n"
 			if ($needDefault && !$default->isList() && !$default->isQtLoL());
 
-
 		if ($strict) {
 		  push @argFilter, sub {subifyStrict(shift() || $default, @sfyArgs)};
 		} else {
@@ -4504,9 +4503,11 @@ sub mk_mproc_macro_argfilter {
 	  when ("symbol") {
 		die "Default argument is not a symbol in argument $argNum of " .
 		  "mproc '$name' despite 'symbol' modifier.\n"
-			if ($needDefault && !$default->isSymbol());
-
-		push @argFilter, sub {quoteIfSym(shift() || $default, $strict)};
+			if ($needDefault &&
+				!($default->isQuote() && $default->value()->isSymbol()));
+		
+		my $uqDefault = $needDefault ? $default->value() : undef;
+		push @argFilter, sub {quoteIfSym(shift() || $uqDefault, $strict)};
 	  }
 
 	  when ("list") {

@@ -1,4 +1,4 @@
-Expected symbol, got LL::List in mproc argument.
+Expected symbol, got LL::List in strict mproc argument.
 calling <procedure> on :foo
 :foo
 calling <procedure> on :bar
