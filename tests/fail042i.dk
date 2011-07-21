@@ -1,0 +1,9 @@
+# strict list arg called with non-list arg
+
+mproc foo {
+	strict list l
+} {
+	puts l
+}
+
+foo 42
