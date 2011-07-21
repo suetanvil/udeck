@@ -1,1 +1,1 @@
-Expected list, got LL::Number in mproc argument.
+Expected list, got Number in mproc argument.

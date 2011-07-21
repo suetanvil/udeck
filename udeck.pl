@@ -460,6 +460,19 @@ sub new {
   return bless $ref, $class;
 }
 
+# Printable type name, used by check*().
+sub _nm {
+  my ($self) = @_;
+
+  my $nm = $self->class()->{name};
+  if (!$nm) {
+	$nm = ref($self);
+	$nm =~ s/^LL:://;
+  }
+
+  return $nm;
+}
+
 sub checkType {
   my ($self, $type, $name) = @_;
 
@@ -470,19 +483,19 @@ sub checkType {
 	or die "Expected 'LL::$type'; got @{[ref($self)]}$fname.\n";
 }
 
-sub checkNumber {die "Expected number, got @{[ref(shift)]}@_\n"}
-sub checkByte   {die "Expected integer from 0 to 255, got @{[ref(shift)]}@_\n"}
-sub checkString {die "Expected string, got @{[ref(shift)]}@_\n"}
-sub checkList   {die "Expected list, got @{[ref(shift)]}@_\n"}
-sub checkSymbol {die "Expected symbol, got @{[ref(shift)]}@_\n"}
-sub checkQuote  {die "Expected quoted expr, got @{[ref(shift)]}@_\n"}
-sub checkQtLoL  {die "Expected quoted LoL, got @{[ref(shift)]}@_\n"}
-sub checkLoL    {die "Expected LoL, got @{[ref(shift)]}@_\n"}
-sub checkFun	{die "Expected procedure, got @{[ref(shift)]}@_\n"}
-sub checkClass	{die "Expected class, got @{[ref(shift)]}@_\n"}
-sub checkStruct	{die "Expected struct, got @{[ref(shift)]}@_\n"}
-sub checkLocalName {die "Expected unqualified name, got @{[ref(shift)]}@_\n"}
-sub checkValidName {die "Expected valid name, got @{[ref(shift)]}@_\n"}
+sub checkNumber {die "Expected number, got @{[(shift)->_nm()]}@_\n"}
+sub checkByte   {die "Expected integer from 0 to 255, got @{[(shift)->_nm()]}@_\n"}
+sub checkString {die "Expected string, got @{[(shift)->_nm()]}@_\n"}
+sub checkList   {die "Expected list, got @{[(shift)->_nm()]}@_\n"}
+sub checkSymbol {die "Expected symbol, got @{[(shift)->_nm()]}@_\n"}
+sub checkQuote  {die "Expected quoted expr, got @{[(shift)->_nm()]}@_\n"}
+sub checkQtLoL  {die "Expected quoted LoL, got @{[(shift)->_nm()]}@_\n"}
+sub checkLoL    {die "Expected LoL, got @{[(shift)->_nm()]}@_\n"}
+sub checkFun	{die "Expected procedure, got @{[(shift)->_nm()]}@_\n"}
+sub checkClass	{die "Expected class, got @{[(shift)->_nm()]}@_\n"}
+sub checkStruct	{die "Expected struct, got @{[(shift)->_nm()]}@_\n"}
+sub checkLocalName {die "Expected unqualified name, got @{[(shift)->_nm()]}@_\n"}
+sub checkValidName {die "Expected valid name, got @{[(shift)->_nm()]}@_\n"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isLocalName {return 0}

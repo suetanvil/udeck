@@ -1,3 +1,3 @@
-Expected list, got LL::Quote in mproc argument.
+Expected list, got Quote in mproc argument.
 calling <procedure> on [a b hello 41.9 [xxx]]
 [a b hello 41.9 [xxx]]
