@@ -1,0 +1,86 @@
+
+=head1 Deck Language Reference
+
+=head1 Introduction
+
+
+=head1 Syntax
+
+=head2 Tokens
+
+=head2 Data
+
+=head2 Expressions
+
+=head3 Prefix Expressions
+
+=head3 Infix Expressions
+
+=head3 LoLs
+
+
+
+=head1 Procedures
+
+=head2 Procs
+
+=head2 Closures
+
+=head2 Final Blocks
+
+=head2 Continuations
+
+
+=head1 Macros
+
+=head2 Proper Macros
+
+=head2 MProcs
+
+=head3 MProc Syntax
+
+
+
+=head1 Objects
+
+=head2 The Metaclass System
+
+=head2 Method Lookup Semantics
+
+=head2 Basic Classes and Struct
+
+=head2 Defining Classes
+
+=head3 Methods
+
+=head4 Private methods
+
+=head4 op_*
+
+=head3 Fields and Attributes
+
+=head3 The 'class' macro
+
+=head3 The 'object' macro
+
+
+
+=head1 Namespaces
+
+=head2 Defining Modules
+
+=head3 Private Names
+
+=head2 Importing Modules
+
+=head2 Local vs Qualified names
+
+=head2 Default Namespaces
+
+=head2 Reserved Namespaces
+
+
+
+=head1 Bugs
+
+

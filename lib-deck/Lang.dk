@@ -1400,6 +1400,11 @@ class Exception {
 		currentThrowable self
 	}
 
+	method printable_get {} {
+		var desc = (id && " ($id)" || "")
+		return "Exception$desc: $message"
+	}
+
 	method shallowCopy {} {
 		"Make a copy of this C<Exception>.  Note that all fields are shared
          across both instances."

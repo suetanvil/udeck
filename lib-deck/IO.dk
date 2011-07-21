@@ -309,7 +309,6 @@ class FileHandle {
 	}
 }
 
-=pod xxx
 
 mproc dofile {
 	name
@@ -332,5 +331,4 @@ mproc dofile {
 }
 
 
-=cut
 
