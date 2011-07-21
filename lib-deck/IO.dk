@@ -357,14 +357,14 @@ proc _bail {msg id exc ret} {
 }
 
 
-mproc delete {
+mproc unlink {
 	file
 	onError [default nil]
 } {
 	"Delete (unlink) C<file>.  Returns C<true> on success and C<false>.  If
      Exception C<onError> is given, it is thrown instead on error."
 
-	[_unlink file] || [_bail "Unable to delete '$file'" :unlinkError 
+	[_unlink file] || [_bail "Unable to unlink '$file'" :unlinkError 
 					   onError return]
 	return true
 }
