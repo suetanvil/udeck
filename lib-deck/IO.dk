@@ -345,6 +345,8 @@ perlproc _lsdir {dir} '''
     return \@dirs;
 '''
 
+perlproc _stat {file} '''return [stat($file)];'''
+
 
 
 # Throw C<exc> with C<msg> and C<id> if it is not nil; otherwise
@@ -353,6 +355,7 @@ proc _bail {msg id exc ret} {
 	exc || [ret false]
 	exc->throw msg id
 }
+
 
 mproc delete {
 	file
@@ -364,6 +367,7 @@ mproc delete {
 	[_unlink file] || [_bail "Unable to delete '$file'" :unlinkError return]
 	return true
 }
+
 
 mproc mkdir {
 	path
@@ -384,6 +388,7 @@ mproc mkdir {
 	return true
 }
 
+
 mproc rmdir {
 	dir
 	onError [default nil]
@@ -396,6 +401,7 @@ mproc rmdir {
 		[_bail ("Error removing '$file': " + [_errmsg]) :rmdirErr return]
 	return true
 }
+
 
 mproc lsdir {
 	dir
@@ -411,4 +417,63 @@ mproc lsdir {
 		[_bail ("Error listing '$dir': " + [_errmsg]) :listErr return]
 		
 	return items
+}
+
+
+
+class StatResult {
+	"StatResult is a data structure holding the results of a successful
+     stat call.  Readable fields are:
+
+     =over
+
+	 name dev ino mode nlink uid gid rdev size atime mtime ctime
+	 blksize blocks
+
+     =back
+    "
+
+	readable name
+	readable dev ino mode nlink uid gid rdev size atime mtime ctime
+	readable blksize blocks
+
+	method _init {path itm} {
+		name	= path
+
+		dev		= itm@0
+		ino		= itm@1
+		mode	= itm@2
+		nlink	= itm@3
+		uid		= itm@4
+		gid		= itm@5
+		rdev	= itm@6
+		size	= itm@7
+		atime	= itm@8
+		mtime	= itm@9
+		ctime	= itm@10
+		blksize = itm@11
+		blocks	= itm@12
+	}
+
+	method printable_get {} {
+		"Return a human-readable representation."
+		return "[stat '$name']";
+	}
+}
+
+
+mproc stat {
+	file
+	onError [default nil]
+} {
+	"Perform a stat operation on C<file>.  If successful, returns a
+     StatResult describing the object.  On error, returns C<nil> unless
+     C<onError> is non-nil (and is an Exception), in which case it is
+     thrown with an error message."
+	var elements = [_stat file]
+
+	elements || \
+		[_bail ("Error statting '$file': " + [_errmsg]) :statErr return]
+
+	return [StatResult->new file elements]
 }
