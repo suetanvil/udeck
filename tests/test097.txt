@@ -34,3 +34,7 @@ Slurping iotest1.tmp: Howdy, world!
 ---
 Slurping iotest1.tmp: We Meet Again, World!
 ---
+Size = 22
+nlink = 1
+name = iotest1.tmp
+Exception (statErr): Error statting 'nonexistant-file.txt': No such file or directory

@@ -145,4 +145,18 @@ dofile t1 :read {
 puts "---"
 
 
+# Test 'stat'
+var status = [stat t1]
+puts "Size = "  status.size
+puts "nlink = " status.nlink
+puts "name = " status.name
+
+# Status failure
+try {
+	var x = [stat "nonexistant-file.txt" Error]
+	puts x
+} catch {
+	puts Error
+}
+
 

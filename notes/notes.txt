@@ -362,8 +362,11 @@ X		-also 'do'
 	-basic file I/O
 X		FileHandle
 			-need fail-by-retval and exceptions both
-		Dir
+		-also, a bunch of file manipulation functions
+			-class StatResult
+
 	
+	-StatResult should answer questions
 	-module docstrings	
 	-if macro should allow multiple 'elseif' clauses
 	-there should be some way to query a MethodCall to see if it's a
