@@ -18,4 +18,8 @@ puts "@{b} = \@{b}"
 var c = :"this is $a and $b"
 puts c.printable
 
+var d = 42
+puts "This is not a list: @d"
+d = "xxx"
+puts "Nor is this: @d"
 

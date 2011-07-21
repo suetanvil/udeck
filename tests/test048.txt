@@ -8,3 +8,5 @@ $a = ${a}x = 42
 @b = this is 1 list, a=42
 this is 1 list = @{b}
 [_::mkstr this is  a  and  b]
+This is not a list: 42
+Nor is this: xxx

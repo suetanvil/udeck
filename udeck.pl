@@ -4790,6 +4790,8 @@ sub builtin_mkstr_all {
 
   checkNargs('_::mkstr_all', \@_, 1);
 
+  $args = LL::List->new([$args]) unless $args->isList();
+
   my @strings = map { $_->printStr() } @{$args};
   my $result = join(" ", @strings);
   return LL::String->new(\$result);

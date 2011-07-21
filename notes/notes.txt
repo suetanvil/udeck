@@ -364,10 +364,10 @@ X		FileHandle
 			-need fail-by-retval and exceptions both
 		-also, a bunch of file manipulation functions
 			-class StatResult
-	-test
+X	-test
 X		-mproc default type symbol
 X		-ditto, not a symbol
-		-default quoted list
+X		-default quoted list
 	-unquoted lists for sub default arg?
 	
 	-StatResult should answer questions
