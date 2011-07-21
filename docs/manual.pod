@@ -3,14 +3,252 @@
 
 =head1 Introduction
 
+Deck is a modern Lispish general-purpose programming language.  It
+features:
+
+=over
+
+=item * First-class functions
+
+=item * Closures
+
+=item * Dynamically-typed variables
+
+=item * Automatic memory management and memory safety
+
+=item * Macros
+
+=item * List-structured source code
+
+=back
+
+It also has:
+
+=over
+
+=item * Infix expressions and a readable syntax
+
+=item * A pervasive, modern object system
+
+=item * Namespaces and packages
+
+=item * Continuations
+
+=item * An innovative exception system
+
+=back
+
+Deck has two goals: to be a useful general-purpose programming
+language on par with Java or Python and to be completely explorable by
+curious novice programmers.  This means that the final Deck
+implementation needs to be a simple program written in Deck.
+
+To accomplish this, Deck is a building-block language.  Outside of a
+tiny core, all of Deck is just libraries written in Deck.
+
+(The current implementation doesn't live up to this goal, but it's
+heading that way.)
+
+
 
 =head1 Syntax
 
-=head2 Tokens
+Deck source code is currently expected to be 7-bit ASCII text,
+although future versions may support other character sets as well.
+
+=head2 Lines
+
+Deck source code is read in as a sequence of lines.  These lines are
+sometimes syntactically significant so it is important to be aware of
+the rules.
+
+A line runs from either the start of the input file or from the
+character after the end of the previous line through to the next ASCII
+newline character.  For example:
+
+	line 1
+	line 2
+	line 3
+
+In addition, a semicolon (C<;>) can be used as a logical line
+separator instead:
+
+	line 1; line 2; line 3
+
+Conversely, it is possible to spread a logical line across multiple
+physical lines by ending the line with a backslash (C<\>):
+
+	line \
+	1
+	line \
+	2
+	line \
+	3
+
+Note that unlike other line-oriented languages (e.g. Tcl and Unix
+shells), the backslash is not an escaped newline.  You may put B<any>
+whitespace or comment after a backslash and it will continue to mean
+the same thing:
+
+	line \    # this is a comment
+	1
+	line \    # so is this
+	2
+	line \    # and this
+	3
+
+Note: How Deck handles newlines from different platforms
+(LF vs CR+LF vs CR) is currently dependent on the underlying Perl
+interpreter.  This could be considered a bug.
+
+
+=head2 Comments
+
+Deck comments begin with a pound sign (C<#>, aka number sign, aka
+octothorp) and run to the end of the physical line:
+
+	foo     # this is a comment
+
+Comments end at the B<physical> line: semicolons and backslashes do
+not have an effect on comments:
+
+	bar     # this is a comment; this is still the comment
+	quux    # this is a new line \
+	baz     # this is not part of the previous line's comment
+
+For parsing purposes, comments are considered whitespace.
+
+
+=head2 POD Regions
+
+Deck also supports POD documentation.  Specifically, any line
+beginning with an equal sign (C<=>) followed by a series of "word"
+characters (alphanumeric plus C<_>) and optional other text after a
+space denotes the start of a POD region.  The Deck interpreter will
+ignore all subsequent input lines until it comes upon a line beginning
+with C<=cut>.  
+
+The C<=cut> may optionally be followed by a space and
+then other text but must end with an actual newline.
+
+POD documents inside multi-line strings are considered part of the
+string and are parsed as such.
+
+See L<perlpod> for a better explanation of POD.
+
 
 =head2 Literals
 
-=head3 Double-Quoted Strings
+Deck supports the following data literals:
+
+=head3 Numbers
+
+Deck currently only implements a single Number type but there are
+multiple literal forms.  They are:
+
+	12345			# Decimal integer
+	0456			# Also decimal--leading zeroes are ignored
+	-123.456		# Negative float
+	0xDEADBEEF		# Hex literal
+	0b10101010		# Binary literal
+
+Note that there is no octal form.  Unlike most C-like languages, a
+leading zero in an integer literal does not indicate an octal
+constant.
+
+In addition, numeric literals may contain underscores (C<_>).  These
+are ignored by the parser and so can be used to make your numbers more
+readable:
+
+	1_000_000		# One. Million. Dollars.
+
+The underscore can appear anywhere in a number with one exception: a
+floating-point literal may not begin with an underscore:
+
+	_3.14159		# WRONG!
+
+
+=head3 Strings
+
+Deck has two kinds of strings: single-quoted strings and double-quoted
+strings.  Both evaluate to the same kind of internal object but the
+quote determines how they are parsed.
+
+Both kinds of strings can be spread across multiple lines.
+
+=head4 Single-Quoted Strings
+
+Single-quoted strings are delimited by one or more single quote
+characters (C<'>).  The text inside a single-quoted string is not
+altered in any way.  It is stored literally without any kind of
+escaping or interpolation:
+
+	'Hello, world!'
+
+Because quotes are likely to appear in the text with no way to escape
+them, you can use a series of quotes as the delimiter instead of a
+single quote:
+
+	'''I don't think this will be a problem. Nor will "''" be.'''
+
+Note that the delimiter B<must> have an B<odd> number of quote
+characters.  Otherwise, it will look like an empty string (i.e. an
+odd-number-sized delimiter followed by the closing delimiter.):
+
+	''''Hello, world!''''			# WRONG!
+
+	''''''							# Empty string
+
+As a special case, any even number of single quotes is parsed as an
+empty string.
+
+
+=head4 Double-Quoted Strings
+
+Double-quoted strings allow interpolation and escaping.  As in Perl
+and C-family languages, the backslash character is used as the escape:
+
+	"She said, \"That's what he said!\""
+
+In addition, Deck implements a subset of Perl's escape sequences:
+
+	\t		tab
+	\n		newline
+	\r		return
+	\a		bell
+	\f		form feed
+
+For example:
+
+	"line 1\nline 2\nline 3\n"
+
+The backslash also escapes the other special characters:
+
+	\$		Dollar sign (C<$>)
+	\@		At sign (C<@>)
+	\\		backslash (C</>)
+
+For example:
+
+	"\\Win \$\$\$\$\$ \@ my online casino!\\"
+
+The C<$> and C<@> require some special attention.
+
+Deck provides something like Perl-style variable interpolation.  If a
+string contains a dollar sign followed by a name (and possibly
+bracketted by curly brackets (C<{> and C<}>)), 
+
+
+
+
+
+=head2 Delimiters
+
+=head2 Words
+
+=head3 Operators
+
+=head4 Escaped Operators
 
 =head2 Expressions
 
@@ -19,6 +257,8 @@
 =head3 Infix Expressions
 
 =head3 LoLs
+
+=head3 Quoting
 
 
 =head1 Data
