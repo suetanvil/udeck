@@ -4429,9 +4429,9 @@ sub mk_mproc_macro_argfilter {
 		  # Leave $default as is
 
 		} elsif ($default->isQuote()) {
-		  $default = $default->value();
+		  my $val = $default->value();
 		  die $msg
-			unless $default->isSymbol() || $default->isList();
+			unless $val->isSymbol() || $val->isList();
 
 		} else {
 		  die $msg;
@@ -4512,20 +4512,25 @@ sub mk_mproc_macro_argfilter {
 	  when ("list") {
 		die "Default argument is not a list in argument $argNum of " .
 		  "mproc '$name' despite 'list' modifier.\n"
-			if ($needDefault && !$default->isList());
+			if ($needDefault && (!$default->isQuote() ||
+								 !$default->value()->isList() ));
 
 		push @argFilter, sub {quoteIfList(shift() || $default, $strict)};
 	  }
 
 	  when ("word") {
-		die "Default argument is not the symbol '$argName' of ".
-		  "mproc '$name' despite 'word' modifier.\n"
-			if ($needDefault && (!$default->isSymbol() ||
-								 ${$default} ne $argName));
+		my $udef = undef;
+
+		if ($needDefault) {
+		  $udef = $default->isQuote() ? $default->value() : $default;
+		  die "Default argument is not the symbol '$argName' of ".
+			"mproc '$name' despite 'word' modifier.\n"
+			  if (!$udef->isSymbol() || ${$udef} ne $argName);
+		}
 
 		push @argFilter,
 		  sub {my ($param) = @_;
-			   $param ||= $default;
+			   $param ||= $udef;
 
 			   $param->checkSymbol(" in mproc argument '$argName' " .
 								   "for '$name'.");

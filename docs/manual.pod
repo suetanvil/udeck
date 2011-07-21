@@ -10,6 +10,8 @@
 
 =head2 Literals
 
+=head3 Double-Quoted Strings
+
 =head2 Expressions
 
 =head3 Prefix Expressions

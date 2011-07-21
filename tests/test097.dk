@@ -158,5 +158,24 @@ try {
 } catch {
 	puts Error
 }
+puts "------------"
 
+=pod
+
+# Test mkdir/lsdir/unlink/rmdir
+var tmpdir = "tmp-test097"
+
+puts "This should succeed: " [mkdir tmpdir]
+puts "This should fail: " [mkdir tmpdir]	
+
+try {
+	mkdir tmpdir :[7 7 7] Error
+} catch {
+	puts "Expected exception: " Error
+}
+puts "---"
+
+var f2
+
+=cut
 
