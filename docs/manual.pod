@@ -8,7 +8,7 @@
 
 =head2 Tokens
 
-=head2 Data
+=head2 Literals
 
 =head2 Expressions
 
@@ -17,6 +17,15 @@
 =head3 Infix Expressions
 
 =head3 LoLs
+
+
+=head1 Data
+
+=head2 Types
+
+=head2 Booleans
+
+=head3 Stupid Boolean Tricks
 
 
 

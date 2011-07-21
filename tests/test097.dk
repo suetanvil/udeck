@@ -122,3 +122,27 @@ fh->close
 puts "---"
 
 
+# Test 'dofile'
+dofile "non-existant-file.txt" :read {
+	var f = [fh->slurp]
+	puts "File contents: $f"
+} catch {
+	puts Error.printable
+}
+puts "---"
+
+dofile t1 :read {
+	say "Slurping $t1: " [fh->slurp]
+}
+puts "---"
+
+dofile t1 :write {
+	fh->puts "We Meet Again, World!"
+}
+dofile t1 :read {
+	say "Slurping $t1: " [fh->slurp]
+}
+puts "---"
+
+
+

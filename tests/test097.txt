@@ -28,3 +28,9 @@ Howdy, world!
 Howdy, world!
 >>><<<
 ---
+Exception (openError): Unable to open file 'non-existant-file.txt'.
+---
+Slurping iotest1.tmp: Howdy, world!
+---
+Slurping iotest1.tmp: We Meet Again, World!
+---
