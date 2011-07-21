@@ -4004,6 +4004,8 @@ sub initGlobals {
   op_method '&',  'op_BitAnd';
   op_method '^',  'op_BitXor';
   op_method '==', 'op_Equals';
+  op_method '<<', 'op_LShift';
+  op_method '>>', 'op_RShift';
 
   # Define the built-in classes.
   defclass 'Object', '',
@@ -4170,9 +4172,21 @@ sub initGlobals {
 						$other->checkNumber(" in bitAndNumber");
 						return decktype(int(${$other}) & int(${$self}))},
 
+	 shiftRight	=> sub {my ($self, $other) = @_;
+						checkNargs('shiftRight', \@_, 2);
+						$other->checkNumber(" in shiftRight");
+						return decktype(int(${$other}) >> int(${$self}))},
+
+	 shiftLeft	=> sub {my ($self, $other) = @_;
+						checkNargs('shiftLeft', \@_, 2);
+						$other->checkNumber(" in shiftLeft");
+						return decktype(int(${$other}) << int(${$self}))},
+
 	 op_Equals	=> sub {my ($self, $other) = @_; checkNargs('op_Equals',\@_,2);
 						return NIL unless $other->isNumber();
 						return boolObj(${$self} == ${$other})},
+
+
 
 	};
 

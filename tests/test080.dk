@@ -2,7 +2,7 @@
 
 # Modulo:
 
-var {a = 5; b = 3.0; c = 2}
+var {a = 5; b = 3.0; c = 2; d = 42}
 puts " --- %"
 puts (a%3)
 puts (a%b)
@@ -66,6 +66,21 @@ puts " --- -"
 puts [- a]
 puts (b - a)
 puts (a - b)
+
+# Shift left
+puts "--- <<"
+puts (a << 1)
+puts (a << 2)
+puts (a << 3)
+puts (a << 4)
+
+# Shift right
+puts "--- >>"
+puts (d >> 1)
+puts (d >> 2)
+puts (d >> 3)
+puts (d >> 4)
+
 
 
 

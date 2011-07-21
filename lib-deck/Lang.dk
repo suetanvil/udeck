@@ -254,6 +254,18 @@ _class_ext Number {
 		return [obj->gteNumber self]
 	}
 
+	mdoc shiftRight {num} "Return C<num> shifted right by C<self>"
+	method op_RShift {obj} {
+		"C<E<gt>E<gt>> operator.  Shift self right by C<obj>."
+		return [obj->shiftRight self]
+	}
+
+	mdoc shiftLeft {num} "Return C<num> shifted left by C<self>"
+	method op_LShift {obj} {
+		"C<E<lt>E<lt>> operator.  Shift self left by C<obj>."
+		return [obj->shiftLeft self]
+	}
+
 	mdoc op_Equals {obj} \
 		"Test if C<self> and C<obj> have the same numeric value.
          (Non-numbers clearly do not.)"
