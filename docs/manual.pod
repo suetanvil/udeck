@@ -162,10 +162,12 @@ readable:
 
 	1_000_000		# One. Million. Dollars.
 
-The underscore can appear anywhere in a number with one exception: a
-floating-point literal may not begin with an underscore:
+The underscore can appear anywhere in a number except for the
+beginning:
 
 	_3.14159		# WRONG!
+
+This is needed to distinguish between numbers and symbols.
 
 
 =head3 Strings
@@ -235,22 +237,90 @@ For example:
 The C<$> and C<@> require some special attention.
 
 Deck provides something like Perl-style variable interpolation.  If a
-string contains a dollar sign followed by a name (and possibly
-bracketted by curly brackets (C<{> and C<}>)), 
+string contains a dollar sign (C<$>) followed by a name (and possibly
+bracketted by curly brackets (C<{> and C<}>)), it will be replaced by
+the value of the variable's printable form:
 
+	x = "foo"
+	puts "$x $x"				# "foo foo"
+	puts "${x}bar"				# "foobar"
 
+Similarly, an at-sign (C<@>) followed by the name of a list will
+expand to the printable form of each element in the list separated by a
+single space.  If the variable is not a list, it is expanded in the
+same way as the C<$> for above:
 
+	var x = :["foo" "bar" "quux"]
+	puts "@x"					# "foo bar quux"
+	x = 42
+	puts "$x"					# "42"
+
+Note that C<@> expansion only works for items of the type List.
+Datatypes that mimic a List sufficiently well do not get expanded like
+one.  However, this may change in a future release.
+
+Note: Deck currently has two printable forms, one from the C<printable>
+attribute and the other coming from within.  String interpolation
+currently uses the internal (wrong) one.  This Will Be Fixed.
 
 
 =head2 Delimiters
 
-=head2 Words
+Deck parses the following characters as special delimiters:
 
-=head3 Operators
 
-=head4 Escaped Operators
+=over
+
+=item 1) C<{> and C<}>, the curly brackets
+
+=item 2) C<(> and C<)>, the round brackets
+
+=item 3) C<[> and C<]>, the square brackets
+
+=item 4) C<:>, the quote delimiter
+
+=back
+
+The first three items are the parentheses Deck supports.
+
+The colon (C<:>) is used to quote (i.e. delay evaluation) of the thing
+following it.  See L<Quoting> below.
+
+=head2 Symbols
+
+Symbols (aka words, aka names) are generally used as the names of
+variables and constants.  There are two forms of symbols:
+
+Textual symbols take the same form as most modern programming
+languages' variables: an alphabetic character or the underscore (C<_>)
+followed by zero or more "word" characters (i.e. alphanumerics or
+underscore).  Examples:
+
+	foo
+	_foo42
+	this_is_a_variable
+	_45			# Tricky: a variable, NOT a number
+
+Operators consist of one or more of any of the following "operator"
+characters:
+
+	C<->, C<.>, C<|>, C<!>, C<@>, C<$>, C<%>, C<^>, C<&>, C<+>, C<=>,
+	C<?>,  C<E<lt>>, C<E<gt>>, C</>
+
+For example:
+
+	a + b
+
+Operators may be prefixed by the backslash (C<\>).  This does not
+change the symbol but sometimes provides a hint to the parse (see
+B<Expressions> below).  For example:
+
+	++ == \++			# This expression is true--they are the same symbol
+
 
 =head2 Expressions
+
+
 
 =head3 Prefix Expressions
 
@@ -259,6 +329,9 @@ bracketted by curly brackets (C<{> and C<}>)),
 =head3 LoLs
 
 =head3 Quoting
+
+=head2 Syntactic Sugar
+
 
 
 =head1 Data
