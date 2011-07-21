@@ -259,6 +259,36 @@ Note that C<@> expansion only works for items of the type List.
 Datatypes that mimic a List sufficiently well do not get expanded like
 one.  However, this may change in a future release.
 
+B<Beware:> Double-quoted strings are sometimes converted into more
+complex expressions by the parser.  This can react badly with certain
+other constructs to put a non-string where a string is expected.  For
+example, if a procedure contains this docstring:
+
+	proc foo {x} {
+		"do the foo thing"
+		...
+	}
+
+everything will be fine.  However, if you add an interpolation:
+
+	proc foo {x} {
+		"do the foo thing to $x"
+		...
+	}
+
+what you're actually doing is this:
+
+	proc foo {x} {
+		[_::mkstr "do the foo thing to " x]
+		...
+	}
+
+which is not only not a docstring but will attempt to call a string as
+a function.
+
+So remember: a double-quoted string is a true string if an only if it
+does not contain an unescaped C<@> or C<$>.
+
 Note: Deck currently has two printable forms, one from the C<printable>
 attribute and the other coming from within.  String interpolation
 currently uses the internal (wrong) one.  This Will Be Fixed.
@@ -318,8 +348,15 @@ B<Expressions> below).  For example:
 	++ == \++			# This expression is true--they are the same symbol
 
 
+=head2 Lists
+
+
+
+
 =head2 Expressions
 
+Deck expressions ultimately take the form of Lisp-style prefix
+expressions: a list in which the first item evaluates to the 
 
 
 =head3 Prefix Expressions
@@ -345,6 +382,10 @@ B<Expressions> below).  For example:
 
 
 =head1 Procedures
+
+=head2 Expression Evaluation
+
+=head2 Toplevels
 
 =head2 Procs
 
