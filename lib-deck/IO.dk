@@ -331,4 +331,39 @@ mproc dofile {
 }
 
 
+# Throw C<exc> with C<msg> and C<id> if it is not nil; otherwise
+# call ret (a continuation) with false.
+proc _bail {msg id exc ret} {
+	exc || [ret false]
+	exc->throw msg id
+}
+
+
+perlproc _unlink {file} '''return unlink $file;'''
+
+mproc delete {
+	file
+	onError [default nil]
+} {
+	"Delete (unlink) C<file>.  Returns C<true> on success and C<false>.  If
+     Exception C<onError> is given, it is thrown instead on error."
+
+	[_unlink file] || [_throw "Unable to delete '$file'" :unlinkError return]
+	return true
+}
+
+
+perlproc _mkdir {path mask} '''return $path, $mask;'''
+
+mproc mkdir {
+	path
+	mask [default :[7 7 7]]
+	onError [default nil]
+} {
+
+	var maskVal = (mask@2) | (mask@1 << 3) | (mask@0 << 6);
+
+
+
+}
 
