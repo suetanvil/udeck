@@ -336,6 +336,17 @@ perlproc _unlink {file} '''return unlink $file;'''
 perlproc _mkdir {path mask} '''return $path, $mask;'''
 perlproc _rmdir {dir} '''return rmdir $dir;'''
 
+perlproc _lsdir {dir} '''
+    opendir my $dh, $dir
+        or return undef;
+    my @dirs = readdir($dh);
+    close($dh);
+
+    return \@dirs;
+'''
+
+
+
 # Throw C<exc> with C<msg> and C<id> if it is not nil; otherwise
 # call ret (a continuation) with false.
 proc _bail {msg id exc ret} {
@@ -384,4 +395,20 @@ mproc rmdir {
  	[_rmdir dir] || \
 		[_bail ("Error removing '$file': " + [_errmsg]) :rmdirErr return]
 	return true
+}
+
+mproc lsdir {
+	dir
+	onError [default nil]
+} {
+	"Return a list containing the names of all directory entries in C<dir>.
+     On error, return C<nil>.  If exception C<onError> is not nil, it is
+     thrown when an error occurs."
+
+	var items = [_lsdir dir]
+
+	(items == nil) && \
+		[_bail ("Error listing '$dir': " + [_errmsg]) :listErr return]
+		
+	return items
 }
