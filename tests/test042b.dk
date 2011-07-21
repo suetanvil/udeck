@@ -68,9 +68,20 @@ mp4a [value 42]		# see, not strict
 mproc mp5 {
 	l [default :[1 2 3]]
 } {
-	puts "mp4: $l"
+	puts "mp5: $l"
 }
 
 mp5
 mp5 42
 mp5 :[4 5 6]
+
+mproc mp5a {
+	list l [default :[1 2 3]]
+} {
+	puts "mp5a: $l"
+}
+
+mp5a
+mp5a 42
+mp5a [4 5 6]
+mp5a (2+3)

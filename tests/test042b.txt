@@ -38,6 +38,10 @@ mp4: aSymbol
 mp4: someOtherSymbol
 mp4a: notAStrictArg
 mp4a: 42
-mp4: [1 2 3]
-mp4: 42
-mp4: [4 5 6]
+mp5: [1 2 3]
+mp5: 42
+mp5: [4 5 6]
+mp5a: [1 2 3]
+mp5a: 42
+mp5a: [4 5 6]
+mp5a: [+ 2 3]
