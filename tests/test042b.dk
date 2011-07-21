@@ -63,3 +63,14 @@ mproc mp4a {
 
 mp4a notAStrictArg
 mp4a [value 42]		# see, not strict
+
+
+mproc mp5 {
+	l [default :[1 2 3]]
+} {
+	puts "mp4: $l"
+}
+
+mp5
+mp5 42
+mp5 :[4 5 6]

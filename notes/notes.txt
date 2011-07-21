@@ -366,7 +366,7 @@ X		FileHandle
 			-class StatResult
 	-test
 X		-mproc default type symbol
-		-ditto, not a symbol
+X		-ditto, not a symbol
 		-default quoted list
 	-unquoted lists for sub default arg?
 	
