@@ -384,6 +384,50 @@ forms and convert them into simple prefix expressions.
 
 =head3 Quoting
 
+The colon (C<:>) is Deck's quote symbol.  It is roughly the same as
+the single quote (C<'>) in Scheme and Common Lisp.  A quoted
+expression is any Deck expression following a quote:
+
+	:42
+	:[1 2 3]
+	:foo
+
+The quote prevents the thing from following it from being evaluated.
+Instead, the result of a quote expression is the thing being quoted.
+A quoted list returns the list itself:
+
+	:[foo bar quux]
+
+The unquoted list
+
+	[foo bar quux]
+
+would attempt to look up C<foo>, C<bar> and C<quux>, then call C<foo>
+with the other values as arguments.
+
+In the same way, quoting a symbol returns the symbol instead of its
+value:
+
+	:foo		# symbol :foo
+	foo			# value of variable 'foo'
+
+Other literals (single-quoted strings and numbers) yield themselves
+when quoted.  Double-quoted strings yield either the string (if
+there's no interpolation) or the quoted interpolation expression.
+
+The various expression transformations that happen below (i.e. infix
+expressions, LoLs and prefix syntactic sugar) are all done before the
+expression is quoted.  In other words, quoting does not prevent those
+transformations.
+
+Note that the quote is a syntactic structure rather than a function.
+The parser creates a quote expression when it sees the colon.  It does
+not attempt to look up the value of the variable C<:> and call it as a
+function.
+
+The quote and the next expression together make up a single
+expression.  This has higher precedence than anything else except for
+parentheses.
 
 
 =head3 Prefix Expressions
