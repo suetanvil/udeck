@@ -557,16 +557,58 @@ Specifically:
 =head3 LoLs
 
 LoLs (Line-oriented Lists or Lists of Lists) are another form of Deck
-expression.  Like infix expressions, they are immediately converted
-into infix expressions.
+expression.  Each LoL is delimited by braces (C<{> and C<}>) and is
+immediately converted into a quoted list containing zero or more other
+lists.
 
+LoLs use line boundaries instead of brackets as the delimiters of
+their sublists.  Specifically, a LoL line starts at	the end of the
+previous LoL line (or the start of the LoL if this is the first line)
+and ends at the following line-end (or the end of the LoL if this is
+the last item) in which all brackets opened in this line have been
+B<closed>.
+
+Examples:
+
+	{
+		line 1					# First Entry
+
+		line 2 {				# Second entry
+			continuing...		# Second entry continued
+		} and done!				# Second entry finished
+
+		line 3 [1 2 3			# Third entry starts
+			4 3]				# Third entry ends
+	}
+
+LoL lines are logical lines (as described above) and so are subject to
+C<;> and C<\>.  In addition, comments are ignored as are empty lines
+(i.e. lines containing no non-whitespace characters):
+
+	{							# Empty line.  Ignored
+		line 1 \				# Item 1 starts
+		continued				#  ...and continues
+
+		line 2 ; line 3; line 4	# Next three items
+	}	
+
+Deck source files are implicitly LoLs, as is the interactive command
+prompt.  They differ from ordinary functions a little in that each
+toplevel line is evaluated immediately before the next line is read.
 
 
 
 
 =head1 Data
 
-=head2 Types
+Deck has a number of built-in data types
+
+=head2 Basic Types
+
+
+=head2 Derived Types
+
+
 
 =head2 Booleans
 
