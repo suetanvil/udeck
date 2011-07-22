@@ -1034,11 +1034,12 @@ sub withAutoInfixed {
 	# Find '<expr> . <expr>' or '<expr> => <expr>' sequences
 	my $oper;
 	for my $item (@result) {
-	  last if ($item->isUnescapedOperator() &&
-			   ${$item} =~ /^($opRegex)$/);
+	  if ($item->isUnescapedOperator() && ${$item} =~ /^($opRegex)$/) {
+		$oper = $1;
+		last;
+	  }
 	  $dotIndex++;
 	}
-	$oper = $1;
 	last if $dotIndex > $#result;
 
 	# Check for errors
