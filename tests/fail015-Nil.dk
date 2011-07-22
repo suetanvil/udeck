@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo Nil {method xxx {} {puts "XXX"}}

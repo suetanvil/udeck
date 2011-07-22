@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo Macro {method xxx {} {puts "XXX"}}

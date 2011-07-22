@@ -601,18 +601,89 @@ toplevel line is evaluated immediately before the next line is read.
 
 =head1 Data
 
-Deck has a number of built-in data types
+Deck has a number of built-in data types.  All of these are also
+Classes (in the object-oriented-programming sense), making all data
+objects OOP objects as well.
+
+That being said, it is possible to (mostly) ignore this aspect of the
+data objects and write procedural programs in Deck.
+
+The inheritance heirarchy is as follows:
+
+	Object
+		Struct
+		Class
+		List
+		Stringlike
+			String
+			Symbol
+			ByteArray
+		Number
+		Nil
+		Quote
+		Macro
+		Procedure
+		Method
+		MethodCall
+
+Be aware that I reserve the right to reorganize the heirarchy as I see
+fit, so it is not safe to depend on the inheritance structure.  It
+B<is> safe (well, relatively) to assume that the methods will not be
+removed from any objects' interfaces.
+
+Classes are organized (mostly) according to their underlying
+implementation.  Class C<Struct> represents the traditional Object
+(methods and named fields) and will be the base class for most
+traditional OOP.  (All of it, actually--the current implementation
+doesn't let you subclass anything except B<Struct> or one of its
+subclasses.)
+
 
 =head2 Basic Types
 
+=head3 Class
 
-=head2 Derived Types
+=head3 Object
+
+=head3 List
+
+=head3 String
+
+=head3 Symbol
+
+=head3 ByteArray
+
+=head3 Number
+
+=head3 Nil
 
 
+
+=head2 Obscure Types
+
+=head3 Quote
+
+=head3 Macro
+
+=head3 Procedure
+
+=head3 Method
+
+=head3 MethodCall 
+
+=head3 Stringlike	
+
+
+
+=head2 Struct
 
 =head2 Booleans
 
 =head3 Stupid Boolean Tricks
+
+=head2 PerlObj
+
+=head2 The Sequence Protocol
 
 
 

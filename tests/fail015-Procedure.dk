@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo Procedure {method xxx {} {puts "XXX"}}
