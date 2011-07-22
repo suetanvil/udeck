@@ -381,6 +381,11 @@ Deck expressions ultimately take the form of Lisp-style prefix
 expressions but the parser will also accept several more readable
 forms and convert them into simple prefix expressions.
 
+
+=head3 Quoting
+
+
+
 =head3 Prefix Expressions
 
 Deck prefix expressions are simple unquoted lists.  Each item in the
@@ -415,17 +420,102 @@ So,
 	[x->y 42]				becomes		[[-> x y] 42]
 	[bar x => y]			becomes		[bar [=> x y]]
 
+It is an error to start or end an infix expression with one of these
+operators:
+
+	[-> a b]			# WRONG!
+
+This auto-infix behaviour can be disabled by prefixing the operator
+with a backslash (C<\>) character.  This does not alter the meaning of
+the token but will disable the syntactic sugar:
+
+	[foo b \. c]
+	[x \-> y 42]
+	[bar x \=> y]
+	[\-> a b]
 
 
-
-
+The C<=E<gt>> is bound to a macro that creates closures.  The C<.>
+operator is used to access object attributes and the C<-E<gt>>
+operator is used to look up methods in objects.
 
 
 =head3 Infix Expressions
 
+Any Deck expression surround by parentheses (aka round brackets, C<(>
+and C<)>) is parsed as an infix expression.  The operator precedence
+in decreasing order are as follows:
+
+		. @ =>
+		->
+		**
+		* / // %
+		+ -
+		<< >> >>> <<<
+		== === != !== < > <= >= <=>
+		&
+		| ^
+		&&
+		||
+		(user operators)			  
+		=
+
+All operators are left-associative except for C<=>.
+
+Any other sequence of operator characters is also valid as an infix
+operator but will have second-lowest precedence:
+
+	(a !!! 2)			# does whatever !!! is defined to do
+
+Like the syntactic sugar above, infix expressions are just another
+syntactic form for basic Deck expressions.  The parser immediately
+converts infix expressions to the equivalent prefix expression.  This
+is true even if the expression is quoted:
+
+	:(a + b * c)		# Yields [+ a [* b c]]
+
+Infix expressions need to have an odd number of items with unescaped
+operators in all of the even-numbered positions:
+
+	(c / d & f)			# Right
+	(c \+ d)			# WRONG!!!
+	(c d e)				# WRONG!!!
+
+The odd-numbered items may also be operators:
+
+	(addOp = +)
+
+(But be warned that this will not work in a LoL line.)
+
+As a special case, a one-item infix expression is equivalent to just
+the item:
+
+	(a) === a
+	:(a) === a
+	
+
+=head4 Negation
+
+The C<-> operator with one argument negates that argument.  In this
+case, it must be a B<prefix> expression.  There is no infix negation.
+However, numeric constants may begin with a C<-> to indicate that they
+are negative and those may be used in an infix expression.
+
+Specifically:
+
+	(a + -3)			# Correct. -3 is one token.
+	(a + [- b])			# Correct. Infix negate on b
+	(a + [neg b])		# Correct.
+	(a + -b)			# ERROR
+	(a + (-b))			# ERROR
+
+
 =head3 LoLs
 
-=head3 Quoting
+LoLs (Line-oriented Lists or Lists of Lists) are another form of Deck
+expression.  Like infix expressions, they are immediately converted
+into infix expressions.
+
 
 
 

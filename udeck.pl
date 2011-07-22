@@ -1189,8 +1189,6 @@ sub withAutoInfixDone {my ($self) = @_; return $self}	# asPrefixList does it.
 
 	if (scalar @{$self} == 1) {
 	  my $retval = $self->[0];
-#	  $retval = $retval->asUnescapedOperator()
-#		if $retval->isEscapedOperator();
 	  return $retval;
 	}
 
