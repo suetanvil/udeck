@@ -350,16 +350,76 @@ B<Expressions> below).  For example:
 
 =head2 Lists
 
+Lists consist of zero or more items surrounded by square brackets
+(C<[> and C<]>) and separated by whitespace.  They will nearly always
+need to be preceded by the quote operator (C<:>) to keep them from
+being treated as prefix expressions:
 
+	:[1 "two" 3]			# Simple list
+	:[]						# Empty list
+	:["foo" "bar" [1 2 3]]	# Nested list
+
+Symbols in lists do not need to be quoted:
+
+	:[+ a b]
+
+Sublists may also be in infix form.
+
+	:[+ a (b & c)]			# Nested list with infix sublist
+
+Note that there are a few special cases.  These are described in
+L<Syntactic Sugar> below.
+
+(As an aside, Lisp/Scheme hackers should be aware that the underlying
+data structure of a Deck list is an array (aka a vector), B<not> a
+linked list of CONS cells.  This is explained in more detail below.)
 
 
 =head2 Expressions
 
 Deck expressions ultimately take the form of Lisp-style prefix
-expressions: a list in which the first item evaluates to the 
-
+expressions but the parser will also accept several more readable
+forms and convert them into simple prefix expressions.
 
 =head3 Prefix Expressions
+
+Deck prefix expressions are simple unquoted lists.  Each item in the
+list is first recursively evaluated from left to right.  The first
+expression in the list is expected to evaluate to a callable
+function.  This function is called with the remaining items passed to
+it as arguments:
+
+	[+ 1 3]									# Simple example
+	[[getHook :panic] "Oh no!"]				# Complex example
+	
+The semantics of this are explained in more detail below.
+
+=head4 Syntactic Sugar
+
+As a special exception to the list parsing rules, the following
+symbols are always treated as infix expressions:
+
+	C<=E<gt>>, C<.>
+	C<-E<gt>>
+
+The first two have the same precedence and the third has lower
+precedence.
+
+For any of the above operators, the sequence C<*expr1* *op* *expr2*> is
+automatically treated as a parenthesized infix expression and becomes
+C<[*op* *expr1* *expr2*]>.
+
+So,
+
+	[foo b.c]				becomes		[foo [. b c]]
+	[x->y 42]				becomes		[[-> x y] 42]
+	[bar x => y]			becomes		[bar [=> x y]]
+
+
+
+
+
+
 
 =head3 Infix Expressions
 
@@ -367,7 +427,6 @@ expressions: a list in which the first item evaluates to the
 
 =head3 Quoting
 
-=head2 Syntactic Sugar
 
 
 
