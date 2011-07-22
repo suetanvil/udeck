@@ -5265,6 +5265,11 @@ sub builtin_class {
   $name->checkString(" in _::class name argument.");
   $body->checkLoL(" in class body.");
 
+  # For now, we disable subclassing structured classes.  I need to
+  # figure out what to do with them.
+  die "Attempted to subclass a non-structured class '$superclass->{name}'.\n"
+	unless $superclass->isStructuredClass();
+
   my $fullNameStr = $Globals->normalizeName(${$name});
   {
 	my $docstring = $body->stripDocString();

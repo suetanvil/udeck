@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo List {method xxx {} {puts "XXX"}}

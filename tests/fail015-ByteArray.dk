@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo ByteArray {method xxx {} {puts "XXX"}}

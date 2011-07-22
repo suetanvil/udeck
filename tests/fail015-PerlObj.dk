@@ -1,0 +1,2 @@
+# Test subclassing a builtin class
+class Foo PerlObj {method xxx {} {puts "XXX"}}
