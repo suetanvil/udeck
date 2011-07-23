@@ -596,6 +596,126 @@ Deck source files are implicitly LoLs, as is the interactive command
 prompt.  They differ from ordinary functions a little in that each
 toplevel line is evaluated immediately before the next line is read.
 
+Because the list delimiter is implied in a LoL, it is not clear
+whether a LoL line is treated as an infix expression or as a prefix
+expression.  The answer is, it depends.
+
+The parser examines each LoL line and treats it as infix if it looks
+infix or as prefix if it looks prefix.  If it can't decide, it is an
+error.
+
+Informally, LoL line looks infix if it is an assignment to a simple
+variable, a sequence or an object attribute OR if it consists of a
+series of terms divided by boolean AND (C<&&>) and OR (C<||>)
+operators.
+
+Otherwise, it is considered a prefix expression.  In the latter case,
+there should be no unescaped operators in the expression (with C<var>
+and C<const> expressions being the exception).
+
+Here are some examples:
+
+	{
+
+		a = 42								# infix
+
+		load "hello"						# prefix
+
+		[load "hello"] || [die "error!"]	# infix
+
+		obj.status = 42						# infix
+
+		array@n = x + 5						# infix
+
+	}
+
+In addition, the 'var' and 'const' keywords are a wierd special case
+in that they are infix expressions but allow the C<=> word unescaped
+and will reparse some of their arguments as infix expressions:
+
+	{
+
+		var a = 42							# special case prefix
+
+		const {x = 2+z; y = x + 1}			# prefix
+
+		var a = x + y * 11;					# prefix but reparsed later
+
+	}
+
+Expressions that look like you made a mistake are usually considered
+errors.  Specifically, prefix expressions (other than var/const) are
+not allowed to contain unescaped operators:
+
+	{
+
+		a = b + + c				# Error!
+
+		a = n + 1 +				# Error!
+
+		a \= b \+ \+ c			# Prefix (calls a with arguments)
+
+	}
+
+Escaping operators allows you to tell the parser that yes, you know
+what you're doing.
+
+Here's the excruciatingly precise definition:
+
+For a LoL line to be considered infix, it must:
+
+=over
+
+=item 1) Contain an odd number of elements and more than one element.
+
+=item 2) Have only unescaped operators as the even-numbered elements.
+
+=item 3) Have no unescaped operators as the odd-numbered elements.
+
+=back
+
+In addition, it must take one of the following forms:
+
+=over
+
+=item * C<name = ...>
+
+A name that is not an unescaped operator followed by the word
+C<=> and the rest of the expression.
+
+=item * C<name @ <term> = ... >
+
+A name that is not an unescaped operator, followed by the word C<@>,
+followed by some term (often a number) followed by the word C<=> and
+the rest of the expression.
+
+=item * C<name1 . name2 = ... >
+
+A name that is not an unescaped operator followed by C<.> followed by
+another name that is also not an unescaped operator followed by C<=>
+and the rest of the expression.
+
+=item * C<term1> C<||/&&> C<term1> ...
+
+An odd number of terms separated by one of the boolean operators C<||>
+or C<&&>.
+
+=back
+
+For a line to be considered a prefix expression, it must either:
+
+=over
+
+=item * Contain B<no> unescaped operators
+
+=item * Be a C<var> or C<const> expression with a C<=> as its second argument.
+
+=back
+
+Each non-empty, non-comment line must meet one set of requirements.
+If it does not, it is an error.
+
+
 
 
 
