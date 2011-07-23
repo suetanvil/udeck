@@ -4032,8 +4032,6 @@ sub initGlobals {
   defclass 'Class',		'Object',
 	{new		=> sub {
 	   my ($self, @argv) = @_;
-	   die "'new' only works on Struct-derived classes.\n"
-		 unless $self->isStructuredClass();
 	   return builtin_new($self, @argv);
 	 },
 	 name_get	=> sub {my ($self) = @_; checkNargs('name_get', \@_, 1);
@@ -5321,6 +5319,9 @@ sub builtin_new {
   my ($class, @args) = @_;
 
   $class->checkClass(" in procedure 'new'.");
+
+  die "'new' only works on Struct-derived classes.\n"
+	unless $class->isStructuredClass();
 
   my $obj = LL::Struct->new($class);
 
