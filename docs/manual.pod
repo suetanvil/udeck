@@ -758,52 +758,217 @@ traditional OOP.  (All of it, actually--the current implementation
 doesn't let you subclass anything except B<Struct> or one of its
 subclasses.)
 
+The usual object construction mechanism--the C<new> method and
+function--only works on classes derived from C<Struct>.
 
 =head2 Basic Types
 
-=head3 Class
-
-=head3 Object
-
 =head3 List
+
+Type List is the basic list type.  Lists are arrays (B<not> linked
+lists) of references.  Class List implements the L<Sequence Protocol>
+(as described below.)
+
+Lists are created by the parser from list literals, via the C<list>
+function and through the C<listSized> function.
+
 
 =head3 String
 
+Class C<String> is the Deck string type.  Instances hold text in some
+internal encoding.
+
+C<String> implements the L<Sequence Protocol>.  Each element in a
+String is individually addressable.  However, Deck does not have a
+separate Character type.  Instead, each element of a String is also a
+String of length one.
+
+Instances are created from literals by the parser and by the function
+C<stringSized>.
+
+Note: At some time in the future, Deck will support Unicode and will
+do it well.  Unfortunately, that day is a long time coming and depends
+on me learning a lot more about Unicode than I know now.  In the
+meantime, Strings are just whatever 8-bit ASCII superset your terminal
+displays.
+
+All of this vague definition of String as text of some sort is here as
+a sort of placeholder for that day.  In particular, you're not
+supposed to assume that you can throw any arbitrary binary data into a
+String.  That may work now but it won't in the future.  If you need to
+deal with binary data, use ByteArray.  It's designed for that.
+
+
 =head3 Symbol
+
+C<Symbols> are used to represent names in Deck expressions.  They are
+similar to Strings.  However, they are immutable.  In addition, the
+system guarantees that each C<Symbol> is unique.  That is, there is
+only ever one symbol containing a particular sequence of characters.
+
+C<Symbol> implements the L<Sequence Protocol> except for the ability
+to set elements.  Attempting to modify a C<Symbol> results in an
+error.
+
+Instances are created by the parser from literals and by the function
+C<intern>.  The function C<unintern> returns the string containing the
+same letters as the symbol.
+
+Symbols and strings with the same characters are equal according to
+C<op_Equals>.
+
+
 
 =head3 ByteArray
 
+A C<ByteArray> is an array of 8-bit bytes.  It is here to give you a
+way to manipulate binary data.  It implements the L<Sequence
+Protocol>.  Only integers between 0 and 255 may be stored in a
+C<ByteArray>.
+
+Instances are created by the function C<bytesSized>.
+
+
 =head3 Number
 
+C<Numbers> represent numbers.  Instances are created by the parser
+from literals and by arithmetic operations.  Numbers are immutable.
+
+Note: Number is just a wrapper around Perl numbers, which is not
+really ideal.  Ideally, there should be several numeric classes with
+arithmetic operations smart enough to convert between them as
+necessary.  This will probably change in the future.
+
 =head3 Nil
+
+C<Nil> is the class of C<nil>, the undefined object.  C<nil> is the
+only instance of class C<Nil>.  Uninitialized values are set to C<nil>
+by default.
+
+C<Nil> is a true object however and implements the basic set of
+methods.  In particular, its implementation of attribute C<isNil>
+returns true.
+
+=head3 Object
+
+Object is the abstract base class of all objects in Deck.  It cannot
+be instantiated.
+
+=head3 Class
+
+Type C<Class> is the type of all Deck classes.  It implements the
+method C<new> which (usually) creates a new instance of the class.  It
+also implements methods and attributes that provide extra information
+about the class.
+
+Every object's class is available through the C<class> attribute
+implemented by Object.
+
+Instances are created via the 'class' and 'object' macros.
+
+Note: Every class in Deck is an instance of Class.  That includes
+Class itself, which is its own grandpa.
 
 
 
 =head2 Obscure Types
 
+The following types are visible but are not commonly used.
+
 =head3 Quote
 
-=head3 Macro
+A Quote contains one other object which may be read.  It exists solely
+to indicate to the compiler that the wrapped object should not be
+immediately evaluated.  You will only ever need it if you are
+constructing code to be compiled.
 
-=head3 Procedure
+Instances are created by the parser from the quote symbol (C<:>) (but
+that will almost never reach you) and by the built-in function
+C<quote>.  Note that the function C<quote> does not have any effect on
+the evaluation of its arguments.
 
-=head3 Method
+
+=head3 Macro, Procedure, Method
+
+These are the types of various types of procedure.  The first two can
+be invoked as part of an expression.  However, there is nothing useful
+you can do with the objects other than that.
 
 =head3 MethodCall 
 
+A C<MethodCall> represents a method lookup on a specific object.  It
+is callable.
+
+
 =head3 Stringlike	
 
+C<Stringlike> is the abstract base class for some types that contain
+sequences of binary data.  It cannot be instantiated.
 
 
 =head2 Struct
 
+Type C<Struct> is the abstract base class for all structured objects.
+Structured objects are objects containing zero or more named instance
+variables--that is, objects as implemented by most object systems and
+programming languages.
+
+This is described in L<Objects> below.
+
+
 =head2 Booleans
+
+Deck does not have a dedicated Boolean type.  Instead, each object is
+either true or false.
+
+The following objects are false:
+
+	0						(the Number 0)
+	''						(any empty String)
+	:[]						(any empty List)
+	[intern '']				(the empty Symbol)
+	[bytesSized 0]	        (any empty ByteArray)
+	nil
+	
+In addition, any object whose C<isTrue> attribute yields C<nil> is
+false.  Implementations of C<isTrue> should never return a different
+value if the object has not changed.
+
+Deck defines two constants, C<true> and C<false> that refer to the
+"canonical" boolean values.  These are the values that most boolean
+operators return.
+
+C<true> is defined to be 1 and C<false> is defined to be C<nil>.
+	
+Note: 0 may be redefined as a true value at some later point.  Be
+warned.
+
 
 =head3 Stupid Boolean Tricks
 
-=head2 PerlObj
+Deck provides two short-circuited boolean operators, C<&&> (logical
+and) and C<||> (logical or).  Because of the short-circuiting
+behaviour, they can be used as control structures.
 
-=head2 The Sequence Protocol
+For example, here's a common idiom stolen from Perl:
+
+	[doThing arg1 arg2] || [die "doThing failed."]
+
+C<doThing> returns false on error and true on success.  As a result,
+the C<die> expression is only called if C<doThing> fails.
+
+The other interesting thing about these operators is that their result
+is the value of the last expression evaluated.  You can leverage this
+to do all kinds of useful conditional assignments:
+
+	x = x || ""						# Ensure that x is initialized
+
+	x = [cacheLookup] && [recalc]	# Recalculate if cache lookup fails
+	
+	y = (x > 5) && x || 5			# y = maximum of x and 5
+
+
+
 
 
 
@@ -820,6 +985,9 @@ subclasses.)
 =head2 Final Blocks
 
 =head2 Continuations
+
+=head2 perlproc
+
 
 
 =head1 Macros
@@ -854,6 +1022,9 @@ subclasses.)
 
 =head3 The 'object' macro
 
+=head2 The Sequence Protocol
+
+
 
 
 =head1 Namespaces
@@ -869,6 +1040,29 @@ subclasses.)
 =head2 Default Namespaces
 
 =head2 Reserved Namespaces
+
+
+=head1 The Perl Interface
+
+=head2 PerlObj
+
+C<PerlObj> is an implementation-specific type.  The current
+implementation of Deck is in Perl and so a PerlObj is used to pass
+information to code written in Perl and running on the underlying Perl
+interpreter.
+
+You may get a C<PerlObj> back from Perl code.  You can do nothing with
+it in Deck except hand it back to a C<perlproc>.
+
+(On the Perl side of things, a PerlObj is simply a blessed array ref
+to a 1-element array containing some Perl object.  You create one by
+returning C<LL::PerlObj->new($MY_PERL_OBJECT)> from a C<perlproc>.
+The wrapping will let it return unmolested.  Passing a C<PerlObj> to a
+C<perlproc> will strip off the wrapping automatically.)
+
+=head2 perlproc
+
+=head2 perluse
 
 
 
