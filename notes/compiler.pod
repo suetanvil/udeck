@@ -9,6 +9,8 @@
 
 =item * Performance increase
 
-=item * Backtrace and line/file info on error.
+=item * Backtrace on error.
+
+=item * Instance variables hidden from subclasses.
 
 =back

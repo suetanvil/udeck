@@ -1123,10 +1123,45 @@ C<atPut> call or an attribute call, respectively:
 	b.foo = 5		# Becomes: b->foo_set 5
 
 
+=head3 Docstrings
 
-=head2 Toplevels
+Procedures, methods and classes may optionally begin with a single
+string literal (B<Beware:> interpolated strings don't count.)  If
+present, this string literal and other information about the
+object it annotates are stored in the interpreter.
+
+They can be retrieved using the built-in functions C<_::docstring_keys>
+and C<_::docstring_get> to create documentation.  The utility
+C<progs/utils/print_docstrings.dk> does this for the system classes.
+
+Although there is no formatting requirement, existing docstrings are
+in POD format.  This is recommended.
 
 
+
+=head2 Toplevel Expressions
+
+Toplevel expressions are expressions written and evaluated outside of
+any procedure, method or closure.  A Deck source file consists of a
+series of toplevel expressions.
+
+Toplevel expressions are read and evaluated one after another with
+each expression being evaluated before the next one is read:
+
+	var foo			# Read, compiled and evaluated.
+	foo = 42        # Read, compiled and evaluated.
+
+This is slightly different from procedure bodies where the entire
+source is compiled at once.
+
+Variables and constants declared at the toplevel are global (at least
+to the package in which they occur).
+
+A procedure definition is simply a toplevel expression whose side
+effect is the creation of the procedure.  All of the other definitions
+work the same way.  The only exception to this is the C<package>
+declaration, which is a magic word stripped out by the interpreter
+when the package is loaded.
 
 
 =head2 Procs
