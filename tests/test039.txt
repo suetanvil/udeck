@@ -8,3 +8,4 @@ bar called with '[1 2 3 4 5]'
 [_::sub :[] :[[[var x = 42] [return [+ [+ a b] x]]]] nil]
 [_::sub :[] :[[_::value 42]] nil]
 [_::sub :[] :[[_::value someVariable]] nil]
+:bobo 42

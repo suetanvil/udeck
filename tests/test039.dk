@@ -27,3 +27,9 @@ puts [subifyOrDelay 42]
 puts [subifyOrDelay :someVariable]
 
 
+# Also test that the first argument is a symbol.
+macro bobo {mn a} {
+	return [list :Lang::puts [quote mn] " " a]
+}
+
+bobo 42

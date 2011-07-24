@@ -2235,7 +2235,7 @@ sub applyMacros {
 	last unless $val->isMacro();
 
 	print "*macro* ${$name}(@{[$expr->printStr()]}) ==> " if $dumpExpr;
-	$expr = $val->(@{$expr});
+	$expr = $val->($name, @{$expr}[1 .. $#{$expr}]);
 	print $expr->printStr() . "\n" if $dumpExpr;
 
 	push @backtrace, $expr;
