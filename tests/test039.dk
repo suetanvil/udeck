@@ -33,3 +33,6 @@ macro bobo {mn a} {
 }
 
 bobo 42
+
+const blort = bobo
+blort 42
