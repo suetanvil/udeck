@@ -1045,21 +1045,89 @@ Specifically, a C<var> declaration makes the compiler do three things:
 
 =back
 
-The reason for this bit of wierdness is that final blocks make it
-possible to access a variable before it is officially defined.  This
-way, the variable will always exist, even if it's just C<nil>.
+(Actually, it's a bit more complicated than that.  C<var> and
+C<const> are macros that expand to some implementation-defined form
+and the result of that expansion contains the actual "magic word".)
 
 (Note: the current implementation doesn't yet do this.  Instead,
 variables are declared by the 'var' statement.  This can result in
 runtime undeclared variable errors.)
 
+The reason for this bit of wierdness is that final blocks make it
+possible to access a variable before it is officially defined.  This
+way, the variable will always exist, even if it's just C<nil>.
+
+=head4 Syntax
+
+C<var> and C<const> have a unique syntax that needs more explanation.
+
+A declaration consists of the word C<var> or C<const> followed by the
+declaration part.
+
+The declaration part is either:
+
+=over
+
+=item 1) A single name:
+
+	var x
+
+(Only allowed for 'var'.)
+
+=item 2) An infix assignment expression:
+
+	var y = 42
+	const PI = [compute_pi]
+
+=item 3) A LoL containing assignments.
+
+	var { x = 42; b = "bob" }
+
+=back
+
+Note that in case 2), the assignment looks like an infix expression.
+It is not, at least as far as the parser is concerned.  Instead, it is
+parsed as infix by C<var> or C<const>.
+
+The parser is aware of this case, however.  Normally, it is an error
+to have operators in an infix expression.  C<var> and C<const> are
+special cases that the parser tolerates.
+
 
 =head3 Assignment
 
+Variable assignment is performed using either the C<=> operator or the
+C<set> macro:
+
+	a = 42
+	set a 42
+
+The two are currently different names for the same macro.
+
+For ordinary variable assignment, it expands to the internal
+primitive assignment statement.  Since this is implementation defined,
+that's really all I need to tell you about it.  However, in the
+interest of transparency, I'll explain more.
+
+The internal assignment function is (currently) named C<_::set>.  It
+takes two arguments, a symbol naming the destination variable and the
+value to assign to it.  This behaves pretty much as expected.
+However, the first argument B<must> be a symbol literal.  This way,
+the compiler can catch undeclared variables.
+
+If the destination of an assignment is an array element or an object
+attribute, the assignment macro expands the expression into an
+C<atPut> call or an attribute call, respectively:
+
+	a@42 = 5		# Becomes: a->atPut 42 5
+	b.foo = 5		# Becomes: b->foo_set 5
 
 
 
 =head2 Toplevels
+
+
+
 
 =head2 Procs
 
