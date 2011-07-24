@@ -1164,7 +1164,154 @@ declaration, which is a magic word stripped out by the interpreter
 when the package is loaded.
 
 
-=head2 Proc Procedures
+=head2 Procedures
+
+
+=head3 Argument Lists
+
+All procedure types share a common type of argument list.  It must be
+a list containing symbols, each the name of a procedure argument.
+C<arg-list> may be a simple list or a LoL. That is, these are
+equivalent:
+
+	proc foo {a b} {puts a b}		# One definition of foo
+	proc foo [a b] {puts a b}		# Equivalent definition of foo
+
+The relevant macro automatically smoothes out the differences between
+the list formats.
+
+If the final argument in the argument list is named C<args>, all
+subsequent actual arguments will be packed into a C<List> and the list
+passed as args:
+
+	proc bar {x args} {
+		puts "x: " x " args: " args
+	}
+
+	# ...
+
+	bar 1 2 3 4 5		# Yields: "x: 1 args: [2 3 4 5]"
+
+If there are no subsequent arguments, C<args> is an empty list.  It is
+a fatal error to name any argument other than the last one C<args>.
+
+
+=head3 Procedure Bodies
+
+A procedure body is a quoted list of lists (I.e. a LoL) containing the
+expressions which are actually evaluated when the procedure is
+invoked.  The LoL syntax creates a suitable procedure body but you can
+also use the more explicit notation if you hate readable code:
+
+	proc foo [] :[[puts "hello, world"]]
+
+But don't do that.
+
+
+=head3 Continuations
+
+Continuations are callable objects associated with an individual
+function call.  When the continuation is called, the function call
+that created it will return.
+
+All procedure types have continuations.  In procs and methods, they
+are named C<return>; in subs, they are named C<next>.
+
+In the most common case, continuations behave like the common
+C<return> statement of most programming languages:
+
+	proc max {a b} {
+		if (a > b) {return a}
+		return b
+	}
+
+However, C<return> is not a control structure.  It is an object that
+may be assigned, passed as a parameter or treated as any other data
+object.  When invoked, the continuation will immediately return the
+procedure call in which it was defined.  Any nested procedure calls
+are also returned.  For example:
+
+	proc f1 {r} {
+		r 42
+		puts "Done!"			# Never reached
+	}
+
+	proc f2 {r} {
+		f1 r
+		puts "Done!"			# Never reached
+	}
+
+	proc f3 {} {
+		f2 return
+		puts "Done!"			# Never reached
+	}
+
+C<f3> calls C<f2> which calls C<f1>.  C<f1> calls the continuation,
+which immediately returns the entire call stack.  
+
+Continuations may take one argument.  If given, the argument is the
+return value of the function returned.  If not, the result is C<nil>.
+
+It is a fatal error to call the continuation created by a function
+call which has since returned:
+
+	var r
+	proc f1 {} {
+		r = return
+	}
+
+	f1
+	r 42				# Fatal error: r is no longer valid
+
+The library class Exception wraps continuations as a way to implement 
+exception-based error handling.
+
+=head3 Final Blocks
+
+Deck procedures allow an optional second block of code after the
+body.  This is called the final block.
+
+A final block is effectively part of the procedure's body.  It is
+guaranteed to be executed just before the procedure returns.  This
+allows you to add cleanup code tht will be called even if the
+procedure is terminated by a continuation.
+
+For example:
+
+	proc readInfo {resource} {
+		var rh = [openResource resource]
+		[readHdr rh]	|| [return nil]
+		[readBody rh]	|| [return nil]
+		[readEnd rh]	|| [return nil]
+
+		return 1
+	} {
+		close rh		# rh is guaranteed to be closed
+	}
+
+In the above example, the handle C<rh> is guaranteed to be closed when
+C<readInfo> returns.
+
+If a function returns before a local const or variable is initialized,
+it is visible to the final block but has a value of C<nil>.  (Bug: not
+yet--right now, it's an undefined variable error.)
+
+This can lead to subtle errors.  For example, suppose that there is a
+continuation referenced by argument C<resource> in the above example
+and that in some cases, it is invoked.  This leads to a final block
+calling C<close> on C<fh> with a value of C<nil>.  In this case, the
+final block needs to read:
+
+		fh && [close fh]
+
+It is a fatal error to invoke any continuation in a final block that
+is not also caught within the confines of that final block.  In
+particular, invoking C<return> is not allowed.
+
+
+=head3 Procedure Types
+
+=head4 Basic Procedures (proc)
 
 A C<proc> is the workhorse procedure in Deck.  It is declared with the
 C<proc> macro:
@@ -1172,24 +1319,10 @@ C<proc> macro:
 	C< proc <name> <arg-list> <body> <final> >
 
 C<name> is a bare word.  It is the name of the procedure to define.
-It may be a qualified name.
+It may be a qualified name.  C<body> is a procedure body and C<final>
+is the optional final block.
 
-C<arg-list> is the list of formal arguments.  It must be a list
-containing symbols, each the name of a procedure argument.
-C<arg-list> may be a simple list or a LoL. That is, these are
-equivalent:
-
-	proc foo {a b} {puts a b}		# One definition of foo
-	proc foo [a b] {puts a b}		# Equivalent definition of foo
-
-The C<proc> macro automatically smoothes out the differences between
-the list formats.  
-
-C<body> is a quoted list of lists (I.e. a LoL) containing the
-expressions which are actually evaluated when the procedure is
-invoked.
-
-C<final> is the final block (explained below).  It is optional.
+The const C<return> is bound to the function's return continuation.
 
 C<proc> may be called anywhere, including inside other procedures.
 The resulting procedure does not inherit the scope of the procedure
@@ -1212,6 +1345,9 @@ closure.
 
 C<procs> are declared as C<const> names.
 
+By default, a C<proc> returns C<nil>.  You can return other values
+with C<return>.
+
 C<proc> may also be called with only the procedure name and argument
 list:
 
@@ -1230,18 +1366,95 @@ arguments in a pre-declaration and procedure definition.  It also
 tolerates advance declarations with no argument )
 
 
-=head2 Closures
+=head4 Closures
 
-Closures are small unnamed fu
+Closures (aka sub) are small unnamed procedures.  Unlike procs, they
+inherit the lexical scope in which they are created.  That is, a
+closure created in the body of another procedure has access to every
+variable that the outside procedure can access.  This access survives
+the outside procedure's return:
 
-=head3 =>
+	proc foo {} {
+		var x = 0
+		return [sub {x = x + 1; x}
+	}
 
-=head2 Final Blocks
+	# ...
 
-=head2 Continuations
+	var f = [foo]
+	puts [f]					# Output: 1
+	puts [f]					# Output: 2
+	puts [f]					# Output: 3
 
 
-=head2 perlproc
+Closures are typically created by the macro C<sub>.  C<sub> can take
+up to three arguments: an argument list, a procedure body and a final
+block:
+
+	sub {a} {puts a} {puts "Done!"}
+
+If called with one argument, it is taken as the body with the argument
+list assumed to be empty:
+
+	sub {puts "Hello, world}
+
+When called with two arguments, the first argument must be the
+argument list and the second the body:
+
+	sub {a} {puts a}
+
+Thus, if you want to create a closure with no arguments and a final
+bock, you need to provide an empty argument list:
+
+	sub {} {puts "Called!"} {puts "Done!"}
+
+Most Deck control structures work by converting LoL arguments into
+subs.  C<mprocs> can do this automatically.
+
+Closures return the result of their last expression by default.  The
+exit continuation of a closure is named C<next>.  Aside from the name,
+it is identical to the C<return> continuation in procs and methods.
+
+
+=head4 =>
+
+The C<=E<gt>> operator is a shortcut for calling C<sub>.  The
+left-hand argument is the argument list and the right-hand argument is
+the procedure.  Because Deck automatically converts prefix uses of the
+operator into infix subexpressions, it is sometimes a more compact
+form of closure syntax.
+
+For example, these are equivalent:
+
+	[apply {a b} => {value (a+b)} :[1 2]]
+
+	[apply [sub {a b} {value (a+b)}] :[1 2]]
+
+In fact, the parser (more or less) turns the first into the second.
+
+
+=head4 Methods
+
+Methods (aka "member functions") are the code associated with an
+object.  Semantically, they are identical to procs with three
+exceptions:
+
+1) Methods have direct access to the instance variables of the object
+to which the belong.
+
+2) Methods have a local const named C<self> with references the object
+on which the method was called.
+
+3) Methods return C<self> by default instead of C<nil>.
+
+Methods are described in more detail below.
+
+
+=head4 perlproc
+
+A perlproc is a native Perl function accessible from Deck.  It is
+described in more detail below.
+
 
 
 

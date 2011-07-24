@@ -1581,6 +1581,8 @@ sub readfile {
 	  or die "Unable to open '$file'.";
   }
 
+  my $emptyList = LL::List->new([]);
+
   my $oldNamespace;
 
   while (1) {
@@ -1610,7 +1612,7 @@ sub readfile {
 	$expr = LL::List->new([$expr]);
 	my $args = LL::List->new([]);
 
-	my $fn = compile($Globals, $args, $expr, undef, 'toplevel', "*top*");
+	my $fn = compile($Globals, $args, $expr, $emptyList, 'toplevel', "*top*");
 
 	my $result;
 	eval {
