@@ -4384,7 +4384,7 @@ sub builtin_proc {
 
   if ($body->isNil()) {
 	$Globals->addForward(${$name});
-	return;
+	return NIL;
   }
 
   $args->checkList();
