@@ -1,0 +1,14 @@
+
+=head1 Compiler Rewrite
+
+=head2 Goals
+
+=over
+
+=item * Make variable declarations work as described.
+
+=item * Performance increase
+
+=item * Backtrace and line/file info on error.
+
+=back
