@@ -1,0 +1,4 @@
+# Test illegal use of 'args'
+
+proc foo {a b args c d} {}
+

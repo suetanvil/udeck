@@ -1210,6 +1210,8 @@ In addition, the name of the procedure is also always global.  This is
 a deliberate feature.  If you need access to the local scope, use a
 closure.
 
+C<procs> are declared as C<const> names.
+
 C<proc> may also be called with only the procedure name and argument
 list:
 
@@ -1220,7 +1222,8 @@ procedures may then call it even if they precede the actual
 definition.
 
 If a procedure is declared in advance, it B<must> be defined before
-the end of the module.
+the end of the module.  The act of defining a declared variable
+magically overrides the constness of the definition.
 
 (Bug: Deck currently does not currently detect a mismatch between the
 arguments in a pre-declaration and procedure definition.  It also
@@ -1229,7 +1232,7 @@ tolerates advance declarations with no argument )
 
 =head2 Closures
 
-Closu
+Closures are small unnamed fu
 
 =head3 =>
 

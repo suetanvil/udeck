@@ -2564,6 +2564,12 @@ sub compile {
 	--$nargs;
   }
 
+  # Test for illegal use of 'args'
+  for my $arg (@{$args}) {
+	die "Illegal argument name '${$arg}'\n"
+	  if $arg->isSymbol() && ${$arg} eq 'args';
+  }
+
   # Determine the default namespace if needed.
   my $namespace = $isProc ? $Globals->getNamespace : undef;
 
