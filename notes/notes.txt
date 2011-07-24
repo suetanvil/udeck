@@ -371,6 +371,8 @@ X		-default quoted list
 	-unquoted lists for sub default arg?
 	-disable (for now) subclassing non-struct classes
 	
+	-check for argument mismatch between predeclared proc and actual 
+     declaration.
 	-warn if a double-quote docstring gets expanded.
 		-also as mproc default
 	-StatResult should answer questions

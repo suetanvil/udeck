@@ -1135,7 +1135,7 @@ and C<_::docstring_get> to create documentation.  The utility
 C<progs/utils/print_docstrings.dk> does this for the system classes.
 
 Although there is no formatting requirement, existing docstrings are
-in POD format.  This is recommended.
+in POD format.  This is the preferred format.
 
 
 
@@ -1164,9 +1164,72 @@ declaration, which is a magic word stripped out by the interpreter
 when the package is loaded.
 
 
-=head2 Procs
+=head2 Proc Procedures
+
+A C<proc> is the workhorse procedure in Deck.  It is declared with the
+C<proc> macro:
+
+	C< proc <name> <arg-list> <body> <final> >
+
+C<name> is a bare word.  It is the name of the procedure to define.
+It may be a qualified name.
+
+C<arg-list> is the list of formal arguments.  It must be a list
+containing symbols, each the name of a procedure argument.
+C<arg-list> may be a simple list or a LoL. That is, these are
+equivalent:
+
+	proc foo {a b} {puts a b}		# One definition of foo
+	proc foo [a b] {puts a b}		# Equivalent definition of foo
+
+The C<proc> macro automatically smoothes out the differences between
+the list formats.  
+
+C<body> is a quoted list of lists (I.e. a LoL) containing the
+expressions which are actually evaluated when the procedure is
+invoked.
+
+C<final> is the final block (explained below).  It is optional.
+
+C<proc> may be called anywhere, including inside other procedures.
+The resulting procedure does not inherit the scope of the procedure
+that calls it however.  For example:
+
+	var x = "global x"				# Global variable
+	proc mkproc {} {
+		var x = "local x"			# Local to mkproc
+		proc y {} {puts x}			# Proc 
+	}
+
+	# Later ...
+
+	mkproc							# Defines y
+	y								# Prints "global x"
+
+In addition, the name of the procedure is also always global.  This is
+a deliberate feature.  If you need access to the local scope, use a
+closure.
+
+C<proc> may also be called with only the procedure name and argument
+list:
+
+	proc foo {a}
+
+This has the effect of pre-declaring the procedure.  Subsequent
+procedures may then call it even if they precede the actual
+definition.
+
+If a procedure is declared in advance, it B<must> be defined before
+the end of the module.
+
+(Bug: Deck currently does not currently detect a mismatch between the
+arguments in a pre-declaration and procedure definition.  It also
+tolerates advance declarations with no argument )
+
 
 =head2 Closures
+
+Closu
 
 =head3 =>
 

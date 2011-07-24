@@ -13,4 +13,6 @@
 
 =item * Instance variables hidden from subclasses.
 
+=item * Call/argument mismatch detection when possible.
+
 =back
