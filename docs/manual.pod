@@ -721,45 +721,10 @@ If it does not, it is an error.
 
 =head1 Data
 
-Deck has a number of built-in data types.  All of these are also
-Classes (in the object-oriented-programming sense), making all data
-objects OOP objects as well.
-
-That being said, it is possible to (mostly) ignore this aspect of the
-data objects and write procedural programs in Deck.
-
-The inheritance heirarchy is as follows:
-
-	Object
-		Struct
-		Class
-		List
-		Stringlike
-			String
-			Symbol
-			ByteArray
-		Number
-		Nil
-		Quote
-		Macro
-		Procedure
-		Method
-		MethodCall
-
-Be aware that I reserve the right to reorganize the heirarchy as I see
-fit, so it is not safe to depend on the inheritance structure.  It
-B<is> safe (well, relatively) to assume that the methods will not be
-removed from any objects' interfaces.
-
-Classes are organized (mostly) according to their underlying
-implementation.  Class C<Struct> represents the traditional Object
-(methods and named fields) and will be the base class for most
-traditional OOP.  (All of it, actually--the current implementation
-doesn't let you subclass anything except B<Struct> or one of its
-subclasses.)
-
-The usual object construction mechanism--the C<new> method and
-function--only works on classes derived from C<Struct>.
+Deck has a number of fundamental data types.  This section lists
+them.  Note that in Deck, all objects are OOP objects and so implement
+methods.  However, it is possible to (mostly) treat Deck as a purely
+procedure language and pretend Objects are dumb data.
 
 =head2 Basic Types
 
@@ -1702,13 +1667,56 @@ also have default clauses.
 
 =head1 Objects
 
-=head2 The Metaclass System
+All Deck data are also objects (in the "object-oriented programming"
+sense of the word.)  Every type is also a class and every object is an
+instance of a class.
 
-=head2 Method Lookup Semantics
+The inheritance heirarchy is as follows:
+
+	Object
+		Struct
+		Class
+		List
+		Stringlike
+			String
+			Symbol
+			ByteArray
+		Number
+		Nil
+		Quote
+		Macro
+		Procedure
+		Method
+		MethodCall
+
+Be aware that I reserve the right to reorganize the heirarchy as I see
+fit, so it is not safe to depend on the inheritance structure.  It
+B<is> safe (well, relatively) to assume that the methods will not be
+removed from any objects' interfaces.
+
+Classes are organized (mostly) according to their underlying
+implementation.  Class C<Struct> represents the traditional Object
+(methods and named fields) and will be the base class for most
+traditional OOP.  (All of it, actually--the current implementation
+doesn't let you subclass anything except B<Struct> or one of its
+subclasses.)
+
+The usual object construction mechanism--the C<new> method and
+function--only works on classes derived from C<Struct>.
+
+=head2 Overview
+
+
+
+=head3 Method Lookup Semantics
+
+=head3 The Metaclass System
 
 =head3 MethodCall
 
-=head2 Basic Classes and Struct
+=head3 Basic Classes and Struct
+
+
 
 =head2 Defining Classes
 
@@ -1720,9 +1728,12 @@ also have default clauses.
 
 =head4 op_*
 
-=head3 Fields and Attributes
+=head4 Attributes
+
+=head3 Fields
 
 =head3 The 'object' macro
+
 
 =head2 The Sequence Protocol
 
