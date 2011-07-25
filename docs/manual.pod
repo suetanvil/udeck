@@ -1460,9 +1460,68 @@ described in more detail below.
 
 =head1 Macros
 
+Macros are an extremely powerful feature of Deck.  They are, in
+effect, plugins to the compiler and so allow you to extend the
+language syntax in a (semi-) controlled way.  
+
+Deck has two kinds of macros: proper macros and mprocs.  In general,
+you should always try to use mprocs if you can. 
+
 =head2 Proper Macros
 
+Proper macros are basically functions that get called by the compiler
+to transform the expression it is compiling.  If the first term in an
+expression is a name and that name references a macro, it is called as
+a function.  It is given the expression as its arguments and the
+result of that function call is in turn compiled by the compiler.  For
+example:
+
+	macro bobo {mn a} {
+		return [list :Lang::puts [quote mn] " " a]
+	}
+
+	# ...
+
+	bobo 42					# Outputs: :bobo 42
+
+
+If the macro is returned by a more complex expression, it is a runtime
+error. Macros may not be called as functions.  For example:
+
+	[value bobo] 42			# ERROR!
+
+The result of a macro call may also be a macro.  If so, it is also
+evaluated by the compiler.  This will continue until the result is not
+a macro or until some upper limit is reached.  (Currently this is
+hardcoded at 20.)
+
+The first argument of a macro is a C<Symbol>, the name by which the
+macro was called.  Macros may be referenced by more than one name and
+this is the name used in this instance:
+
+	const blort = bobo
+	blort 42				# Outputs: :blort 42
+
+Unlike Scheme, there is no special syntax or semantics for proper
+macros.  You have the full power and full responsibility of
+programmatically transforming code.  
+
+There are two things that Deck provides that may help you: firstly,
+Deck provides the functions C<subify> and C<subifyOrDelay> to convert
+lists into subs in an ordered way.  See the library reference for
+details.  Secondly, Deck's qualified names let you specify global
+variables in a way that the local environment cannot override.  This
+is explained in the section on namespaces below.
+
+
 =head2 MProcs
+
+MProcs are lightweight macros.  They let you do most of the things you
+normally need macros for but without the complexity and debugging
+macros normally need.
+
+# XXXX
+
 
 =head3 MProc Syntax
 
