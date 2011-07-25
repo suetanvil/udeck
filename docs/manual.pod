@@ -1517,15 +1517,188 @@ is explained in the section on namespaces below.
 =head2 MProcs
 
 MProcs are lightweight macros.  They let you do most of the things you
-normally need macros for but without the complexity and debugging
-macros normally need.
+normally need macros for but without the debugging headaches.  An
+mproc definition creates both a	proc and a macro.  The macro expands
+its calls into calls to the functions with various changes made to
+the arguments.
 
-# XXXX
+The macro can:
+
+=over
+
+=item * Turn a LoL argument into a sub.
+
+=item * Automatically quote a bare symbol or list
+
+=item * Ensure that a precise symbol is in the argument list.
+
+=item * Set a default value for an argument.
+
+=back
+
+For example, consider this proc.  It applies a given procedure
+(typically a sub) to each element in a list:
+
+	proc dofor {pr seq} {
+		for elem in seq {pr elem}
+	}
+
+Calling it is pretty simple, too, if a bit clunky:
+
+	dofor {a} => { [isValid a] || [db->store a]} objects
+
+Here is the equivalent mproc:
+
+	mproc dofor {
+		sub 1 pr
+		seq
+	} {
+		for elem in seq {pr elem}
+	}
+
+It's identical to the proc above in all but one way: the first
+argument will be turned into a sub with one argument ("a") if the
+caller passes it a LoL.  This makes the call look like this:
+
+	dofor { [isValid a] || [db->store a]} objects
+
+which is simpler.
+
+MProcs are created by the C<mproc> macro.  The syntax is:
+
+	C< mproc <name> <mproc-arg-list> <body> <final> >
+
+This is identical to C<proc> except for the argument list.
+
+Note that the object named by <name> is a macro, not a procedure.  If
+you take a reference to it, you will not be able to invoke it at
+runtime.  The related function has the same full name as <name> but is
+in the namespace C<__> (two underscores).  So this:
+
+	mproc Main::foo { ... } { ... }
+
+creates macro C<Main::foo> and function C<__::Main::foo>.
+
+It is probably not a good idea to invoke the function directly.  I
+don't have any plans to change the naming or argument order, but I
+might get a bright idea at some point.  You probably want to wait a
+bit just in case.
 
 
-=head3 MProc Syntax
+=head3 MProc Argument Syntax
+
+The C<mproc> argument list B<must> be a LoL.  Each sublist describes a
+single argument.  Typically, I put each argument on its own line;
+that's what I'm going to do here.
+
+Each argument takes the following form:
+
+	'strict'? <type>? name <default>?
+
+Where <type> takes the form of one of:
+
+	sub 0-9
+	sub [arg1 ... argn]
+	symbol
+	list
+	word
+   
+And <default> takes the form:
+
+	[default <literal>]
+
+where <literal> must be a number, string literal, quoted list, symbol
+or nil.
+
+Some examples:
+
+	strict sub [a b c] aProc [default {}]
+	symbol name
+	strict list fl [default :[1 2 3]]
+
+The word C<strict> makes the macro require that the argument be
+transformable.  Without it, if the argument is not of the expected
+type, it is just passed through as is.
+
+Types do the following:
+
+=over
+
+=item sub <number>
+
+If the argument is a list or LoL, it is converted into a sub and that
+is passed as the argument.  C<number> is the number of formal
+arguments.  Arguments are named C<a> through C<z>.  More than 26
+arguments is an error.
+
+If the argument is not a list or LoL, it is passed unmodified, unless
+the argument is prefixed with C<strict> in which case it is a fatal
+error.
 
 
+=item sub [arg1 .. argn]
+
+Exactly like sub <number> above except that the list contains the
+names of the sub's formal arguments instead of C<a> through C<z>.
+
+=item symbol
+
+If the argument is a bare symbol, quote it.  The procedure gets the
+symbol itself instead of the value of whatever variable (if any) it
+names.
+
+If C<strict> is present, it is an error if the argument is not a bare
+symbol
+
+
+=item word
+
+C<word> is similar to C<symbol>.  However, it is an error if the argument
+is not the same symbol as the argument name.
+
+This is intended to aid in adding words for synctac sugar such as the
+C<in> in a C<for> macro.
+
+C<strict> has no effect.
+
+You can set the desired word as a default argument to make the
+argument optional.
+
+=item list
+
+If the argument is an unquoted list, it is first quoted.  It is thus
+not evaluated at the call site.  Any other kind of argument is
+evaluated normally.  (Be aware though, that Deck expressions are lists
+and will thus be quoted.)
+
+If C<strict> is present, it is an error if the argument is not a list.
+
+=back
+
+The C<default> clause is used to set a default value.  It consists of
+a two-item list containing the word C<default> followed by a value.
+Legal default value types are:
+
+=over
+
+=item * numeric literals
+
+=item * string literals (but be careful with double-quoted strings)
+
+=item * quoted lists
+
+=item * quoted symbols
+
+=item * nil
+
+=back
+
+If a default clause is used, then all of the following arguments must
+also have default clauses.
+
+
+
+	
 
 =head1 Objects
 
