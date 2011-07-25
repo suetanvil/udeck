@@ -1,0 +1,10 @@
+# Test macro call where the macro name comes from an expression
+
+macro bobo {mn a} {
+	return [list :Lang::puts [quote mn] " " a]
+}
+
+proc gm {} {return bobo}
+
+[gm] 42
+
