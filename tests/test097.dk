@@ -160,8 +160,6 @@ try {
 }
 puts "------------"
 
-=pod
-
 # Test mkdir/lsdir/unlink/rmdir
 var tmpdir = "tmp-test097"
 
@@ -175,7 +173,36 @@ try {
 }
 puts "---"
 
-var f2
+puts "Contents: " [lsdir tmpdir]
+dofile "$tmpdir/foo" :write {
+	fh->puts "This is not a line of text."
+}
+puts "New Contents: " [lsdir tmpdir]
+puts "lsdir failure: " [lsdir ("xxx" + tmpdir)]
 
-=cut
+try {
+	lsdir ("xxx" + tmpdir) Error
+} catch {puts "Expected exception: " Error}
+puts "---"
+
+puts "Stat foo: " [stat (tmpdir + "/foo")]
+
+puts "Should succeed: " [unlink (tmpdir + "/foo")]
+puts "Should fail: " [unlink (tmpdir + "/foo")]
+try {
+	unlink (tmpdir + "/foo") Error
+} catch {puts "Expected exception: " Error}
+
+puts "Stat foo (should be nil): " [stat (tmpdir + "/foo")]
+
+try {
+	stat (tmpdir + "/foo") Error
+} catch {puts "Expected exception: " Error}
+
+
+
+
+
+
+
 

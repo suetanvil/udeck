@@ -333,7 +333,7 @@ mproc dofile {
 
 
 perlproc _unlink {file} '''return unlink $file;'''
-perlproc _mkdir {path mask} '''return $path, $mask;'''
+perlproc _mkdir {path mask} '''return mkdir ($path, $mask);'''
 perlproc _rmdir {dir} '''return rmdir $dir;'''
 
 perlproc _lsdir {dir} '''
@@ -382,10 +382,11 @@ mproc mkdir {
      as an Exception if an error occurs.  Otherwise, returns false on error
      and true on success."
 
-	var maskVal = (mask@0 << 6)  | (mask@1 << 3) | (mask@2);
-	
+	var maskVal = ((0x7 & mask@0) << 6)  | ((0x7 & mask@1) << 3) | \
+		(0x7 & mask@2);
+
  	[_mkdir path maskVal] || \
-		[_bail ("Error deleting '$file': " + [_errmsg]) :mkdirErr 
+		[_bail ("Error creating '$path': " + [_errmsg]) :mkdirErr 
 		 onError return]
 	return true
 }
