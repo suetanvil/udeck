@@ -1704,7 +1704,32 @@ subclasses.)
 The usual object construction mechanism--the C<new> method and
 function--only works on classes derived from C<Struct>.
 
+
 =head2 Overview
+
+The Deck object system is modeled after Smalltalk's, albeit with a
+different metaphor.  Smalltalk presents objects as receiving
+"messages" which it typically answers by invoking the method with the
+matching name.  If there is no corresponding name, it invokes the
+method C<doesNotUnderstand:> with the message as its argument.  By
+default, C<doesNotUnderstand:> will treat this as a fatal error but a
+class may override it and do other things, including mimic the
+expected behaviour or forward teh message to another object.
+
+Deck's object system provides all of these capabilities.  However, in
+Deck, the "message send" has been replaced with the "method lookup".
+
+Here is a typical Deck method call:
+
+	someObject->someMethod "first arg" :secondArg
+
+Syntactic sugar treats the C<-E<gt>> expression as a parenthesized
+infix expression, i.e.:
+
+	(someObject->someMethod) "first arg" :secondArg
+
+
+XXXXXXXX
 
 
 
