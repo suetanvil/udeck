@@ -821,18 +821,10 @@ be instantiated.
 
 =head3 Class
 
-Type C<Class> is the type of all Deck classes.  It implements the
-method C<new> which (usually) creates a new instance of the class.  It
-also implements methods and attributes that provide extra information
-about the class.
+Type C<Class> is the type of all Deck classes.  Instances are created
+via the 'class' and 'object' macros.  It is described in much more
+detail below in the section L<Objects>.
 
-Every object's class is available through the C<class> attribute
-implemented by Object.
-
-Instances are created via the 'class' and 'object' macros.
-
-Note: Every class in Deck is an instance of Class.  That includes
-Class itself, which is its own grandpa.
 
 
 
@@ -1728,26 +1720,127 @@ infix expression, i.e.:
 
 	(someObject->someMethod) "first arg" :secondArg
 
+Looking at it like this reveals the semantics of what's going on.
+Calling a method has been split into two parts.  The first is
+performed by the C<-E<gt>> operator.  It performs the lookup, querying
+C<someObject> for a method named C<someMethod> and returning a
+C<MethodCall> object.
 
-XXXXXXXX
-
+Secondly, the C<MethodCall> gets called like a procedure (it is a
+callable object so that works).  
 
 
 =head3 Method Lookup Semantics
 
-=head3 The Metaclass System
+Method lookups are typically performed by the C<-E<gt>> operator.
+This operator is actually a macro which usually expands to a call to
+function C<getMethod> with the LHS and RHS values as arguments.  This
+function does the actual lookup.
+
+If it finds a method named by the RHS in the LHS object's class
+heirarchy, it returns a C<MethodCall> object for that object/method
+pair.  If there is no matching method, the method C<doesNotUnderstand>
+is substituted.  In addition, the method name is prepended to the
+argument list.  Default behaviour for C<doesNotUnderstand> is to exit
+immediately with an error message but classes may override this
+behaviour.
+
+The only time C<-E<lt>> does not expand to C<getMethod> is if the LHS
+is the word C<super>. In that case, it expands to C<getSuperMethod>
+with C<self> as the object being queried.  This behaves identically to
+C<getMethod> B<except> that the search for a matching method starts at
+the superclass of C<self>.
+
+(Actually, C<-E<gt>> expands to C<_::getMethod> or
+C<_::getSuperMethod>, both of which are (currently) aliases to
+C<getMethod> and C<getSuperMethod> respectively.)
 
 =head3 MethodCall
 
-=head3 Basic Classes and Struct
+Instances of C<MethodCall> are callable objects encapsulating an
+object and one of its methods.  Calling a C<MethodCall> calls the
+method with the C<MethodCall>'s argument and the object as its
+C<self>.
+
+Like procedures, C<MethodCalls> can be assigned to variables or passed
+around as arguments:
+
+	var x = someObject->doSomething			# x = the MethodCall
+
+	x 42									# Invoke the MethodCall
+
+	foo x									# Pass the MethodCall to foo
+
+
+
+=head3 The Metaclass System
+
+As in Smalltalk, everything is an object in Deck and every object has
+a class.  It follows, therefore that classes are objects and they
+themselves have classes (i.e. metaclasses), which also have classes
+and so on.
+
+Deck handles this by having one metaclass, the class C<Class>.  Every
+class in Deck is an instance of class C<Class>.  Specifically,
+C<Class> is an instance of itself.  (Cue "I'm My Own Grandpa".)
+
+Another consequence of this is that every class has exactly the same
+public interface.  This means that Deck has no concept of a "class" or
+"static" method--that is, method of a class that is unique to that
+class and performs tasks related to it.  Instead, Deck provides
+procedures, modules and singleton objects.
+
+C<Class's> methods and attributes it are provided to return
+information about the class itself.  The common method C<new> usually
+creates and returns a new instance of the class.
 
 
 
 =head2 Defining Classes
 
-=head3 The 'class' macro
+Classes are defined using the macro C<class>.  C<class> takes two or
+three arguments: a word used as the class name, an optional superclass
+and a LoL containing the body:
+
+	class <name> <superclass> { ... }
+
+C<name> can be any legal name.  A new const is created referencing the
+new class.  
+
+C<superclass> can be any expression that evaluates to a class
+reference.  It is the class from which the new class will be derived.
+If omitted, C<class> defaults to using C<Struct>. 
+
+(Bug: currently it is impossible to subclass any class not derived
+from Struct.)
+
+C<body> is a LoL containing field or method definitions.  It is B<not>
+a procedure body.
+
+C<class> (or more specifically, the internal function that is the
+target of its expansion) takes the arguments and compiles them into a
+class, returning a reference to it.
+
+Here is an example:
+
+	class Complex {
+		readable real im
+
+		method _init {r i} {
+			real = r
+			im = i
+		}
+
+		method add {other} {
+			return [Complex->new (real + other.real) (im + other.im)]
+		}
+	}	
+
 
 =head3 Methods
+
+Methods are functions which execute inside the object's scope. 
+
 
 =head4 Private methods
 
@@ -1756,6 +1849,15 @@ XXXXXXXX
 =head4 Attributes
 
 =head3 Fields
+
+
+
+
+
+=head3 Basic Classes and Struct
+
+=head3 The 'class' macro
+
 
 =head3 The 'object' macro
 
