@@ -1839,10 +1839,36 @@ Here is an example:
 
 =head3 Methods
 
-Methods are functions which execute inside the object's scope. 
+Methods are functions which execute inside the object's scope.  Fields
+are directly accessible to the method's code, as is the object itself
+via the local cost C<self>.
 
+A method definition looks pretty much exactly like a proc
+definition except that the word C<method> replaces the word C<proc>
+and that it has to reside entirely inside a class definition:
+
+	class ... {
+		method <name> <arg-list> <body> <final>?
+	}
+
+Methods may have final blocks but are not required to.
+
+Unlike C<proc> which returns C<nil> by default, a method returns the
+object (i.e. C<self> by default.)
 
 =head4 Private methods
+
+Methods whose names begin with an underscore (C<_>) are private.
+Specifically, the C<-E<gt>> operator will fail with an error message
+if the RHS starts with an underscore and the LHS is not C<self> or
+C<super>.  In terms of protection, this is actually more like the C++
+concept of a "protected" method.
+
+Note that this is enforced by the macro that implements C<-E<gt>>.  It
+is possible to defeat the protection level using C<getMethod> or
+C<getSuperMethod>.  However, doing so is a Bad Idea and people who do
+so are not very bright.
+
 
 =head4 op_*
 
@@ -1850,7 +1876,9 @@ Methods are functions which execute inside the object's scope.
 
 =head3 Fields
 
+-private to class
 
+-bug
 
 
 
