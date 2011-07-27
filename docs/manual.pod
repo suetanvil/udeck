@@ -2086,44 +2086,16 @@ namespace.  Names (variables and consts representing procedures,
 classes or ordinary data) defined in the source file are automatically
 put in the namespace.
 
-Names defined in a package can be imported into the current package
-either en masse or in a controlled manner.
+The C<use> macro imports a package into the current namespace, loading
+and compiling it first if necessary.
 
-
-=head2 Defining and Loading Packages
-
-A package is a Deck source file. 
-
-A C<use> statement takes the symbol following it and if there is no
-corresponding namespace yet, creates a filename from it and loads the
-file.  The file's first statement must be a C<package> declaration
-followed by a symbol and that symbol B<must> be identical to the
-symbol given to the C<use> statement.
-
-The argument to C<use> is converted to a string, all instances of
-'::' are converted into directory separators and the extension ".dk"
-is appended.  Thus,
-
-	use Database::SQL::MySQL
-
-attempts to load "Database/SQL/MySQL.dk".  
-
-The global list C<Sys::ModPath> contains the directories the compiler
-will search for.  The compiler searches each directory in this list
-until it finds a source file with the matching name.  It is a fatal
-error if it does not find anything.
-
-It then loads the source file.  The first statement of the input file
-must be a C<package> declaration and the word following C<package>
-must be identical to the word following the C<use> statement.
-
-
-
+Names defined by the Deck command prompt or the initial source file
+occupy namespace C<Main>.
 
 
 =head2 Local vs Qualified names
 
-Deck provides a single, flat global namespace.  All names take the
+Deck provides a single, flat global dictionary.  All names take the
 form:
 
 	<qualifier> '::' <baseName>
@@ -2159,15 +2131,175 @@ and would expand to
 
 Usually, this is unecessary however.
 
+
 =head3 Private Names
 
-=head2 Importing Packages
+A name beginning with an underscore (C<_>) is considered private to
+the package that defines it.  The C<use> macro will not import any
+such names into the current namespace.  For example:
 
-=head3 with, without and rename
+	use Foo with {_priv}		# Error!
+
+In addition, the compiler will forbid the referencing of any qualified
+name if the name part begins with an underscore and the namespace part
+is different from the current namespace:
+
+	package Foo
+
+	puts Bar::_priv				# ERROR
+
+	puts Foo::_priv				# legal
+	puts _priv					# equivalent to the previous one
+
+There is no such restriction on namespaces themselves.  However, the
+system-defined private toplevel namespaces have names containing only
+underscores by convention.
+
+
+
+=head2 Defining Packages
+
+A package is a Deck source file.  Its first statement must be a
+C<package> statement: the word C<package> followed by the name of the
+package as a bare word.  For example:
+
+	package IO::FileUtil
+
+This B<must> be the first statement of the package. The C<package>
+statement is the only purely syntactic construct in Deck.  It is not
+executed; instead, the compiler checks for its presence and fails if
+the package name is not what it was expecting.
+
+The word following C<package> is used as the package's namespace.  All
+unqualified names defined or referenced in the package are put into
+this namespace.
+
+The package's filename path must correspond to the name in the
+following way:
+
+=over
+
+=item 1) Each '::' is replaced by a directory separator.
+
+=item 2) The last element must be the actual filename.
+
+=item 3) The filename must have the extension '.dk'.
+
+=back
+
+These rules may be relaxed or other changes may be made in order to
+accomidate the limits of the filesystem.
+
+
+=head2 Loading and Importing Packages
+
+Packages are loaded via the C<use> macro.  C<use> takes the form
+
+	use <name> <qualifiers>
+
+where C<qualifiers> is optional.
+
+The C<name> argument is a bare word.  It is the name of the namespace
+of the package being imported.  If there is no corresponding namespace
+already in existence, the name is converted to a filename according to
+the rules listed above.and the compiler searches for the matching
+source file and compiles it.
+
+The global variable C<Sys::ModPath> is an array of strings, each of
+which should be a path to a directory.  These are the paths the
+compiler searches when trying to load a module.
+
+For example,
+
+	use Database::SQL::MySQL
+
+loads "Database/SQL/MySQL.dk" if it exists and if Database::SQL::MySQL
+does not already exist.
+
+Once it has been established that the namespace exists, C<use> creates
+local consts with the same names as the public package items (possibly
+modified by the C<qualifiers> section) and pointing to the same
+objects.
+
+If the imported name already exists in the current namespace, it is a
+fatal error.
+
+
+=head3 Qualifiers
+
+C<use> qualifiers consist of the word C<with>, C<without> or C<rename>
+followed by a LoL.  Each LoL sublist can be either a bare unqualified
+name or a bare unqualified name followed by C<=> followed by another
+bare unqualified name. Examples:
+
+    use VectorMath
+    use VectorMath with {add; subtract; eigenValue}
+    use VectorMath without {multiply; divide}
+	use VectorMath rename {vectorAdd = add; vectorMinus = subtract}
+
+A C<with> qualifier allows you to specify exactly which symbols will
+be imported.  Symbols named in the list will be imported.  For C<=>
+expressions, the new symbol will be named by the LHS but will
+reference the same object as the package's RHS symbol.
+
+For example, this:
+
+	use VectorMath with {plus = add; minus = subtract; eigenValue}
+
+creates a local copy of C<VectorMath::eigenValue>.  It also creates
+local consts C<plus> and C<minus> which reference, respectively, the
+same object as C<VectorMath::add> and C<VectorMath::subtract>.
+
+A C<without> qualifier imports all public symbols in the namespace
+B<except> for the ones in the list.  It is an error to put a C<=>
+expression in a C<without>-qualified C<use> statement.
+
+A C<rename> qualifier imports all public symbols in the namespace but
+will rename all symbols according to the C<=> expressions in the list.
+A C<rename>-qualified C<use> may not have any simple bare name
+expressions.
+
+A C<use> with no qualifier simply imports all public symbols. It is
+identical to a C<without> followed by an empty list.
+
+
 
 =head2 Default and Reserved Namespaces
 
-_, __, Lang, Main, Sys
+The following namespaces are defined and/or reserved:
+
+=over
+
+=item C<_> (underscore)
+
+This namespace is used for implementation-defined system features.
+You should never directly call or access anything in this namespace.
+
+=item C<__, __::*> (two underscores)
+
+This namespace and its sub-namespaces contain the functions created by
+mproc.
+
+=item C<Lang>
+
+This namespace contains objects considered part of the language or its
+standard library.  It is automatically imported into every new
+namespace.
+
+=item C<Lang::*>
+
+Namespaces beginning with C<Lang::> are reserved but currently unused.
+
+=item C<Main>
+
+This is the default namespace.  The Deck command prompt or the initial
+input file are both in this namespace.
+
+=item C<Sys>
+
+This namespace hold document, publicly-accessible system features.
+
+=back
 
 
 
