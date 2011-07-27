@@ -1821,6 +1821,11 @@ C<class> (or more specifically, the internal function that is the
 target of its expansion) takes the arguments and compiles them into a
 class, returning a reference to it.
 
+If a class defines a method named C<_init>, it is called when the
+object is created and all of the arguments passed to the C<new> method
+or procedure are passed on to it.
+
+
 Here is an example:
 
 	class Complex {
@@ -1872,11 +1877,120 @@ so are not very bright.
 
 =head4 op_*
 
+Most operators are implemented as macros that expand into matching
+method calls.  For example, 
+
+	a + b
+
+expands into
+
+	a->op_Add b
+
+Here is the full list of operators and matching methods:
+
+	+  		op_Add
+	%  		op_Mod
+	*  		op_Mult
+	/  		op_Div
+	// 		op_DivTrunc
+	<  		op_Lt
+	<= 		op_Lte
+	>  		op_Gt
+	>= 		op_Gte
+	** 		op_Pow
+	|  		op_BitOr
+	&  		op_BitAnd
+	^  		op_BitXor
+	== 		op_Equals
+	<< 		op_LShift
+	>> 		op_RShift
+
+Finally, not really part of the same series is:
+
+	@		at
+
+
 =head4 Attributes
+
+A common pattern in object-oriented languages is the getter/setter
+method pair.  This is where an object provides access to some named
+internal object via a pair of methods, one to return the value and the
+other to set it.  Smalltalk uses this as the primary way to access
+fields while some Java framework use it as a way to provide controlled
+access to data fields.
+
+In Deck, a getter/setter pair plus its underlying field (not all of
+which need to be present) is called an attribute. Deck provides a
+special syntax for them.
+
+Outside an object, reading and writing an attribute is done via the
+C<.> operator.
+
+Reading an attribute takes the form C< <object> . <attribute> >.  The
+C<.> operator has a very high precedence and so usually groups by
+itself in a prefix expression.  In an infix expression, the parser
+automatically wraps the items to the left and right of a C<.> with
+round parens.  For example:
+
+	foo 42 c.real c.im
+	a = [sqrt (c.real * c.real + c.im * c.im)]
+
+The C<.> is a macro that expands to a method call on its LHS object.
+The method name is the name of the attribute with C<_get> appended to
+its name:
+
+	method real_get {} {return real}
+
+The method must take no arguments.
+
+Setting an attribute looks like an ordinary assignment where the
+destination is the assignment expression.  Specifically, it looks like
+C< obj . attr = value >.  For example:
+
+	c.real = 1.01
+
+In this case, the assignment operator expands the whole expression
+into a method call on the LHS of the C<.>.  The method takes one
+argument, the assignment value, and its name is the name of the
+attribute with C<_set> appended to it.  For example:
+
+	method real_set {r} {return (real = r)}
+
+Attribute methods may contain a docstring.  If so, the documentation
+documents the attribute as a whole.  If the attribute has both a
+getter and a setter, the getter is used as the source of the
+docstring.  The setter is used only if the getter is not present.
+
+The class may automatically add attributes to some existing variables.
+
 
 =head3 Fields
 
--private to class
+Fields (aka "instance variables") are named variables that exist
+inside an object.  They are visible only to methods of that object
+that were defined in its class.  Unlike Smalltalk, a subclass does not
+have direct access to its superclass's fields.  In C++ parlance, all
+instance variables are declared C<private>.
+
+Fields are declared with the word C<var> followed by one or more
+names.  Each is initialized to nil when the object is created.  Any
+other intialization is done by the method C<_init>.
+
+For example:
+
+	var real im
+
+Variables may also be made publically visible via attributes, either
+by hand-coding them or via the C<public>, C<readable> and C<writeable>
+words.
+
+
+XXXXXXXXXXXXXXXXXXXXX
+
+
+
+
+
 
 -bug
 
