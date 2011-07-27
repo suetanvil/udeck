@@ -11,6 +11,8 @@ readable var
 writable var
 private var
 
+12345
+42
 readable var2
 public var2
 Derived class:

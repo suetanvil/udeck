@@ -60,6 +60,11 @@ puts b.r "\n" b.p
 b->putall "Base class:"
 puts ""
 
+# Test attribute_set return
+puts (b.p = 12345)
+puts (b.p = 42)
+
+
 puts d.r "\n" d.p
 d->putall "Derived class:"
 puts ""
