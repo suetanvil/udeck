@@ -373,6 +373,7 @@ X		-default quoted list
 	
 	-check for argument mismatch between predeclared proc and actual 
      declaration.
+	-ensure _get and _set have correct arg count at compile time.
 	-warn if a double-quote docstring gets expanded.
 		-also as mproc default
 	-StatResult should answer questions

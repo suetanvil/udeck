@@ -1980,28 +1980,45 @@ For example:
 
 	var real im
 
-Variables may also be made publically visible via attributes, either
-by hand-coding them or via the C<public>, C<readable> and C<writeable>
-words.
+Alternately, one or more fields may be declared following the one of
+the words C<public>, C<readable> or C<writeable>.  If a field is
+declared with C<readable> and there is no C<_get> method for it, the
+compiler automatically creates one which simply returns the value of
+the field.  Similarly, if it is declared with C<writeable> and there
+is no matching C<_set> method, the compiler creates a trivial one that
+stores its argument in the field and then returns it.  C<public>
+behaves as though both C<readable> and C<writeable> were present.
+
+Examples:
+
+	readable real im
+	writable mode
+	public foo bar
+
+If the above isn't clear enough, the compiler will never replace a
+hand-written C<_get> or C<_set> method.
+
+Fields are only allowed in classes descended from C<Struct>.
+
+(Bug: in the current implementation, a new class may not a contain field
+with the same name as a field in one of its superclasses.  Doing so
+will cause a runtime error, even though methods are prevent from
+accessing a superclass's instance variable.)
 
 
-XXXXXXXXXXXXXXXXXXXXX
+=head3 The C<object> macro
 
+The macro C<object> defines a singleton object.  It creates an unnamed
+class and one instance which is referenced by a const it defines.
+It takes three arguments: a name, a superclass and the body.
 
+The name is a C<Symbol> that will be the object's name.
 
+The superclass is an expression which evaluates to the superclass of
+the anonymous class.  Unlike its equivalent in C<class>, it is not
+(yet) optional.
 
-
-
--bug
-
-
-
-=head3 Basic Classes and Struct
-
-=head3 The 'class' macro
-
-
-=head3 The 'object' macro
+The body is a LoL of exactly the same format as accepted by C<class>.
 
 
 =head2 The Sequence Protocol

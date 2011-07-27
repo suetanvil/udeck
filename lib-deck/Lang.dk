@@ -1283,29 +1283,6 @@ proc puts {args} {
 }
 
 
-#macro nfor {for elem in list body} {
-
-# proc _nfor_body {for elem in seq body} {
-
-# 	if (in != :in) {
-# 		die "Invalid value for nfor 'in' field: '$in'"
-# 	}
-
-# 	if (elem.class != Symbol) {
-# 		die "nfor variable name '$elem' is not a symbol."
-# 	}
-
-# 	var bodySub = [subify body 0]
-
-# 	var outerBody = [list bodySub :[set index [+ index 1]]]
-# 	var forLoop = [list :for elem :in list outerBody]
-
-# 	var result = [lolcat {var ndxInit = 0} forLoop]
-# 	result = [list :do result]
-
-# 	return result
-# }
-
 
 macro object {object name superClass body} {
 	"Define a class and declare a single instance of it in the current
