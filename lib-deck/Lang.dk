@@ -70,7 +70,7 @@ _class_ext Object {
          the sequence protocol).  If true, the object must implement at least
 		 C<at>, C<size> and C<maker> as expected and C<atPut> should either
 		 behave as expected as well or fail with an error."
-		return nil
+		return false
 	}
 
 	method last_get {} {
@@ -340,7 +340,7 @@ _class_ext List {
 
 	method isIndexable_get {} {
 		"Returns true, since C<List> implements the sequence protocol."
-		return 1
+		return true
 	}
 
 	method printable_get {} {

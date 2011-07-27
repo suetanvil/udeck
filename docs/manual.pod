@@ -1726,8 +1726,8 @@ performed by the C<-E<gt>> operator.  It performs the lookup, querying
 C<someObject> for a method named C<someMethod> and returning a
 C<MethodCall> object.
 
-Secondly, the C<MethodCall> gets called like a procedure (it is a
-callable object so that works).  
+In the second part, the C<MethodCall> gets called like a procedure (it
+is a callable object so that works).
 
 
 =head3 Method Lookup Semantics
@@ -2023,22 +2023,153 @@ The body is a LoL of exactly the same format as accepted by C<class>.
 
 =head2 The Sequence Protocol
 
+Deck does not need to provide a formal mechanism for specifying a
+common interface the way Java and C# do.  However, it is often
+useful to specify a set of methods to treat as an interface.
+
+One such selection is known as the sequence protocol.  It is the
+interface that indexable objects present to the world.  Most
+List-oriented operations (e.g. C<for>, C<map> and C<reduce>, etc)
+actually only use the sequence protocol.  This allows any object to
+mimic a list simply by implementing the necessary methods.
+
+The interface consists of the following methods:
+
+=over
+
+=item C<at {index}> 
+
+Returns the item at index C<index>.  Index must be positive and valid
+for all values between zero the result of C<size_get> minus one.
+
+This is normally called by the C<@> macro.
+
+=item C<atPut {index value}>
+
+Stores the item C<value> at index C<index>, which has the same
+constraints as the index argument of C<at>.  This is normally called
+by the assignment operator with an C<@> expression as its LHS.
+
+Read-only sequences do not implement C<atPut>.
+
+=item C<size_get>
+
+Readable attribute returning the number of elements the object can
+hold.
+
+=item C<isIndexible_get>
+
+Returns true if the object implements at least the readable part of
+the sequence protocol, false otherwise.  C<Object> provides a default
+implementation that returns C<false>.
+
+=item C<maker_get>
+
+Returns a function which, when called with a number returns a new
+sequence of that size and whose type can hold any object the
+implementer can hold.
+
+C<Object> provides a default implementation which returns
+C<listSized>.
+
+=back
 
 
 
-=head1 Namespaces
 
-=head2 Defining Modules
 
-=head3 Private Names
+=head1 Packages and Namespaces
 
-=head2 Importing Modules
+Packages are another way to divide software into manageable chunks.  A
+package consists of a Deck source file associated with a unique
+namespace.  Names (variables and consts representing procedures,
+classes or ordinary data) defined in the source file are automatically
+put in the namespace.
+
+Names defined in a package can be imported into the current package
+either en masse or in a controlled manner.
+
+
+=head2 Defining and Loading Packages
+
+A package is a Deck source file. 
+
+A C<use> statement takes the symbol following it and if there is no
+corresponding namespace yet, creates a filename from it and loads the
+file.  The file's first statement must be a C<package> declaration
+followed by a symbol and that symbol B<must> be identical to the
+symbol given to the C<use> statement.
+
+The argument to C<use> is converted to a string, all instances of
+'::' are converted into directory separators and the extension ".dk"
+is appended.  Thus,
+
+	use Database::SQL::MySQL
+
+attempts to load "Database/SQL/MySQL.dk".  
+
+The global list C<Sys::ModPath> contains the directories the compiler
+will search for.  The compiler searches each directory in this list
+until it finds a source file with the matching name.  It is a fatal
+error if it does not find anything.
+
+It then loads the source file.  The first statement of the input file
+must be a C<package> declaration and the word following C<package>
+must be identical to the word following the C<use> statement.
+
+
+
+
 
 =head2 Local vs Qualified names
 
-=head2 Default Namespaces
+Deck provides a single, flat global namespace.  All names take the
+form:
 
-=head2 Reserved Namespaces
+	<qualifier> '::' <baseName>
+
+The qualifier may also contain '::', giving us nested namespace.  For
+example:
+
+	IO::StatResult									# StatResult in IO
+	Office::WordProcessor::SpellChecker::Dictionary # Variable named Dictionary
+
+Deck allows you to express any global name in its qualified form
+(unless it's private--see below).
+
+Most names, however are unqualified.  That is, they only contain the
+part after the last '::'.  In this case, the compiler prepends the
+name of the current package (along with C<::> to the name.  Thus, in
+package Smurf,
+
+	smurfilicious = smurfy + 1		# smurfy and smurfilicious are globals
+
+is resolved as
+
+	Smurf::smurfilicious = Smurf::smurfy + 1
+
+Of course, if you wanted to use the variable <smurfy> defined in
+package C<TrademarkInfringement>, it would look like this:
+
+	smurfilicious = TrademarkInfringement::smurfy + 1
+
+and would expand to
+
+	Smurf::smurfilicious = TrademarkInfringement::smurfy + 1
+
+Usually, this is unecessary however.
+
+=head3 Private Names
+
+=head2 Importing Packages
+
+=head3 with, without and rename
+
+=head2 Default and Reserved Namespaces
+
+_, __, Lang, Main, Sys
+
+
 
 
 =head1 The Perl Interface
