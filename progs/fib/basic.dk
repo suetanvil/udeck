@@ -1,0 +1,21 @@
+# Basic itterative Fibonacci sequence generator
+
+
+
+proc fib {count} {
+	var first = 1
+	var second = 1
+
+	repeat count {
+		say "$first "
+
+		var ns = first + second
+		first = second
+		second = ns
+	}
+
+	puts ""
+}
+
+
+# XXXXXX
