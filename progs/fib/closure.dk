@@ -1,0 +1,25 @@
+# Itterative closure to generate fibonacci sequence
+
+proc fibFn {} {
+	var {first = 1; second = 1}
+
+	return {} => {
+		var newSecond = first + second
+		var result = first
+
+		first = second
+		second = newSecond
+
+		next result
+	}
+}
+
+
+var c = [str2num (Sys::Argv@0)]
+var ff = [fibFn]
+for n in (1 .. c) {
+	say [ff] " "
+}
+puts
+
+
