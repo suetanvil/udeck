@@ -1,15 +1,10 @@
 # Basic itterative Fibonacci sequence generator
 
+
+
 proc fib {index} {
-	var {first = 1; second = 1}
-
-	repeat (index - 1) {
-		var ns = first + second
-		first = second
-		second = ns
-	}
-
-	return first
+	(index <= 2) && [return 1]
+	return ([fib (index - 1)] + [fib (index - 2)])	
 }
 
 
@@ -18,5 +13,6 @@ for n in (1 .. c) {
 	say [fib n] " "
 }
 puts
+
 
 

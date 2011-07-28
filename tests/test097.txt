@@ -39,7 +39,7 @@ nlink = 1
 name = iotest1.tmp
 Exception (statErr): Error statting 'nonexistant-file.txt': No such file or directory
 ------------
-This should succeed: nil
+This should succeed: 1
 This should fail: nil
 Expected exception: Exception (mkdirErr): Error creating 'tmp-test097': File exists
 ---
@@ -54,3 +54,7 @@ Should fail: nil
 Expected exception: Exception (unlinkError): Unable to unlink 'tmp-test097/foo'
 Stat foo (should be nil): nil
 Expected exception: Exception (statErr): Error statting 'tmp-test097/foo': No such file or directory
+---
+Should succeed: 1
+Should fail: nil
+Expected exception: Exception (rmdirErr): Error removing 'tmp-test097': No such file or directory

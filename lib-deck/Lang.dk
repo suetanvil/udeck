@@ -1154,10 +1154,17 @@ mproc repeat {
 	sub 1 pr
 } {
 	"Evaluate procedure C<pr> C<count> times.  C<pr> takes one argument, the
-     itteration number starting from zero."
+     itteration number starting from zero.  Does nothing if C<count> is not
+     greater than zero.  Returns the result of the last evaluation of pr or 
+     nil if there is none."
+	(count > 0) || [return nil]
+
+	var result
 	for i in (0 .. count - 1) {
-		pr i
+		result = [pr i]
 	}
+
+	return result
 }
 
 

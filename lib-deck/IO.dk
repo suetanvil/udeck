@@ -401,7 +401,7 @@ mproc rmdir {
      directory must be empty."
 
  	[_rmdir dir] || \
-		[_bail ("Error removing '$file': " + [_errmsg]) :rmdirErr
+		[_bail ("Error removing '$dir': " + [_errmsg]) :rmdirErr
 		 onError return]
 	return true
 }

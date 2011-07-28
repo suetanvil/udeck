@@ -198,7 +198,14 @@ puts "Stat foo (should be nil): " [stat (tmpdir + "/foo")]
 try {
 	stat (tmpdir + "/foo") Error
 } catch {puts "Expected exception: " Error}
+puts "---"
 
+
+puts "Should succeed: " [rmdir tmpdir]
+puts "Should fail: " [rmdir tmpdir]
+try {
+	rmdir tmpdir Error
+} catch {puts "Expected exception: " Error}
 
 
 
