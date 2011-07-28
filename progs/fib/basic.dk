@@ -1,4 +1,4 @@
-# Basic itterative Fibonacci sequence generator
+# Basic itterative Fibonacci number calculation
 
 proc fib {index} {
 	var {first = 1; second = 1}
