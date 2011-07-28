@@ -49,6 +49,16 @@ tiny core, all of Deck is just libraries written in Deck.
 (The current implementation doesn't live up to this goal, but it's
 heading that way.)
 
+=head2 Other Resources
+
+See the file L<lib.pod> for documentation of all of Deck's functions,
+macros, mprocs and classes.  Since Deck mostly just consists of those,
+it is necessary reading for making sense of the language.
+
+The directory C<progs> contains a few example Deck programs that may
+be worth examining.
+
+
 
 
 =head1 Syntax
@@ -2297,37 +2307,125 @@ input file are both in this namespace.
 
 =item C<Sys>
 
-This namespace hold document, publicly-accessible system features.
+This namespace holds documented, publicly-accessible system features.
 
 =back
+
+
+=head1 Selected Objects
+
+Most of Deck's procedures, classes and other objects are documented in
+the Library Reference.  This section address those that are not or
+those that  need a bit more explanation.
+
+=head2 Sys::Argv0, Sys::Argv
+
+Sys::Argv0 is string variable.  It is set to the path to the Deck
+program being run.  If Deck is running interactively, it is set to
+'-'.
+
+Sys::Argv is a list of strings containing the script's argument list.
+It contains all arguments that follow the program being run in the
+Deck interpreter's command line.
+
+=head2 Sys::ModPath
+
+This is the list of directories to search when looking for a package
+to load.  If the environment variable C<DECKLIB> has a value, that
+value is split on the colon (C<:>) and each substring becomes an entry
+in Sys::ModPath.
+
+Then, if there is a directory named 'lib-deck' in the same directory
+as the Deck interpreter (and if the code can find it--not always
+possible), that is appended to the list.
 
 
 
 
 =head1 The Perl Interface
 
+The current implementation of Deck is in Perl.  Sometimes it is
+necessary (or just really convenient) to get at the the underlying
+Perl interpreter.  This section describes how.
+
+Note: at some point in the distant future, Deck may move off of Perl
+and onto some other platform.  In that case, these capabilties B<may>
+go away.
+
+
+
+=head2 perluse
+
+C<perluse> forces the Perl interpreter to load the given Perl module
+via the C<require> function.  The module is loaded into its own
+namespace.  This should be harmless as long as the module does not
+have the same namespace as the Deck implementation (i.e C<LL>).
+
+A C<perluse> consists of the word C<perluse> followed by a bare word
+containing the name of the module to load.  This name is passed to
+C<require> unmodified which ensures that the module is loaded but does
+not export the module's public members to any other namespace.
+
+For example:
+
+	perluse File::Find
+
+Accessing this from a perlproc will require using the full name.
+
+
+=head2 perlproc
+
+The macro C<perlproc> defines a procedure written in Perl but callable
+from Deck.  C<perlproc> takes three arguments: the name, the argument
+list and a string containing the body text.
+
+Like C<procs>, name and argument are a bare word and an argument
+list.  The third argument is passed unmodified to the Perl
+interpreter.  It is a fatal error if Perl cannot compile it.
+
+C<perlproc> adds code to convert the formal arguments into comparable
+Perl data.  Specifically, the following conversions are done:
+
+	Number			-- Perl scalar number
+	Stringlike		-- Perl string
+	List			-- Perl array with all elements recursively converted.
+	Nil				-- undef
+	Procedure		-- The procedure reference.  Be careful with this.
+	PerlObj			-- The wrapped Perl object.
+
+The return value is also converted back to a Deck type, specifically:
+
+	Deck references	-- passed back unmodified.
+	Arrays			-- List with elements recursively converted
+	undef			-- nil
+	Perl numbers	-- Numbers
+	Strings			-- Deck strings.
+	Unbless object reference
+					-- The target of the reference recursively converted.
+	All others		-- Wrapped in a PerlObj.
+
+Obviously, it is a Really Bad Idea to use perlprocs to modify the
+state of the Deck runtime.
+
+
 =head2 PerlObj
 
-C<PerlObj> is an implementation-specific type.  The current
-implementation of Deck is in Perl and so a PerlObj is used to pass
-information to code written in Perl and running on the underlying Perl
-interpreter.
+C<PerlObj> is a Deck object that contains some Perl object.  It is
+used to pass information to code written in Perl and running on the
+underlying Perl interpreter.
 
 You may get a C<PerlObj> back from Perl code.  You can do nothing with
 it in Deck except hand it back to a C<perlproc>.
 
-(On the Perl side of things, a PerlObj is simply a blessed array ref
-to a 1-element array containing some Perl object.  You create one by
-returning C<LL::PerlObj->new($MY_PERL_OBJECT)> from a C<perlproc>.
-The wrapping will let it return unmolested.  Passing a C<PerlObj> to a
-C<perlproc> will strip off the wrapping automatically.)
+On the Perl side of things, a PerlObj is simply a blessed array ref
+to a 1-element array containing some Perl object.  They are created by
+calling C<LL::PerlObj->new>:
 
-=head2 perlproc
+	perlproc _get_perl_hash {} '''return LL::PerlObj->new({});'''
 
-=head2 perluse
-
+C<perlprocs> will return C<PerlObj> instances unmolested.  Passing a
+C<PerlObj> to a C<perlproc> will strip off the wrapping automatically.
 
 
-=head1 Bugs
 
 
