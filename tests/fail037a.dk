@@ -1,0 +1,5 @@
+# Test illegal octal number
+
+
+puts 0o123897
+

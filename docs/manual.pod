@@ -63,8 +63,10 @@ be worth examining.
 
 =head1 Syntax
 
-Deck source code is currently expected to be 7-bit ASCII text,
-although future versions may support other character sets as well.
+Deck source code is currently expected to be ASCII text.  However, I
+am aware that not everyone in the world speaks a language that can be
+represented that way.  The plan is that someday, Deck will also
+support one or more forms of Unicode.
 
 =head2 Lines
 
@@ -114,8 +116,8 @@ interpreter.  This could be considered a bug.
 
 =head2 Comments
 
-Deck comments begin with a pound sign (C<#>, aka number sign, aka
-octothorp) and run to the end of the physical line:
+Deck comments begin with a pound sign (C<#>, aka number sign, aka hash
+mark, aka octothorp) and run to the end of the physical line:
 
 	foo     # this is a comment
 
@@ -161,10 +163,12 @@ multiple literal forms.  They are:
 	-123.456		# Negative float
 	0xDEADBEEF		# Hex literal
 	0b10101010		# Binary literal
+	0o755			# Octal literal
 
-Note that there is no octal form.  Unlike most C-like languages, a
-leading zero in an integer literal does not indicate an octal
-constant.
+Note the octal form.  Unlike most C-like languages, a leading zero in
+an integer literal does not indicate an octal constant; you need to
+prefix it with C<0o>.  This is less of a gotcha to novice programmers.
+It also provides another entertaining way to type zero: C<0o0>.
 
 In addition, numeric literals may contain underscores (C<_>).  These
 are ignored by the parser and so can be used to make your numbers more
@@ -202,6 +206,10 @@ them, you can use a series of quotes as the delimiter instead of a
 single quote:
 
 	'''I don't think this will be a problem. Nor will "''" be.'''
+
+The string continues until the parser finds the same number of
+quotes.  (But remember that more quotes is the same number of quotes
+followed by another sequence of quotes.)
 
 Note that the delimiter B<must> have an B<odd> number of quote
 characters.  Otherwise, it will look like an empty string (i.e. an
@@ -266,8 +274,8 @@ same way as the C<$> for above:
 	puts "$x"					# "42"
 
 Note that C<@> expansion only works for items of the type List.
-Datatypes that mimic a List sufficiently well do not get expanded like
-one.  However, this may change in a future release.
+Datatypes that mimic a List still do not get expanded like one.
+However, this may change in a future release.
 
 B<Beware:> Double-quoted strings are sometimes converted into more
 complex expressions by the parser.  This can react badly with certain
@@ -299,9 +307,9 @@ a function.
 So remember: a double-quoted string is a true string if an only if it
 does not contain an unescaped C<@> or C<$>.
 
-Note: Deck currently has two printable forms, one from the C<printable>
+(Bug: Deck currently has two printable forms, one from the C<printable>
 attribute and the other coming from within.  String interpolation
-currently uses the internal (wrong) one.  This Will Be Fixed.
+currently uses the internal (wrong) one.)
 
 
 =head2 Delimiters

@@ -2062,7 +2062,7 @@ sub readNumber {
 	};
 
 	# Hex literal
-	$line =~ s/^(\-?)0x([0-9a-fA-F_]*)(\W?)/$3/ and do {
+	$line =~ s/^(\-?)0x([0-9a-fA-F_]+)(\W?)/$3/ and do {
 	  my ($sign, $num) = ($1, $2);
 	  $num =~ s/_//g;
 	  $tok = oct("0x$num");
@@ -2071,8 +2071,20 @@ sub readNumber {
 	  next;
 	};
 
+	# Octal literal
+	$line =~ s/^(\-?)0o([0-9_]+)(\W?)/$3/ and do {
+	  my ($sign, $num) = ($1, $2);
+	  $num =~ s/_//g;
+	  die "Non-octal digit found in octal literal: '0o$num'\n"
+		if $num =~ /[89]/;
+	  $tok = oct("0$num");
+	  $tok = -$tok if $sign eq '-';
+	  $result = LL::Number->new($tok);
+	  next;
+	};
+
 	# Binary literal
-	$line =~ s/^(\-?)0b([01_]*)(\W?)/$3/ and do {
+	$line =~ s/^(\-?)0b([01_]+)(\W?)/$3/ and do {
 	  my ($sign, $num) = ($1, $2);
 	  $num =~ s/_//g;
 	  $tok = oct("0b$num");

@@ -1,5 +1,5 @@
 
-# Test hex and binary constants
+# Test hex, binary and octal constants
 puts 0b101010
 puts -0b101010
 
@@ -31,4 +31,10 @@ puts 0xAB_CD_EF
 puts 0x_AB_CD_EF_
 puts 0x_AB_CD_E_______F
 
+
+puts 0o0
+puts 0o7
+puts 0o10
+puts 0o11
+puts 0o_7_5_5
 
