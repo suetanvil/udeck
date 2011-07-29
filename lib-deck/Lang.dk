@@ -150,6 +150,10 @@ _class_ext Object {
 		die "Attempted to use '$self' as a hash key."
 	}
 
+	method isCallable_get {} {
+		"Tell if instances of this class are callable."
+		return false
+	}
 }
 
 _class_ext Number {
@@ -787,6 +791,10 @@ _class_ext Macro {
 		"Return a human-readable textual represention of this object."
 		return "<macro>"
 	}
+	method isCallable_get {} {
+		"Tell if instances of this class are callable.  Yes, in this case."
+		return true
+	}
 }
 
 _class_ext Procedure {
@@ -800,6 +808,10 @@ _class_ext Procedure {
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		return "<procedure>"
+	}
+	method isCallable_get {} {
+		"Tell if instances of this class are callable.  Yes, in this case."
+		return true
 	}
 }
 
@@ -832,6 +844,10 @@ _class_ext MethodCall {
 	method printable_get {} {
 		"Return a human-readable textual represention of this object."
 		return "<method call>"
+	}
+	method isCallable_get {} {
+		"Tell if instances of this class are callable.  Yes, in this case."
+		return true
 	}
 }
 

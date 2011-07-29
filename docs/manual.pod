@@ -726,6 +726,21 @@ Each non-empty, non-comment line must meet one set of requirements.
 If it does not, it is an error.
 
 
+=head4 LoL Wierdness
+
+The following does not work:
+
+	foo.isThingy || [return]
+
+You need to parenthesize the first expression:
+
+	(foo.isThingy) || [return]
+
+This is because the first expression is an infix expression but not an
+assignment and not a purely boolean expression.  Deck immediately
+assumes you've made a mistake and complains.
+
+As Deck evolves, it will probably relax some of these constraints.
 
 
 

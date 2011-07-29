@@ -422,3 +422,7 @@ X		-default quoted list
 	-file I/O
 	-should 'for/foreach' also define 'index' as a const?
 	-interpolated strings should allow for "$foo.bar".
+	-maybe, in a var, the name declared should be visible to the
+	 initializer:
+		var foo = {n} => {puts n; (n > 1) || [foo (n - 1)]}
+	

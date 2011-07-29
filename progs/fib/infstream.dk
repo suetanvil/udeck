@@ -1,0 +1,30 @@
+# Fibonacci infinite stream.
+
+class Node {
+	public head tail
+
+	method _init {h t} {
+		head = h
+		tail = t
+	}
+
+	method tail_get {} {
+		(tail.isCallable) && (tail = [tail])	# Breaks if value is callable
+		return tail
+	}
+}
+
+
+proc fibs {v1 v2} {
+	return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+}
+
+
+var is = [fibs 0 1]
+repeat [str2num (Sys::Argv@0)] {
+	say is.head " "
+	is = is.tail
+}
+puts
+
+
