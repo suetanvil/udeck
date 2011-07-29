@@ -14,6 +14,3 @@ proc printFibs {count} {
 
 printFibs [str2num (Sys::Argv@0)]
 
-
-
-

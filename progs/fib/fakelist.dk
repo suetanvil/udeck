@@ -2,43 +2,46 @@
 # sequence protocol.
 
 class FibonacciList {
-	var first second index
+	var first second
+	var prevCallIndex
+	readable size
 
-	method size_get {} {return index}
 	method isIndexable_get {} {return true}
 
-	method _init {} {self->_reset}
+	method _init {sz} {
+		size = sz
+		self->_reset
+	}
 
 	method _reset {} {
 		first = 1
 		second = 1
-		index = 1
+		prevCallIndex = 0
 	}
 
 	method at {index} {
-		(index == 0) && [return 0]
 		self->_update index
 		return first
 	}
 
 	method _update {reqIndex} {
-		(reqIndex > index) && [self->_reset]
+		(reqIndex >= prevCallIndex) || [self->_reset]
 
-		repeat (reqIndex - index) {
+		repeat (reqIndex - prevCallIndex) {
 			var ns = first + second
 			first = second
 			second = ns
 		}
+
+		prevCallIndex = reqIndex
 	}
 }
 
 
 proc printFibs {count} {
-	var fl = [FibonacciList->new]
+	var fl = [FibonacciList->new count]
 
-	for n in (1 .. count) {
-		say (fl@n) " "
-	}
+	for n in fl {say n " "}
 	puts
 }
 
