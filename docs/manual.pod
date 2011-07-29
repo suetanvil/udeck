@@ -360,7 +360,7 @@ For example:
 	a + b
 
 Operators may be prefixed by the backslash (C<\>).  This does not
-change the symbol but sometimes provides a hint to the parse (see
+change the symbol but sometimes provides a hint to the parser (see
 B<Expressions> below).  For example:
 
 	++ == \++			# This expression is true--they are the same symbol
@@ -371,7 +371,7 @@ B<Expressions> below).  For example:
 Lists consist of zero or more items surrounded by square brackets
 (C<[> and C<]>) and separated by whitespace.  They will nearly always
 need to be preceded by the quote operator (C<:>) to keep them from
-being treated as prefix expressions:
+being treated as expressions:
 
 	:[1 "two" 3]			# Simple list
 	:[]						# Empty list
@@ -399,7 +399,6 @@ Deck expressions ultimately take the form of Lisp-style prefix
 expressions but the parser will also accept several more readable
 forms and convert them into simple prefix expressions.
 
-
 =head3 Quoting
 
 The colon (C<:>) is Deck's quote symbol.  It is roughly the same as
@@ -426,7 +425,7 @@ with the other values as arguments.
 In the same way, quoting a symbol returns the symbol instead of its
 value:
 
-	:foo		# symbol :foo
+	:foo		# symbol 'foo'
 	foo			# value of variable 'foo'
 
 Other literals (single-quoted strings and numbers) yield themselves
@@ -435,8 +434,10 @@ there's no interpolation) or the quoted interpolation expression.
 
 The various expression transformations that happen below (i.e. infix
 expressions, LoLs and prefix syntactic sugar) are all done before the
-expression is quoted.  In other words, quoting does not prevent those
-transformations.
+expression is quoted.  Thus, a quoted infix expression will still
+yield the prefix form of that expression:
+
+	x = :(2 + 3)		# x gets set to [+ 2 3]
 
 Note that the quote is a syntactic structure rather than a function.
 The parser creates a quote expression when it sees the colon.  It does
@@ -447,6 +448,8 @@ The quote and the next expression together make up a single
 expression.  This has higher precedence than anything else except for
 parentheses.
 
+
+XXXXXXXXXXXXXXXXXX
 
 =head3 Prefix Expressions
 
