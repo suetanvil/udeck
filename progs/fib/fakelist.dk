@@ -33,13 +33,15 @@ class FibonacciList {
 }
 
 
+proc printFibs {count} {
+	var fl = [FibonacciList->new]
 
-
-var c = [str2num (Sys::Argv@0)]
-var fl = [FibonacciList->new]
-for n in (1 .. c) {
-	say (fl@n) " "
+	for n in (1 .. count) {
+		say (fl@n) " "
+	}
+	puts
 }
-puts
+
+printFibs [str2num (Sys::Argv@0)]
 
 

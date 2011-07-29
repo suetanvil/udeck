@@ -15,11 +15,16 @@ proc fibFn {} {
 }
 
 
-var c = [str2num (Sys::Argv@0)]
-var ff = [fibFn]
-for n in (1 .. c) {
-	say [ff] " "
+proc printFibs {count} {
+	var ff = [fibFn]
+
+	for n in (1 .. count) {
+		say [ff] " "
+	}
+	puts
 }
-puts
+
+printFibs [str2num (Sys::Argv@0)]
+
 
 

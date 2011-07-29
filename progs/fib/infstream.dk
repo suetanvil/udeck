@@ -20,11 +20,13 @@ proc fibs {v1 v2} {
 }
 
 
-var is = [fibs 0 1]
-repeat [str2num (Sys::Argv@0)] {
-	say is.head " "
-	is = is.tail
+proc printFibs {count} {
+	var is = [fibs 0 1]
+	repeat [str2num (Sys::Argv@0)] {
+		say is.head " "
+		is = is.tail
+	}
+	puts
 }
-puts
 
-
+printFibs [str2num (Sys::Argv@0)]
