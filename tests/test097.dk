@@ -206,9 +206,59 @@ puts "Should fail: " [rmdir tmpdir]
 try {
 	rmdir tmpdir Error
 } catch {puts "Expected exception: " Error}
+puts "---"
 
 
+# Test FileHandle without exceptions
+do {
+	var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
+	puts "These should fail:"
+	puts "eof: " fh.eof
+	puts "getLine: " [fh->getLine]
+	puts "slurp: " [fh->slurp]
+	puts "getChar: " [fh->getChar]
+	puts "getChars: " [fh->getChars 10]
+	puts "put: " [fh->put "xxx"]
+	puts "puts: " [fh->puts "xxx" "yyy"]
+	puts "write: " [fh->write [byteArray 1 2 3 4 5]]
+	puts "read: " [fh->read 10]
+	puts "pos: " fh.pos
+	puts "seek: " [fh->seek 1 SEEK_SET]
+	puts "isOpen: " fh.isOpen
+	puts "---"
+}
 
+# Test FileHandle with exceptions
+try {
+	say "This should throw an exception: "
+	var fh = [FileHandle->new "nonexistentfile.txt" :read Error]
+} catch {puts Error}
+
+proc doot {fh desc pr} {
+	say desc " "
+	try {
+		fh.exception = Error
+		pr
+	} catch {
+		puts Error
+	}
+}
+
+do {
+	var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
+	puts "These should fail:"
+
+	doot fh "getLine: " {}=>{fh->getLine}
+	doot fh "slurp: " {}=>{fh->slurp}
+	doot fh "getChar: " {}=>{fh->getChar}
+	doot fh "getChars: " {}=>{fh->getChars 10}
+	doot fh "put: " {}=>{fh->put "xxx"}
+	doot fh "puts: " {}=>{fh->puts "xxx" "yyy"}
+	doot fh "write: " {}=>{fh->write [byteArray 1 2 3 4 5]}
+	doot fh "read: " {}=>{fh->read 10}
+	doot fh "seek: " {}=>{fh->seek 1 SEEK_SET}
+	puts "---"
+}
 
 
 

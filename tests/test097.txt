@@ -58,3 +58,30 @@ Expected exception: Exception (statErr): Error statting 'tmp-test097/foo': No su
 Should succeed: 1
 Should fail: nil
 Expected exception: Exception (rmdirErr): Error removing 'tmp-test097': No such file or directory
+---
+These should fail:
+eof: 1
+getLine: nil
+slurp: nil
+getChar: nil
+getChars: nil
+put: nil
+puts: nil
+write: nil
+read: nil
+pos: -1
+seek: nil
+isOpen: nil
+---
+This should throw an exception: Exception (openError): Unable to open file 'nonexistentfile.txt'.
+These should fail:
+getLine:  Exception (closedFhErr): Attempted operation on closed filehandle.
+slurp:  Exception (closedFhErr): Attempted operation on closed filehandle.
+getChar:  Exception (closedFhErr): Attempted operation on closed filehandle.
+getChars:  Exception (closedFhErr): Attempted operation on closed filehandle.
+put:  Exception (modeErr): FileHandle not open for writing.
+puts:  Exception (modeErr): FileHandle not open for writing.
+write:  Exception (modeErr): FileHandle not open for writing.
+read:  Exception (closedFhErr): Attempted operation on closed filehandle.
+seek:  Exception (closedFhErr): Attempted operation on closed filehandle.
+---

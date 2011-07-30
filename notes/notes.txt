@@ -364,6 +364,8 @@ X		FileHandle
 			-need fail-by-retval and exceptions both
 		-also, a bunch of file manipulation functions
 			-class StatResult
+	-rename FileHandle->put to say
+	
 X	-test
 X		-mproc default type symbol
 X		-ditto, not a symbol

@@ -71,7 +71,9 @@ class FileHandle {
 	"FileHandle represents access to a file on disk.  The filename is passed
      to the initializer along with a symbol indicating the mode (C<:read>,
      C<:write> or C<:readwrite>) and an Exception to throw if an error
-     occurs.
+     occurs.  If C<nil> is given instead, no exception is thrown.  Instead,
+     the methods will all return nil on error.  (But not the attribute 
+     getters--they return an appropriate value.)
 
      The exception is accessible through the field C<errorException> and may
      be replaced at any time.
@@ -86,10 +88,7 @@ class FileHandle {
 
      C<FileHandles> need to be closed when they are no longer needed.  There
      is no finalization mechanism (yet) to close them when they are
-     garbage-collected.
-
-     (To do: Exceptions need to be made optional.)"
-
+     garbage-collected."
 
 	readable errorException
 	public eol
@@ -113,7 +112,8 @@ class FileHandle {
 
 	method _openFh {} {
 		fh = [_newfh filename [self->_modeStr]]
-		fh || [self->_throw "Unable to open file '$filename'." :openError]
+		fh || [self->_throw "Unable to open file '$filename'." 
+			   :openError return]
 	}
 
 	method _checkMode {} {
@@ -121,7 +121,7 @@ class FileHandle {
 			(legalMode@0 == mode) && [return]
 		}
 
-		self->_throw "Invalid file mode: '$mode'" :badArg mode		
+		die "Invalid file mode: '$mode' to class FileHandle."
 	}
 
 	method _modeStr {} {
@@ -131,19 +131,20 @@ class FileHandle {
 		die "Internal error: Illegal mode symbol: $mode"
 	}
 
-	method _sanity {op} {
+	method _sanity {op ret} {
 		(op == :read && [not self.canRead]) && \
-			[self->_throw "FileHandle not open for reading." :modeErr]
+			[self->_throw "FileHandle not open for reading." :modeErr ret]
 
 		(op == :write && [not self.canWrite]) && \
-			[self->_throw "FileHandle not open for writing." :modeErr]
+			[self->_throw "FileHandle not open for writing." :modeErr ret]
 
 		fh || [self->_throw "Attempted operation on closed filehandle."
-			   :closedFhErr]
+			   :closedFhErr ret]
 	}
 
-	method _throw {msg op args} {
-		apply (errorException->throw) [concat [list msg op] args]
+	method _throw {msg op ret} {
+		(errorException.isNil) && [ret nil]
+		(errorException->throw) msg op
 	}
 
 	method close {} {
@@ -164,6 +165,7 @@ class FileHandle {
 
 	method _exceptionSanityCheck {} {
 		[errorException.class->can :throw] || \
+			(errorException.isNil) || \
 			[die "Attempted to store non-exception as FileHandle exception."]
 	}
 
@@ -180,7 +182,7 @@ class FileHandle {
 
 	method eof_get {} {
 		"Test if this file handle is at the end of the file."
-		fh || [return false]
+		fh || [return true]
 		return [_eof fh].isTrue
 	}
 
@@ -190,7 +192,7 @@ class FileHandle {
          newline (0x0a).  The delimiter is not stripped from the string.  If
          the C<FileHandle> is at the end of the file, C<getLine> returns an
          empty string."
-		self->_sanity :read
+		self->_sanity :read return
 
 		(eol.class == String && eol != "") \
 			|| [die "Illegal line separator: '$eol'."]
@@ -204,7 +206,7 @@ class FileHandle {
 		"Read the remaining contents of this file and return them as a
          string.  This can be an empty string if the file position is already
          at the end of the file."
-		self->_sanity :read
+		self->_sanity :read return
 		return [_getline fh nil]
 	}
 
@@ -219,12 +221,12 @@ class FileHandle {
          the end of the file, the remaining characters are returned.  This is
          true even if the C<FileHandle> is already at the end of the file.  In
          that case, the return value is an empty string."
-		self->_sanity :read
+		self->_sanity :read return
 
 		var line = [_read fh count]
 		if (line == nil) {
 			var errmsg = [_errmsg]
-			self->_throw "IO Error: $errmsg" :ioErr
+			self->_throw "IO Error: $errmsg" :ioErr return
 		}
 
 		return line
@@ -233,33 +235,41 @@ class FileHandle {
 
 	method put {string} {
 		"Writes C<string> at the current file position."
-		self->_sanity :write
+		self->_sanity :write return
 
 		[_put fh string] || \
-			[self->_throw "Error writing string to '$filename'."  :ioError]
+			[self->_throw "Error writing string to '$filename'."  :ioError
+			 return]
+		return true
 	}
 
 	method puts {args} {
 		"Writes the printable form of each argument to the file starting from
          the current position, then appends a newline (as defined by C<eol>).
          Analogous to the C<puts> function."
-		for obj in args {
-			self->put obj.printable
+		self->_sanity :write return
+
+		for obj in [concat args [list eol]] {
+			[_put fh obj.printable] || \
+				[self->_throw "Error writing string to '$filename'." :ioError
+				 return]
 		}
-		self->put eol
+		return true
 	}
 
 
 	method write {bytes} {
 		"Writes the bytes in C<bytes>, a ByteArray, to the current file at
          the current position."
-		self->_sanity :write
+		self->_sanity :write return
 
 		(bytes.class == ByteArray) || \
 			[die "FileHandle->write argument must be ByteArray."]
 
 		[_put fh bytes] || \
-			[self->_throw "Error writing ByteArray to '$filename'."  :ioError]
+			[self->_throw "Error writing ByteArray to '$filename'."  :ioError 
+			 return]
+		return true
 	}
 
 	method read {numBytes} {
@@ -268,13 +278,13 @@ class FileHandle {
          than the number of bytes remaining in the file, only the number of
          remaining bytes are read.  If the current position is at the end of
          the file, returns an empty ByteArray."
-		self->_sanity :read
+		self->_sanity :read return
 
 		var line = [_binread fh numBytes]
 
 		if (line == nil) {
 			var errmsg = [_errmsg]
-			self->_throw "IO Error: $errmsg" :ioErr
+			self->_throw "IO Error: $errmsg" :ioErr return
 		}
 
 		return line
@@ -295,9 +305,10 @@ class FileHandle {
          C<SEEK_END> sets it to C<pos> plus the end of the file (C<pos> is
          typically negative."
          
-		self->_sanity :seek
+		self->_sanity :seek return
 		[_seek fh pos whence] || \
 			[self->_throw "Seek error." :seekError]
+		return true
 	}
 
 	method isOpen_get {} {
@@ -305,7 +316,7 @@ class FileHandle {
          C<close>), this attribute will return false; otherwise, it will
          return true.  Naturally, this attribute is safe to call on a closed
          C<FileHandle>."
-		return [fh.isTrue]
+		return fh.isTrue
 	}
 }
 
