@@ -3921,13 +3921,10 @@ sub initGlobals {
   macro 'mproc',		\&macro_mproc,			'name args body',
 	"Declares an mproc in the current module scope.";
   macro 'set',			\&macro_assign,			'dest value',
-	"Assigns C<value> to C<dest>.  C<dest> is either a bare name, a
-     list access (C<@>) expression or an attribute (C<.>) expression.  This
-     is an alias for C<=>.";
+	"Performs assignments.  Prefix alias for C<=>.";
   macro '=',			\&macro_assign,			'dest = value',
 	"Assigns RHS C<value> to LHS C<value>.  C<dest> is either a bare name, a
-     list access (C<@>) expression or an attribute (C<.>) expression.  This
-     is an alias for C<set>.";
+     list access (C<@>) expression or an attribute (C<.>) expression.";
   macro 'sub',			\&macro_subfn,			'args body final',
 	"Create a C<sub> (i.e. a closure) in the local scope and return it.
      C<args> is the list of arguments (in any of the acceptable formal

@@ -1,7 +1,7 @@
 
 =pod
 
-This module provides a first attempt at file I/O.
+This module is a first attempt at providing basic file I/O.
 
 =cut
 
