@@ -1162,7 +1162,7 @@ C<progs/utils/print_docstrings.dk> does this for the system classes.
 Although there is no formatting requirement, existing docstrings are
 in POD format.  This is the preferred format.
 
-
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 =head2 Toplevel Expressions
 

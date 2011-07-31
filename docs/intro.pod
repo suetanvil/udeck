@@ -1,0 +1,50 @@
+
+=head1 Deck: The Quick-and-Dirty Guided Tour
+
+The problem with programming languages is that you can't just throw up
+a few screenshots on the website to show off how cool it is.  You need
+to show code and then point out how cool it is, preferably in a brief
+and witty way.
+
+Oh well.
+
+Instead, I give you the Fibinacci Examples:
+
+=head2 The Fibonacci Sequence
+
+You all know what that is, right?  So I don't need to explain that
+it's a sequence of numbers:
+
+	1 1 2 3 5 8 13 21 34 55 89 144 233 ...
+
+where each number is the sum of the two previous numbers.  Which is
+good because explaining all of that would take forever!
+
+
+=head2 Classic Recursive Fibonacci
+
+Here's the "obvious" recursive Fibonacci algorithm.  This is the one
+you'll find anytime you do a Google search for "Lisp" and "Fibonacci":
+
+    proc fib {index} {
+    	if (index <= 2) {
+    		return 1
+    	}
+    
+    	return ([fib (index - 1)] + [fib (index - 2)])	
+    }
+
+This will return the C<index'th> Fibonacci.
+
+
+
+
+
+    
+    proc printFibs {count} {
+    	for n in (1 .. count) {
+    		say [fib n] " "
+    	}
+    	puts
+    }
+
