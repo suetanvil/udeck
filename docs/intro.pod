@@ -184,4 +184,29 @@ the scope in which it was created.  The Deck operator C<=E<gt>>
 creates a closure: the left operand is the argument list and the right
 is the function body.
 
+So proc C<fibFn> defines and initializes the variables C<first> and
+C<second>, then creates and returns a closure.  C<printFibs> takes the
+closure (in C<ff>) and calls it repeatedly to generate each new number
+in the Fibonacci sequence.  The state (the current next Fibonacci
+number) is stored in those variables which are now only visible to the
+closure.
+
+=over
+
+=item next
+
+=item =>
+
+=item awesome
+
+=back
+
+
+
+
+
+
+
+
+
 
