@@ -1,6 +1,6 @@
 # Basic itterative Fibonacci number calculation
 
-proc printFibs {count} {
+proc printFibs [count] {
 	var {first = 1; second = 1}
 
 	for n in (1 .. count) {
