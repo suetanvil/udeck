@@ -179,10 +179,10 @@ Now, we start getting to the contrived examples:
     	puts
     }
 
-As you know Bob, a closure is an anonymous function that has access to
-the scope in which it was created.  The Deck operator C<=E<gt>>
-creates a closure: the left operand is the argument list and the right
-is the function body.
+As you know Bob, a closure (aka "sub") is an anonymous function that
+has access to the scope in which it was created.  The Deck operator
+C<=E<gt>> creates a closure: the left operand is the argument list and
+the right is the function body.
 
 So proc C<fibFn> defines and initializes the variables C<first> and
 C<second>, then creates and returns a closure.  C<printFibs> takes the
@@ -209,8 +209,202 @@ returning from the function that created it.
 =back
 
 
+=head2 A Digression: C<return> and C<next>
+
+While we're talking about C<return> (and C<next>) I should explain
+just how frickin' cool they are.
+
+In most languages, C<return> is a control structure.  Using it makes
+the compiler (or interpreter) exit the current function.  In Deck,
+C<return> is a callable object, a I<continuation>.  Calling it like a
+function returns the function that called it I<and every function it's
+currently calling>.  For example:
+
+    proc i2 {ret} {
+    	ret 42
+    	puts "i2 done"
+    }
+
+    proc i1 {ret} {
+    	i2 ret
+    	puts "i1 done."
+    }
+
+    proc i0 {} {
+    	puts "starting i0"
+    	i1 return
+    	puts "done i0"
+    }
+
+    proc outer {} {
+    	puts "calling i0"
+    	i0
+    	puts "done i0"
+    }
+
+    outer
+
+when run, produces this output:
+
+    calling i0
+    starting i0
+    done i0
+
+C<i0> passes its return as an argument to C<i1> which calls C<i2> with
+it.  When C<i2> finally calls the continuation, the call sequence is
+completely unwound and C<i0> returns.  If C<ret> had been given an
+argument, it would have been used as the return value.
+
+(In closures, C<return> has been renamed to C<next> but is otherwise
+the same.)
+
+Since unexpectedly returning from a procedure can leave loose ends, a
+proc (or method or closure) may take a I<final block>.  The final
+block another block of code to execute after the body of a sub, proc
+or method has finished.  It is guaranteed to execute, no matter how
+the procedure returns.  This lets you do stuff like this:
+
+	proc readDataFile {fileName} {
+		var fh = [openDataFile filename]
+		[readHeader fh] || [return false]
+		[readBody fh] || [return false]
+		return true
+	} {
+		closeDataFile fh
+	}
+
+Because the second block always returns, C<closeDataFile> is always
+called, even if C<readDataFile> returned when C<readHeader> called a
+continuation stored in a global variable or some equally idiotic
+thing.
 
 
+=head2 Digression #2: MProcs
+
+As mentioned above, Deck has macros.  They're simple and ugly and God
+help you if you need to use them.
+
+Deck also has a nicer lightweight macro called an C<mproc>.  An
+C<mproc> is just a procedure whose calls get modified in various
+simple ways by an automatically-generated macro.  They can be used for
+a number of things but the most common use (so far) is to make fake
+control structures.  For example, this:
+
+    mproc repeat {
+    	count
+    	sub 1 pr
+    } {
+    	for i in (0 .. count - 1) {pr i}
+	}
+	
+can be called like this:
+
+	repeat 5 {puts "I like pie!"}
+
+The special declaration of argument C<pr> turns its second argument
+into a sub.  Since it's a sub, it has access to the C<return> of the
+C<proc> in which it was created, so you can still return from inside
+it.
+
+
+=head2 The Infinite Stream Implementation
+
+Okay, back to Fibonacci.
+
+Infinite streams are a cool idea I stole from I<Higher Order Perl>
+(who stole it from the Lisp community).  Each stream is a linked list
+whose last element is computed lazily.  In other words, the last
+element is a procedure of some kind that computes the value and
+follows it with a procedure that does the same for the following value.
+
+Since this is a Lisp thing, it requires linked lists.  Deck lists are
+not linked lists, so I first need to implement linked lists using a
+class:
+
+    class Node {
+    	public head tail
+
+    	method _init {h t} {
+    		head = h
+    		tail = t
+    	}
+
+    	method tail_get {} {
+    		(tail.isCallable) && (tail = [tail])
+    		return tail
+    	}
+    }
+
+This is pretty straightforward.  C<head> and C<tail> are public, which
+means they can be accessed by the C<.> operator.  The method
+C<tail_get> overrides reads of C<tail>.  In this case, we use it to
+force the evaluation of C<tail> if C<tail> is a closure.  This comes
+in handy when we actually create the stream:
+
+XXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+
+
+
+
+
+
+
+
+=head2 The Fake List Implementation
+
+Deck, you may have read, is an object-oriented language.  In
+particular, members of the C<List> type which gets used for everything
+are also objects.  Due to the magic of polymorphism, this means that
+it's easy to create a class which mimics the basic functionality of a
+list.  We can (ab)use this to create a fake list which appears to be
+full of Fibonacci numbers:
+
+    class FibonacciList {
+    	var first second
+    	var prevCallIndex
+    	readable size
+
+    	method isIndexable_get {} {return true}
+
+    	method _init {sz} {
+    		size = sz
+    		self->_reset
+    	}
+
+    	method _reset {} {
+    		first = 1
+    		second = 1
+    		prevCallIndex = 0
+    	}
+
+    	method at {index} {
+    		self->_update index
+    		return first
+    	}
+
+    	method _update {reqIndex} {
+    		(reqIndex >= prevCallIndex) || [self->_reset]
+
+    		repeat (reqIndex - prevCallIndex) {
+    			var ns = first + second
+    			first = second
+    			second = ns
+    		}
+
+    		prevCallIndex = reqIndex
+    	}
+    }
+
+
+    proc printFibs {count} {
+    	var fl = [FibonacciList->new count]
+
+    	for n in fl {say n " "}
+    	puts
+    }
 
 
 
