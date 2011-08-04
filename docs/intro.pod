@@ -186,18 +186,25 @@ is the function body.
 
 So proc C<fibFn> defines and initializes the variables C<first> and
 C<second>, then creates and returns a closure.  C<printFibs> takes the
-closure (in C<ff>) and calls it repeatedly to generate each new number
-in the Fibonacci sequence.  The state (the current next Fibonacci
-number) is stored in those variables which are now only visible to the
-closure.
+closure (referenced by variable C<ff>) and calls it repeatedly to
+generate each new number in the Fibonacci sequence.  The current and
+next Fibonacci numbers are stored in C<first> and C<second> in fibFn
+which, having exited, are now only visible to the closure.
+
+Things to note:
 
 =over
 
-=item next
+=item * The C<E<gt>> expression in C<fibFn> doesn't have round
+brackets around it, even though it should.  That's because the parser
+automatically surrounds a C<=E>gt>> expression with them in an infix
+expression.  This is more syntactic sugar.
 
-=item =>
+=item * The C<return> statement has been renamed C<next> inside a
+closure.  This is so that you can return from a closure without
+returning from the function that created it.
 
-=item awesome
+=item * Closures are awesome!
 
 =back
 
