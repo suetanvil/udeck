@@ -311,18 +311,51 @@ it.
 
 Okay, back to Fibonacci.
 
-Infinite streams are a cool idea I stole from I<Higher Order Perl>
-(who stole it from the Lisp community).  Each stream is a linked list
-whose last element is computed lazily.  In other words, the last
-element is a procedure of some kind that computes the value and
-follows it with a procedure that does the same for the following value.
+The third implementation uses an infinite stream.  This is a linked
+list whose last element is a procedure that computes the expected
+value followed by another such procedure.  The result is an infinitely
+long linked list whose elements are only computed the first time you
+retrieve them.
 
-Since this is a Lisp thing, it requires linked lists.  Deck lists are
-not linked lists, so I first need to implement linked lists using a
-class:
+Since Deck lists are not linked lists the way they are in
+$FAVOURITE_LISP_DIALECT, I first need to implement linked lists using
+a class:
+
+	class SimpleNode {
+		readable head tail
+
+    	method _init {h t} {
+    		head = h
+    		tail = t
+    	}
+	}	
+
+This is pretty straightforward:
+
+=over
+
+=item C<head> and C<tail> are instance variables (aka object fields).
+      The C<readonly> declaration means (obviously) that external code
+      can read but not write the value.   They could also have been
+      declared C<public>, C<writeable> (i.e. write-only) or C<var>
+      (i.e. private) if necessary.
+
+=item The C<.> operator is used to read and write object fields
+      (e.g. C<x = sn.head>).  Like C<=E<gt>>, the parser
+      will automatically surround a C<.> expression with implicit
+      round parentheses.
+
+=item C<_init_> is called when an instance of C<SimpleNode> is created to
+      initialize it.
+
+=back
+
+
+
 
     class Node {
-    	public head tail
+    	readable head
+		var tail
 
     	method _init {h t} {
     		head = h
@@ -335,13 +368,56 @@ class:
     	}
     }
 
-This is pretty straightforward.  C<head> and C<tail> are public, which
-means they can be accessed by the C<.> operator.  The method
-C<tail_get> overrides reads of C<tail>.  In this case, we use it to
-force the evaluation of C<tail> if C<tail> is a closure.  This comes
-in handy when we actually create the stream:
+Deck classes are (generally) pretty straightforward:
 
-XXXXXXXXXXXXXXXXXXXXXXX
+
+=over
+
+
+=item C<.> expressions are expanded into calls to methods whose names
+      are the field name followed by C<_set> or C<_get> to read or
+      write the field.  Declaring a field C<readable>, C<writeable> or
+      C<public> creates those methods but you can also write them
+      yourself (e.g. C<tail_get>)..
+
+=item C<tail_get> returns the value of the field C<tail>.  However, it
+      first forces the field's evaluation if it's a procedure and
+      replaces C<tail> with the result.  In other words, it lets us
+      delay computing the actual value of C<tail> until the first time
+      it needs to be read.  (This doesn't work if the result of the
+      call is itself callable but we can ignore that for this example.)
+
+=back
+
+
+
+The C<printFibs> function shows how it's used:
+
+    proc printFibs {count} {
+    	var stream = [fibs 0 1]
+    	repeat [str2num (Sys::Argv@0)] {
+    		say stream.head " "
+    		stream = stream.tail
+    	}
+    	puts
+    }
+
+C<stream> gets initialized to the start of the list as computed by
+function C<fibs> (which I'll get to below) which returns the first
+C<Node>.  The C<tail> of C<stream> is the next node so by pointing
+C<stream> to its own C<tail>, we just advance through the list.
+
+In effect, C<stream> is an infinitely long linked list whose elements
+are created just before they're needed.
+
+All of the heavy lifting is done in the function C<fibs>.  It looks
+like this:
+
+    proc fibs {v1 v2} {
+	    return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+    }
+
+That's all.
 
 
 
