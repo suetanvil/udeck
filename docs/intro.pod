@@ -273,7 +273,7 @@ the procedure returns.  This lets you do stuff like this:
 		closeDataFile fh
 	}
 
-Because the second block always returns, C<closeDataFile> is always
+Because the second block always executes, C<closeDataFile> is always
 called, even if C<readDataFile> returned when C<readHeader> called a
 continuation stored in a global variable or some equally idiotic
 thing.
@@ -311,47 +311,97 @@ it.
 
 Okay, back to Fibonacci.
 
-The third implementation uses an infinite stream.  This is a linked
-list whose last element is a procedure that computes the expected
-value followed by another such procedure.  The result is an infinitely
-long linked list whose elements are only computed the first time you
-retrieve them.
+The third implementation uses an infinite stream.  This is an
+infinitely-long linked list which fakes infinity by computing the n'th
+element just before you need it.  We do this by putting a procedure at
+the end of the list and evaluating it when we get there.  The
+procedure computes a new node containing the next value and another
+procedure and this gets attached to the end.
 
 Since Deck lists are not linked lists the way they are in
 $FAVOURITE_LISP_DIALECT, I first need to implement linked lists using
 a class:
 
-	class SimpleNode {
-		readable head tail
+    class Node {
+    	public head tail
 
     	method _init {h t} {
     		head = h
     		tail = t
     	}
-	}	
+    }
 
 This is pretty straightforward:
 
 =over
 
 =item C<head> and C<tail> are instance variables (aka object fields).
-      The C<readonly> declaration means (obviously) that external code
-      can read but not write the value.   They could also have been
-      declared C<public>, C<writeable> (i.e. write-only) or C<var>
-      (i.e. private) if necessary.
+      The C<public> declaration means (obviously) that external code
+      can read and write the value.
 
-=item The C<.> operator is used to read and write object fields
-      (e.g. C<x = sn.head>).  Like C<=E<gt>>, the parser
-      will automatically surround a C<.> expression with implicit
-      round parentheses.
-
-=item C<_init_> is called when an instance of C<SimpleNode> is created to
+=item C<_init_> is called when an instance of C<Node> is created to
       initialize it.
 
 =back
 
+This is a "dumb" data structure.  It holds information but any
+processing is done by external code, just like a C struct.  Since we
+need to process C<tail>, we need a function to evaluate it:
 
+    proc getTail {node} {
+    	if (node.tail.isCallable) {
+    		node.tail = [node.tail]
+    	}
 
+    	return node.tail
+    }
+
+This function returns the C<tail> field of C<Node> instance
+C<node>.  If C<node> is callable (i.e. a procedure), it first calls it
+and replaces the value of C<node> with the result.  (It also breaks
+if the list contains real callable values, but we're not going to
+worry about that now.)
+
+The list gets set up by the function C<fib>:
+
+    proc fibs {v1 v2} {
+	    return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+    }
+
+So as you can see, the (current) last item in the list is a closure
+which returns a new C<Node> containing the Fibonacci value in
+its C<head> and a new closure in C<tail>.
+
+The C<printFibs> procedure looks like this:
+
+    proc printFibs {count} {
+    	var stream = [fibs 0 1]
+    	repeat [str2num (Sys::Argv@0)] {
+    		say stream.head " "
+    		stream = [getTail stream]
+    	}
+    	puts
+    }
+
+As you can see, it uses C<fibs> to create the first node, then calls
+C<getTail> on the stream to generate the next node.
+
+Some more details:
+
+=over
+
+=item The C<.> operator is used to access the (public) fields of
+      C<Node>.  It can be on either side of an assignment.
+
+=item C<.>, like C<=E<gt>> is treated specially by the parser.  The
+      sequence C< left . right > is automatically surrounded by round
+      brackets whenever it is seen in a prefix expression.
+
+=back
+
+Calling C<getTail> is pretty cumbersome.  Fortunately, Deck's object
+system lets us fold that functionality into the C<Node> class.  The
+new C<Node> looks like this:
 
     class Node {
     	readable head
@@ -368,30 +418,25 @@ This is pretty straightforward:
     	}
     }
 
-Deck classes are (generally) pretty straightforward:
-
+There are three changes:
 
 =over
 
+=item C<head> is now C<readable>, which means it can't be modified by
+      external code.  This change is not strictly necessary (and we
+      B<could> have made it C<readonly> in the previous example) but
+      it makes for better code overall.
 
-=item C<.> expressions are expanded into calls to methods whose names
-      are the field name followed by C<_set> or C<_get> to read or
-      write the field.  Declaring a field C<readable>, C<writeable> or
-      C<public> creates those methods but you can also write them
-      yourself (e.g. C<tail_get>)..
+=item C<tail> is now declared private with the C<var> word.
 
-=item C<tail_get> returns the value of the field C<tail>.  However, it
-      first forces the field's evaluation if it's a procedure and
-      replaces C<tail> with the result.  In other words, it lets us
-      delay computing the actual value of C<tail> until the first time
-      it needs to be read.  (This doesn't work if the result of the
-      call is itself callable but we can ignore that for this example.)
+=item Method C<tail_get> has been added.  This is what gets called
+      when external code tries to read C<tail>.  It contains
+      the functionality that used to be in C<getTail> so now, just
+      accessing the C<tail> field does the right thing.
 
 =back
 
-
-
-The C<printFibs> function shows how it's used:
+And here's the (slightly) modified C<printFibs>:
 
     proc printFibs {count} {
     	var stream = [fibs 0 1]
@@ -402,25 +447,116 @@ The C<printFibs> function shows how it's used:
     	puts
     }
 
-C<stream> gets initialized to the start of the list as computed by
-function C<fibs> (which I'll get to below) which returns the first
-C<Node>.  The C<tail> of C<stream> is the next node so by pointing
-C<stream> to its own C<tail>, we just advance through the list.
+This looks a lot cleaner.
 
-In effect, C<stream> is an infinitely long linked list whose elements
-are created just before they're needed.
+Here are a couple of other things you should know about object
+attributes:
 
-All of the heavy lifting is done in the function C<fibs>.  It looks
-like this:
+=over
 
-    proc fibs {v1 v2} {
-	    return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
-    }
+=item In addition to C<var>, C<public> and C<readable>, fields can be
+      declared C<writable>.  This makes then settable but not
+      readable.
 
-That's all.
+=item It is also possible to override writing to a field by defining a
+      method which takes one argument and has the same name as the
+      field with C<_set> appended.  E.g. for field C<head>, it would
+      be named C<head_set>.
+
+=item So far, it looks like I'm implying that the C<_get> and C<_set>
+      methods are being called by a field access.  It's actually
+      backwards.  All class fields are private and declaring a field
+      C<public> (or C<readable> or C<writeable>) causes the compiler
+      to generate trivial getters and setters.
+
+=item The compiler will never generate a getter or setter if you've
+      already written one, so if you've declared a field public but
+      written your own getter, it is your getter that will be called.
+
+=item You may write a getter or setter for a non-existent variable.
+      That is, the public interface does not need to correspond to the
+      internal structure of the class.
+
+=back
+
+(Attribution: I stole the idea of infinite streams from Mark Jason
+Dominus's book I<Higher Order Perl> who stole it from somewhere in
+Lisp Land.)
 
 
 
+=head2 Digression #3: More on Objects
+
+The examples in this document aren't particularly good at highlighting
+all the interesting corners of Deck's object system, so I'm taking a
+few paragraphs to drop knowledge on you.
+
+In Deck, everything is an object.  This includes classes, which are
+all instances of the class C<Class>.  This includes C<Class> itself
+which is its own class.  Classes can be passed around and queried but
+all classes have the same interface.  This means that there's no such
+thing as a class (aka "static") method or field.  Instead, you should
+use packages.  (See the reference manual for a long, tedious
+description of those.)
+
+Instance variables in classes are only visible to the methods defined
+in that class, B<not> in any subclass.  Their scope is the equivalent
+of C<private> in C++.  This doesn't work:
+
+	class Inner {
+		public foo
+		method _init {x} {
+			foo = x
+		}
+	}
+
+	class Outer Inner {
+		method bar {m} {
+			puts m foo	# ERROR: foo not visible
+		}
+	}
+
+But this will work:
+
+	class Outer Inner {
+		method bar {m} {
+			puts m self.foo
+		}
+	}
+
+This is because C<self.foo> invokes the access method defined by
+C<public>.  (C<self> is a reference to the current object.)
+
+(Note that there's a bug in the current implementation of Deck that
+prevents you from defining an instance variable with the same name as
+an instance variable in a parent class even though they are
+unambiguous.)
+
+Methods are normally invoked using the C<-E<gt>> operator:
+
+	var x = [new Outer]
+	x->bar "Value: "
+
+(C<-E<gt>> is syntactically magical just like C<.> and C<=E<gt>>.)
+
+The semantics of C<-E<gt>> are interesting by themselves.  The result
+of C<x-E<gt>bar> is a callable object called a C<MethodCall>.  This
+encapsulates the result of the method search of C<x> for C<bar>.  When
+called like a procedure, it calls the method found (usually C<bar>)
+with C<self> set to C<x> and with whatever arguments it was given.
+The C<MethodCall> can thus be stored or passed around:
+
+	var bar = [new Outer]->bar
+
+	...
+
+	bar "Value: "
+
+If the method lookup fails (i.e. there is no method with that name in
+the object's class heirarchy), the lookup calls the special method
+C<doesNotUnderstand> instead.  Default behaviour for
+C<doesNotUnderstand> is to exit with a backtrace but individual
+classes may override this behaviour.
 
 
 

@@ -25,6 +25,8 @@ class Base {
 	method superPublicBob {} {
 		self->_bob
 	}
+
+	method xxx_get {} {return "base xxx"}
 }
 
 class Derived Base {
@@ -43,6 +45,13 @@ class Derived Base {
 
 	method publicBob {} {
 		self->_bob
+	}
+
+	method xxx_get {} {return "derived xxx"}
+
+	method printxxx {} {
+		puts self.xxx
+		puts super.xxx
 	}
 }
 
@@ -71,7 +80,9 @@ puts ""
 
 d->publicBob
 d->superPublicBob
+puts ""
 
+d->printxxx
 
 
 

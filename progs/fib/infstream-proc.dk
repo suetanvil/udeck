@@ -1,0 +1,38 @@
+
+# Fibonacci infinite stream with dumb objects.
+
+
+class Node {
+	public head tail
+
+	method _init {h t} {
+		head = h
+		tail = t
+	}
+}
+
+proc getTail {node} {
+	if (node.tail.isCallable) {
+		node.tail = [node.tail]
+	}
+
+	return node.tail
+}
+
+proc fibs {v1 v2} {
+	return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+}
+
+
+proc printFibs {count} {
+	var stream = [fibs 0 1]
+	repeat [str2num (Sys::Argv@0)] {
+		say stream.head " "
+		stream = [getTail stream]
+	}
+	puts
+}
+
+printFibs [str2num (Sys::Argv@0)]
+
+
