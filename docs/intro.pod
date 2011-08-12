@@ -546,7 +546,7 @@ called like a procedure, it calls the method found (usually C<bar>)
 with C<self> set to C<x> and with whatever arguments it was given.
 The C<MethodCall> can thus be stored or passed around:
 
-	var bar = [new Outer]->bar
+	var bar = [Outer->new]->bar
 
 	...
 
@@ -558,21 +558,70 @@ C<doesNotUnderstand> instead.  Default behaviour for
 C<doesNotUnderstand> is to exit with a backtrace but individual
 classes may override this behaviour.
 
+If the left side of a C<-E<gt>> or C<.> is the word C<super>, it is
+used as an alias for C<self> but the method search starts in the
+B<superclass> instead of the base class.  This lets you override a
+method but call its base implementation:
+
+	class MoreOuter Outer {
+		method bar {m} {
+			super->bar m
+			puts "MoreOuter!"
+		}
+	}
+
+Methods whose names begin with an underscore (C<_>) are considered
+private to the class heirarchy (what C++ calls "protected").  It is an
+error to use a name starting with an underscore in a C<-E<gt>>
+expression unless the left-hand-side is either C<self> or C<super>:
+
+		self->_privateThingy 42				# Correct
+		super._kindOfPrivate = "maybe"		# Also correct
+		foo->_reallyPrivate "yes"			# Error!
+
+As you can see, this works on attributes too, so you can give instance
+variables a "protected" scope.
+
+Note that it is possible to defeat the underscore rule.  C<-E<gt>> is
+a macro and it performs the check but there are documented built-in
+functions that do the same thing without the check.  Thus, you may
+need to enforce the underscore rule yourself with a blunt instrument.
+
+(Hah hah, just kidding!  Use a knife.)
+
+(Still kidding!  I don't condone violence, even against really, really
+idiotic coders.  Just glare at them really, really hard.)
+
+As you have seen in the above examples, there are two ways to create a
+new object from a class.  You can use the built-in C<new> function:
+
+	new SomeClass "this is an argument"
+
+or you can use the class's C<new> method:
+
+	SomeClass->new "this is also an argument"
+
+The two forms are equivalent and you can use whichever works better
+for you.
+
+
+
+=head2 The Fake List Fibonacci
+
+As mentioned previously, lists in Deck are not linked lists the way
+they are in most Lisp dialects.  Instead, they are arrays (aka
+vectors) of the sort you see in most programming languages.  Since
+Lists are objects and Deck offers other list-like types (Strings and
+ByteArrays for example), it makes sense for list-like objects to have
+a common interface and for the system to use them.  They do and this
+interface is known as the B<Sequence Protocol>.
+
+XXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 
 
 
-
-
-=head2 The Fake List Implementation
-
-Deck, you may have read, is an object-oriented language.  In
-particular, members of the C<List> type which gets used for everything
-are also objects.  Due to the magic of polymorphism, this means that
-it's easy to create a class which mimics the basic functionality of a
-list.  We can (ab)use this to create a fake list which appears to be
-full of Fibonacci numbers:
 
     class FibonacciList {
     	var first second
