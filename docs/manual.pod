@@ -8,7 +8,7 @@ features:
 
 =over
 
-=item * First-class functions
+=item *First-class functions
 
 =item * Closures
 
@@ -51,7 +51,11 @@ heading that way.)
 
 =head2 Other Resources
 
-See the file L<lib.pod> for documentation of all of Deck's functions,
+The file C<intro.pod> provides a more gentle introduction to the
+language.  It tries to be both a tutorial and a tour of the language's
+most interesting features.
+
+See the file C<libref.pod> for documentation of all of Deck's functions,
 macros, mprocs and classes.  Since Deck mostly just consists of those,
 it is necessary reading for making sense of the language.
 
@@ -146,7 +150,7 @@ then other text but must end with an actual newline.
 POD documents inside multi-line strings are considered part of the
 string and are parsed as such.
 
-See L<perlpod> for a better explanation of POD.
+See the perlpod documention for a better explanation of POD.
 
 
 =head2 Literals
@@ -332,7 +336,7 @@ Deck parses the following characters as special delimiters:
 The first three items are the parentheses Deck supports.
 
 The colon (C<:>) is used to quote (i.e. delay evaluation) of the thing
-following it.  See L<Quoting> below.
+following it.  See C<Quoting> below.
 
 =head2 Symbols
 
@@ -386,7 +390,7 @@ Sublists may also be in infix form.
 	:[+ a (b & c)]			# Nested list with infix sublist
 
 Note that there are a few special cases.  These are described in
-L<Syntactic Sugar> below.
+I<Syntactic Sugar> below.
 
 (As an aside, Lisp/Scheme hackers should be aware that the underlying
 data structure of a Deck list is an array (aka a vector), B<not> a
@@ -864,7 +868,7 @@ be instantiated.
 
 Type C<Class> is the type of all Deck classes.  Instances are created
 via the 'class' and 'object' macros.  It is described in much more
-detail below in the section L<Objects>.
+detail below in the section I<Objects>.
 
 
 
@@ -918,7 +922,7 @@ Structured objects are objects containing zero or more named instance
 variables--that is, objects as implemented by most object systems and
 programming languages.
 
-This is described in L<Objects> below.
+This is described in I<Objects> below.
 
 
 =head2 Booleans

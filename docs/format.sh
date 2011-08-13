@@ -8,8 +8,8 @@ else
 	echo "Error creating libref-body.pod.  Using old version."
 fi
 
-cat libref-head.pod libref-body.pod | \
-    pod2html --css format.css --no-index \
-    --title "Deck Library Reference" > libref.html
+cat libref-head.pod libref-body.pod > libref.pod
+pod2html --css format.css --no-index \
+--title "Deck Library Reference" libref.pod > libref.html
 
 pod2html --css format.css --noindex intro.pod > intro.html
