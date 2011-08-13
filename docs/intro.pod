@@ -167,8 +167,8 @@ series.  However, from this code, I can point out a few more things:
 
 =item
 
-Square brackets (C<[> and C<]>) delimit standard Deck
-expressions (i.e. prefix expressions) such as C<[fib n]>.
+Square brackets (C<[> and C<]>) delimit subexpressions in the standard
+Deck form (i.e. prefix expressions). For example: C<[fib n]>.
 
 =item
 
@@ -187,7 +187,7 @@ to be made up of only C<&&> and C<||> operations.
 
 C<proc> lets you wrap the argument list in braces (C<{> and
 C<}>) instead of square brackets.  This is pure syntactic sugar by
-C<proc> in oreder to make Tcl programmers a bit more comfortable.
+C<proc> in order to make Tcl programmers a bit more comfortable.
 
 =back
 
@@ -250,7 +250,10 @@ returning from the function that created it.
 
 =item
 
-Closures are awesome!
+While you never see it in this document, C<=E<gt>> is actually a
+convenient alias for C<sub> which also creates closures but in a
+prefix way.  C<=E<gt>> is more convenient but C<sub> also lets you add
+a final block the closure.
 
 =back
 
@@ -262,9 +265,9 @@ just how frickin' cool they are.
 
 In most languages, C<return> is a control structure.  Using it makes
 the compiler (or interpreter) exit the current function.  In Deck,
-C<return> is a callable object, a I<continuation>.  Calling it like a
-function returns the function that called it I<and every function it's
-currently calling>.  For example:
+C<return> is a callable object of type C<Continuation>.  Calling it
+like a function returns the function in which it was defined and if
+necessary, I<every function it's currently calling>.  For example:
 
     proc i2 {ret} {
         ret 42
@@ -306,14 +309,15 @@ the same.)
 
 Since unexpectedly returning from a procedure can leave loose ends, a
 proc (or method or closure) may take a I<final block>.  The final
-block another block of code to execute after the body of a sub, proc
-or method has finished.  It is guaranteed to execute, no matter how
-the procedure returns.  This lets you do stuff like this:
+block is just another chunk of code added to the end of a procedure
+with full access to namespace.  However, it is guaranteed to execute,
+no matter how the procedure returns.  This lets you do stuff like
+this:
 
     proc readDataFile {fileName} {
         var fh = [openDataFile filename]
         [readHeader fh] || [return false]
-        [readBody fh] || [return false]
+        [readBody fh]   || [return false]
         return true
     } {
         closeDataFile fh
@@ -327,14 +331,21 @@ thing.
 
 =head2 Digression #2: MProcs
 
-As mentioned above, Deck has macros.  They're simple and ugly and God
-help you if you need to use them.
+As mentioned above, Deck has macros.  Unlike Scheme, there is no
+effort to make Deck macros hygenic or simple.  They're just procedures
+that the compiler calls when it finds a matching expression.  The
+compiler passes the expression to the macro and then tries to compile
+whatever it returns.  This is simple, powerful and ugly.  If you've
+led a good life, maybe you won't ever need to use them.
 
 Deck also has a nicer lightweight macro called an C<mproc>.  An
 C<mproc> is just a procedure whose calls get modified in various
-simple ways by an automatically-generated macro.  They can be used for
-a number of things but the most common use (so far) is to make fake
-control structures.  For example, this:
+simple ways by an automatically-generated macro.  MProcs can add
+default arguments to a procedure, automatically quote a bare symbol or
+list or turn a list argument into a closure.
+
+This latter feature is often used to add new control structures.  For
+example, this:
 
     mproc repeat {
         count
@@ -348,9 +359,7 @@ can be called like this:
     repeat 5 {puts "I like pie!"}
 
 The special declaration of argument C<pr> turns its second argument
-into a sub.  Since it's a sub, it has access to the C<return> of the
-C<proc> in which it was created, so you can still return from inside
-it.
+into a closure.
 
 
 =head2 The Infinite Stream Implementation
@@ -418,9 +427,10 @@ The list gets set up by the function C<fib>:
         return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
     }
 
-So as you can see, the (current) last item in the list is a closure
-which returns a new C<Node> containing the Fibonacci value in
-its C<head> and a new closure in C<tail>.
+So the last item in the list is always a closure which returns a new
+C<Node> containing the Fibonacci value in its C<head> and a new
+closure in C<tail> and the new closure does exactly the same thing
+for the next item.
 
 The C<printFibs> procedure looks like this:
 
@@ -460,12 +470,12 @@ new C<Node> looks like this:
     class Node {
         readable head
         var tail
-
+        
         method _init {h t} {
             head = h
             tail = t
         }
-
+        
         method tail_get {} {
             (tail.isCallable) && (tail = [tail])
             return tail
@@ -476,17 +486,23 @@ There are three changes:
 
 =over
 
-=item C<head> is now C<readable>, which means it can't be modified by
-      external code.  This change is not strictly necessary (and we
-      B<could> have made it C<readonly> in the previous example) but
-      it makes for better code overall.
+=item 
 
-=item C<tail> is now declared private with the C<var> word.
+C<head> is now C<readable>, which means it can't be modified by
+external code.  This change is not strictly necessary (and we
+B<could> have made it C<readonly> in the previous example) but
+it makes for better code overall.
 
-=item Method C<tail_get> has been added.  This is what gets called
-      when external code tries to read C<tail>.  It contains
-      the functionality that used to be in C<getTail> so now, just
-      accessing the C<tail> field does the right thing.
+=item
+
+C<tail> is now declared private with the C<var> word.
+
+=item
+
+Method C<tail_get> has been added.  This is what gets called
+when external code tries to read C<tail>.  It contains
+the functionality that used to be in C<getTail> so now, just
+accessing the C<tail> field does the right thing.
 
 =back
 
@@ -531,12 +547,6 @@ to generate trivial getters and setters.
 
 =item
 
-The compiler will never generate a getter or setter if you've
-already written one, so if you've declared a field public but
-written your own getter, it is your getter that will be called.
-
-=item
-
 You may write a getter or setter for a non-existent variable.
 That is, the public interface does not need to correspond to the
 internal structure of the class.
@@ -573,7 +583,7 @@ of C<private> in C++.  This doesn't work:
             foo = x
         }
     }
-
+    
     class Outer Inner {
         method bar {m} {
             puts m foo  # ERROR: foo not visible
@@ -588,7 +598,7 @@ But this will work:
         }
     }
 
-This is because C<self.foo> invokes the access method defined by
+This is because C<self.foo> invokes the getter method defined by
 C<public>.  (C<self> is a reference to the current object.)
 
 (Note that there's a bug in the current implementation of Deck that
@@ -605,16 +615,16 @@ Methods are normally invoked using the C<-E<gt>> operator:
 
 The semantics of C<-E<gt>> are interesting by themselves.  The result
 of C<x-E<gt>bar> is a callable object called a C<MethodCall>.  This
-encapsulates the result of the method search of C<x> for C<bar>.  When
+encapsulates the result of the method search for C<bar> in C<x>.  When
 called like a procedure, it calls the method found (usually C<bar>)
 with C<self> set to C<x> and with whatever arguments it was given.
 The C<MethodCall> can thus be stored or passed around:
 
-    var bar = [Outer->new]->bar
-
+    var barMethodCall = [Outer->new]->bar
+    
     ...
-
-    bar "Value: "
+    
+    barMethodCall "Value: "
 
 If the method lookup fails (i.e. there is no method with that name in
 the object's class heirarchy), the lookup calls the special method
@@ -647,14 +657,15 @@ As you can see, this works on attributes too, so you can give instance
 variables a "protected" scope.
 
 Note that it is possible to defeat the underscore rule.  C<-E<gt>> is
-a macro and it performs the check but there are documented built-in
-functions that do the same thing without the check.  Thus, you may
-need to enforce the underscore rule yourself with a blunt instrument.
+a macro and it performs the check at compile time.  The code that the
+macro emits could be hand-written instead, bypassing the check.  Thus,
+you may need to enforce the underscore rule yourself with a blunt
+instrument.
 
 (Hah hah, just kidding!  Use a knife.)
 
-(Still kidding!  I don't condone violence, even against really, really
-idiotic coders.  Just glare at them really, really hard.)
+(Still kidding!  I don't condone violence, even against really idiotic
+coders.  Just glare at them.)
 
 As you have seen in the above examples, there are two ways to create a
 new object from a class.  You can use the built-in C<new> function:
@@ -665,8 +676,8 @@ or you can use the class's C<new> method:
 
     SomeClass->new "this is also an argument"
 
-The two forms are equivalent and you can use whichever works better
-for you.
+The two forms are equivalent and you can use whichever one looks nicer
+in context.
 
 
 
@@ -675,7 +686,7 @@ for you.
 Early on, I explained that the C<(1 .. count)> sequence in a C<for>
 statement actually created an object which mimicked a list of integers
 in increasing order.  From that, you may have suspected that it would
-be easy to create an class which mimics a list of Fibonacci numbers.
+be easy to create a class which mimics a list of Fibonacci numbers.
 And you'd be right.
 
 With such a class, C<printFibs> becomes almost trivial:
@@ -691,34 +702,34 @@ The class C<FibonacciList> does all of the heavy lifting:
         var first second
         var prevCallIndex
         readable size
-
+        
         method isIndexable_get {} {return true}
-
+        
         method _init {sz} {
             size = sz
             self->_reset
         }
-
+        
         method _reset {} {
             first = 1
             second = 1
             prevCallIndex = 0
         }
-
+        
         method at {index} {
             self->_update [self->_sanitizeIndex index]
             return first
         }
-
+        
         method _update {reqIndex} {
             (reqIndex >= prevCallIndex) || [self->_reset]
-
+            
             repeat (reqIndex - prevCallIndex) {
                 var ns = first + second
                 first = second
                 second = ns
             }
-
+            
             prevCallIndex = reqIndex
         }
     }
@@ -736,32 +747,32 @@ this the I<Sequence Protocol>.  Specifically:
 
 =item
 
-C<isIndexible_get> returns true.  Class C<Object> implements
-      a version of this that returns false.  All classes that mimic
-      lists must make this attribute return true.
+A readable C<isIndexible> attribute must return true.  Class C<Object>
+already implements a version of this that returns false so it is safe
+to use this to test a class for the presence of the rest of the
+sequence protocol.
 
 =item
 
-C<size> needs to be implemented to return the number of items in
-      the list.  As with all attributes, this can also be implemented
-      with a C<_get> method.
+C<size> needs to be implemented to return the number of items in the
+list.  In the example, it's an actual readable field but as with all
+attributes, this can also be implemented with a C<_get> method.
 
 =item
 
-C<at> takes one argument--the index--and returns the
-      corresponding element.  The index must be an integer between 0
-      and (size - 1).  In addition, negative indexes are allowed and
-      interpreted as being relative to size.  E.g. index -4 is treated
-      as (size - 4).  The private C<Object> method C<_sanitizeIndex>
-      converts negative indexes to positive ones.  How the object
-      handles out-of-range indexes is undefined.  This one allows
-      them.
+C<at> takes one argument--the index--and returns the corresponding
+element.  The index must be an integer between 0 and (size - 1).  In
+addition, negative indexes are allowed and interpreted as being
+relative to size.  E.g. index -4 is treated as (size - 4).  The
+private C<Object> method C<_sanitizeIndex> converts negative indexes
+to positive ones.  How the object handles out-of-range indexes is
+undefined.  This one allows them.
 
 =item
 
-C<atPut> (not shown) takes an index and a value and stores the
-      value at the index.  The index has the same constraints as those
-      for C<at>.  Only writeable objects need to implement this.
+Two optional items: C<atPut> to store values and readable attribute
+C<maker> which returns a function to create an empty sequence of a
+compatible type.  (The default implementation returns a C<List>.)
 
 =back
 

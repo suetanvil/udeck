@@ -2119,7 +2119,8 @@ Stores the item C<value> at index C<index>, which has the same
 constraints as the index argument of C<at>.  This is normally called
 by the assignment operator with an C<@> expression as its LHS.
 
-Read-only sequences do not implement C<atPut>.
+Read-only sequences B<must> not implement C<atPut> since the caller
+can test for writeability by testing for the presence of C<atPut>.
 
 =item C<size_get>
 
@@ -2130,7 +2131,10 @@ hold.
 
 Returns true if the object implements at least the readable part of
 the sequence protocol, false otherwise.  C<Object> provides a default
-implementation that returns C<false>.
+implementation that returns C<false>.  Note that non-sequence classes
+may implement some or all of the rest of the sequence protocol with
+(somewhat) different semantics so long as C<isIndexible_get> returns
+false.
 
 =item C<maker_get>
 
