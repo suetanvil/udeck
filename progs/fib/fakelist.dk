@@ -20,7 +20,7 @@ class FibonacciList {
 	}
 
 	method at {index} {
-		self->_update index
+		self->_update [self->_sanitizeIndex index]
 		return first
 	}
 
@@ -39,9 +39,7 @@ class FibonacciList {
 
 
 proc printFibs {count} {
-	var fl = [FibonacciList->new count]
-
-	for n in fl {say n " "}
+	for n in [FibonacciList->new count] {say n " "}
 	puts
 }
 

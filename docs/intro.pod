@@ -15,7 +15,7 @@ Instead, I give you the Fibinacci Examples:
 You all know what that is, right?  So I don't need to explain that
 it's a sequence of numbers:
 
-	1 1 2 3 5 8 13 21 34 55 89 144 233 ...
+    1 1 2 3 5 8 13 21 34 55 89 144 233 ...
 
 where each number is the sum of the two previous numbers.  Which is
 good because explaining all of that would take forever!
@@ -27,17 +27,17 @@ It's pretty simple to code a procedure that prints out some of the
 Fibonacci series:
 
     proc printFibs [count] {
-    	var first = 1
-		var second = 1
+        var first = 1
+        var second = 1
     
-    	for n in (1 .. count) {
-    		say "$first "
+        for n in (1 .. count) {
+            say "$first "
     
-    		var ns = (first + second)
-    		first = second
-    		second = ns
-    	}
-    	puts
+            var ns = (first + second)
+            first = second
+            second = ns
+        }
+        puts
     }
 
 Obvious things:
@@ -88,7 +88,8 @@ creates an object (type C<Interval>) which mimics a list containing
 the range of integers between the left-hand-side and right-hand-side
 arguments.  From this, it becomes clear that what C<for> actually does
 is evaluate its body for each element of a list-like object it
-receives.
+receives.  (Unlike most Lispish languages, Deck lists are actually
+arrays (aka vectors).)
 
 =back
 
@@ -117,18 +118,18 @@ Deck's built-in functionality is actually implemented using macros.
 Subject to the Laws of Computer Science, I am required to show you a
 recursive function, so here it is:
 
-	proc fib {index} {
-		(index <= 2) && [return 1]
-		return ([fib (index - 1)] + [fib (index - 2)])	
-	}
+    proc fib {index} {
+        (index <= 2) && [return 1]
+        return ([fib (index - 1)] + [fib (index - 2)])  
+    }
 
 Of course, it also needs this function:
 
     proc printFibs {count} {
-    	for n in (1 .. count) {
-    		say [fib n] " "
-    	}
-    	puts
+        for n in (1 .. count) {
+            say [fib n] " "
+        }
+        puts
     }
 
 Needless to say, it is 1) minimal and elegant and 2) pig slow because
@@ -157,26 +158,26 @@ C<proc> in oreder to make Tcl programmers a bit more comfortable.
 Now, we start getting to the contrived examples:
 
     proc fibFn {} {
-    	var {first = 1; second = 1}
+        var {first = 1; second = 1}
 
-    	return {} => {
-    		var newSecond = first + second
-    		var result = first
+        return {} => {
+            var newSecond = first + second
+            var result = first
 
-    		first = second
-    		second = newSecond
+            first = second
+            second = newSecond
 
-    		next result
-    	}
+            next result
+        }
     }
 
     proc printFibs {count} {
-    	var ff = [fibFn]
+        var ff = [fibFn]
 
-    	for n in (1 .. count) {
-    		say [ff] " "
-    	}
-    	puts
+        for n in (1 .. count) {
+            say [ff] " "
+        }
+        puts
     }
 
 As you know Bob, a closure (aka "sub") is an anonymous function that
@@ -221,25 +222,25 @@ function returns the function that called it I<and every function it's
 currently calling>.  For example:
 
     proc i2 {ret} {
-    	ret 42
-    	puts "i2 done"
+        ret 42
+        puts "i2 done"
     }
 
     proc i1 {ret} {
-    	i2 ret
-    	puts "i1 done."
+        i2 ret
+        puts "i1 done."
     }
 
     proc i0 {} {
-    	puts "starting i0"
-    	i1 return
-    	puts "done i0"
+        puts "starting i0"
+        i1 return
+        puts "done i0"
     }
 
     proc outer {} {
-    	puts "calling i0"
-    	i0
-    	puts "done i0"
+        puts "calling i0"
+        i0
+        puts "done i0"
     }
 
     outer
@@ -264,14 +265,14 @@ block another block of code to execute after the body of a sub, proc
 or method has finished.  It is guaranteed to execute, no matter how
 the procedure returns.  This lets you do stuff like this:
 
-	proc readDataFile {fileName} {
-		var fh = [openDataFile filename]
-		[readHeader fh] || [return false]
-		[readBody fh] || [return false]
-		return true
-	} {
-		closeDataFile fh
-	}
+    proc readDataFile {fileName} {
+        var fh = [openDataFile filename]
+        [readHeader fh] || [return false]
+        [readBody fh] || [return false]
+        return true
+    } {
+        closeDataFile fh
+    }
 
 Because the second block always executes, C<closeDataFile> is always
 called, even if C<readDataFile> returned when C<readHeader> called a
@@ -291,15 +292,15 @@ a number of things but the most common use (so far) is to make fake
 control structures.  For example, this:
 
     mproc repeat {
-    	count
-    	sub 1 pr
+        count
+        sub 1 pr
     } {
-    	for i in (0 .. count - 1) {pr i}
-	}
-	
+        for i in (0 .. count - 1) {pr i}
+    }
+    
 can be called like this:
 
-	repeat 5 {puts "I like pie!"}
+    repeat 5 {puts "I like pie!"}
 
 The special declaration of argument C<pr> turns its second argument
 into a sub.  Since it's a sub, it has access to the C<return> of the
@@ -323,12 +324,12 @@ $FAVOURITE_LISP_DIALECT, I first need to implement linked lists using
 a class:
 
     class Node {
-    	public head tail
+        public head tail
 
-    	method _init {h t} {
-    		head = h
-    		tail = t
-    	}
+        method _init {h t} {
+            head = h
+            tail = t
+        }
     }
 
 This is pretty straightforward:
@@ -349,11 +350,11 @@ processing is done by external code, just like a C struct.  Since we
 need to process C<tail>, we need a function to evaluate it:
 
     proc getTail {node} {
-    	if (node.tail.isCallable) {
-    		node.tail = [node.tail]
-    	}
+        if (node.tail.isCallable) {
+            node.tail = [node.tail]
+        }
 
-    	return node.tail
+        return node.tail
     }
 
 This function returns the C<tail> field of C<Node> instance
@@ -365,7 +366,7 @@ worry about that now.)
 The list gets set up by the function C<fib>:
 
     proc fibs {v1 v2} {
-	    return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+        return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
     }
 
 So as you can see, the (current) last item in the list is a closure
@@ -375,12 +376,12 @@ its C<head> and a new closure in C<tail>.
 The C<printFibs> procedure looks like this:
 
     proc printFibs {count} {
-    	var stream = [fibs 0 1]
-    	repeat [str2num (Sys::Argv@0)] {
-    		say stream.head " "
-    		stream = [getTail stream]
-    	}
-    	puts
+        var stream = [fibs 0 1]
+        repeat count {
+            say stream.head " "
+            stream = [getTail stream]
+        }
+        puts
     }
 
 As you can see, it uses C<fibs> to create the first node, then calls
@@ -404,18 +405,18 @@ system lets us fold that functionality into the C<Node> class.  The
 new C<Node> looks like this:
 
     class Node {
-    	readable head
-		var tail
+        readable head
+        var tail
 
-    	method _init {h t} {
-    		head = h
-    		tail = t
-    	}
+        method _init {h t} {
+            head = h
+            tail = t
+        }
 
-    	method tail_get {} {
-    		(tail.isCallable) && (tail = [tail])
-    		return tail
-    	}
+        method tail_get {} {
+            (tail.isCallable) && (tail = [tail])
+            return tail
+        }
     }
 
 There are three changes:
@@ -439,12 +440,12 @@ There are three changes:
 And here's the (slightly) modified C<printFibs>:
 
     proc printFibs {count} {
-    	var stream = [fibs 0 1]
-    	repeat [str2num (Sys::Argv@0)] {
-    		say stream.head " "
-    		stream = stream.tail
-    	}
-    	puts
+        var stream = [fibs 0 1]
+        repeat count {
+            say stream.head " "
+            stream = stream.tail
+        }
+        puts
     }
 
 This looks a lot cleaner.
@@ -503,26 +504,26 @@ Instance variables in classes are only visible to the methods defined
 in that class, B<not> in any subclass.  Their scope is the equivalent
 of C<private> in C++.  This doesn't work:
 
-	class Inner {
-		public foo
-		method _init {x} {
-			foo = x
-		}
-	}
+    class Inner {
+        public foo
+        method _init {x} {
+            foo = x
+        }
+    }
 
-	class Outer Inner {
-		method bar {m} {
-			puts m foo	# ERROR: foo not visible
-		}
-	}
+    class Outer Inner {
+        method bar {m} {
+            puts m foo  # ERROR: foo not visible
+        }
+    }
 
 But this will work:
 
-	class Outer Inner {
-		method bar {m} {
-			puts m self.foo
-		}
-	}
+    class Outer Inner {
+        method bar {m} {
+            puts m self.foo
+        }
+    }
 
 This is because C<self.foo> invokes the access method defined by
 C<public>.  (C<self> is a reference to the current object.)
@@ -534,8 +535,8 @@ unambiguous.)
 
 Methods are normally invoked using the C<-E<gt>> operator:
 
-	var x = [new Outer]
-	x->bar "Value: "
+    var x = [new Outer]
+    x->bar "Value: "
 
 (C<-E<gt>> is syntactically magical just like C<.> and C<=E<gt>>.)
 
@@ -546,11 +547,11 @@ called like a procedure, it calls the method found (usually C<bar>)
 with C<self> set to C<x> and with whatever arguments it was given.
 The C<MethodCall> can thus be stored or passed around:
 
-	var bar = [Outer->new]->bar
+    var bar = [Outer->new]->bar
 
-	...
+    ...
 
-	bar "Value: "
+    bar "Value: "
 
 If the method lookup fails (i.e. there is no method with that name in
 the object's class heirarchy), the lookup calls the special method
@@ -563,21 +564,21 @@ used as an alias for C<self> but the method search starts in the
 B<superclass> instead of the base class.  This lets you override a
 method but call its base implementation:
 
-	class MoreOuter Outer {
-		method bar {m} {
-			super->bar m
-			puts "MoreOuter!"
-		}
-	}
+    class MoreOuter Outer {
+        method bar {m} {
+            super->bar m
+            puts "MoreOuter!"
+        }
+    }
 
 Methods whose names begin with an underscore (C<_>) are considered
 private to the class heirarchy (what C++ calls "protected").  It is an
 error to use a name starting with an underscore in a C<-E<gt>>
 expression unless the left-hand-side is either C<self> or C<super>:
 
-		self->_privateThingy 42				# Correct
-		super._kindOfPrivate = "maybe"		# Also correct
-		foo->_reallyPrivate "yes"			# Error!
+        self->_privateThingy 42             # Correct
+        super._kindOfPrivate = "maybe"      # Also correct
+        foo->_reallyPrivate "yes"           # Error!
 
 As you can see, this works on attributes too, so you can give instance
 variables a "protected" scope.
@@ -595,11 +596,11 @@ idiotic coders.  Just glare at them really, really hard.)
 As you have seen in the above examples, there are two ways to create a
 new object from a class.  You can use the built-in C<new> function:
 
-	new SomeClass "this is an argument"
+    new SomeClass "this is an argument"
 
 or you can use the class's C<new> method:
 
-	SomeClass->new "this is also an argument"
+    SomeClass->new "this is also an argument"
 
 The two forms are equivalent and you can use whichever works better
 for you.
@@ -608,67 +609,125 @@ for you.
 
 =head2 The Fake List Fibonacci
 
-As mentioned previously, lists in Deck are not linked lists the way
-they are in most Lisp dialects.  Instead, they are arrays (aka
-vectors) of the sort you see in most programming languages.  Since
-Lists are objects and Deck offers other list-like types (Strings and
-ByteArrays for example), it makes sense for list-like objects to have
-a common interface and for the system to use them.  They do and this
-interface is known as the B<Sequence Protocol>.
+Early on, I explained that the C<(1 .. count)> sequence in a C<for>
+statement actually created an object which mimicked a list of integers
+in increasing order.  From that, you may have suspected that it would
+be easy to create an class which mimics a list of Fibonacci numbers.
+And you'd be right.
 
-XXXXXXXXXXXXXXXXXXXXXXXXX
-
-
-
-
-
-
-    class FibonacciList {
-    	var first second
-    	var prevCallIndex
-    	readable size
-
-    	method isIndexable_get {} {return true}
-
-    	method _init {sz} {
-    		size = sz
-    		self->_reset
-    	}
-
-    	method _reset {} {
-    		first = 1
-    		second = 1
-    		prevCallIndex = 0
-    	}
-
-    	method at {index} {
-    		self->_update index
-    		return first
-    	}
-
-    	method _update {reqIndex} {
-    		(reqIndex >= prevCallIndex) || [self->_reset]
-
-    		repeat (reqIndex - prevCallIndex) {
-    			var ns = first + second
-    			first = second
-    			second = ns
-    		}
-
-    		prevCallIndex = reqIndex
-    	}
-    }
-
+With such a class, C<printFibs> becomes almost trivial:
 
     proc printFibs {count} {
-    	var fl = [FibonacciList->new count]
-
-    	for n in fl {say n " "}
-    	puts
+        for n in [FibonacciList->new count] {say n " "}
+        puts
     }
 
+The class C<FibonacciList> does all of the heavy lifting:
+
+    class FibonacciList {
+        var first second
+        var prevCallIndex
+        readable size
+
+        method isIndexable_get {} {return true}
+
+        method _init {sz} {
+            size = sz
+            self->_reset
+        }
+
+        method _reset {} {
+            first = 1
+            second = 1
+            prevCallIndex = 0
+        }
+
+        method at {index} {
+            self->_update [self->_sanitizeIndex index]
+            return first
+        }
+
+        method _update {reqIndex} {
+            (reqIndex >= prevCallIndex) || [self->_reset]
+
+            repeat (reqIndex - prevCallIndex) {
+                var ns = first + second
+                first = second
+                second = ns
+            }
+
+            prevCallIndex = reqIndex
+        }
+    }
+
+As you can see, the method C<_update> does all of the actual work.  It
+computes the C<reqIndex>'th Fibonacci number.  If the previous call's
+results come before C<reqIndex> in the list, then it computes them
+from there.  This is reasonably efficient if you only need to read the
+list from start to finish.
+
+This class implements everything required to mimic a list.  We call
+this the I<Sequence Protocol>.  Specifically:
+
+=over
+
+=item C<isIndexible_get> returns true.  Class C<Object> implements
+      a version of this that returns false.  All classes that mimic
+      lists must make this attribute return true.
+
+=item C<size> needs to be implemented to return the number of items in
+      the list.  As with all attributes, this can also be implemented
+      with a C<_get> method.
+
+=item C<at> takes one argument--the index--and returns the
+      corresponding element.  The index must be an integer between 0
+      and (size - 1).  In addition, negative indexes are allowed and
+      interpreted as being relative to size.  E.g. index -4 is treated
+      as (size - 4).  The private C<Object> method C<_sanitizeIndex>
+      converts negative indexes to positive ones.  How the object
+      handles out-of-range indexes is undefined.  This one allows
+      them.
+
+=item C<atPut> (not shown) takes an index and a value and stores the
+      value at the index.  The index has the same constraints as those
+      for C<at>.  Only writeable objects need to implement this.
+
+=back
+
+Most of the time, you won't need to call C<at> or C<atPut> directly.
+Instead, the C<@> and C<=> macros are used.  Reading a list item looks
+like this:
+
+	puts "Item: " (theList@42)
+
+In this case, C<@> is a macro that expands into to a call to the C<at>
+method of its left argument.
+
+Storing looks like this:
+
+	theList@42 = "item 42"
+
+In this case, the assignment macro (C<=>) expands the entire
+expression into a call to C<atPut> method of the first item with the
+second (right of C<@>) and third (right of C<=>) as the index and
+value arguments.
 
 
+=head2 More Reading
 
+If you're still interested in Deck and want to read more manuals,
+there is a language reference C<manual.pod> and a library reference
+C<lib.pod>.  
 
+The library reference lists every procedure, macro, mproc and class
+available to you along with a maddeningly brief description of each.
+The language reference, meanwhile, explains the minutia of every nook
+and cranny of the Deck language as well as its deficiencies.
+
+If you just want to see source code, the Deck library source code is
+in the C<lib-deck> directory and a number of example programs
+(including the ones seen here) are in the directory C<progs>.
+
+Finally, the Deck interpreter itself is written in (ahem) highly
+readable Perl.
 
