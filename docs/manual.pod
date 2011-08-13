@@ -78,9 +78,9 @@ Deck source code is read in as a sequence of lines.  These lines are
 sometimes syntactically significant so it is important to be aware of
 the rules.
 
-A line runs from either the start of the input file or from the
+A line runs from either the start of the input file B<or> from the
 character after the end of the previous line through to the next ASCII
-newline character.  For example:
+newline character B<or> the end of the file.  For example:
 
 	line 1
 	line 2
@@ -102,8 +102,8 @@ physical lines by ending the line with a backslash (C<\>):
 	3
 
 Note that unlike other line-oriented languages (e.g. Tcl and Unix
-shells), the backslash is not an escaped newline.  You may put B<any>
-whitespace or comment after a backslash and it will continue to mean
+shells), the backslash is not an escaped newline.  You may put other
+whitespace or a comment after a backslash and it will continue to mean
 the same thing:
 
 	line \    # this is a comment
