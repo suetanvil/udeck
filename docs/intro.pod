@@ -12,8 +12,8 @@ Instead, I give you the Fibinacci Examples:
 
 =head2 The Fibonacci Sequence
 
-You all know what that is, right?  So I don't need to explain that
-it's a sequence of numbers:
+You all know what the Fibonacci sequence is, right?  So I don't need
+to explain that it's a sequence of numbers:
 
     1 1 2 3 5 8 13 21 34 55 89 144 233 ...
 
@@ -44,19 +44,29 @@ Obvious things:
 
 =over
 
-=item * C<proc> defines the procedure, C<printFibs> is the name of the
+=item 
+
+C<proc> defines the procedure, C<printFibs> is the name of the
 procedure, C<[count]> is the argument list and the rest is the
 procedure body.
 
-=item * C<var> declares a variable.
+=item 
 
-=item * C<say> prints its argument(s).  C<puts> does to but it adds a
+C<var> declares a variable.
+
+=item 
+
+C<say> prints its argument(s).  C<puts> does that too but it adds a
 newline.
 
-=item * C<for> itterates over a range of numbers.
+=item 
 
-=item * Deck provides Perl/Tcl/shell-style variable interpolation in
-strings.  (E.g. "$first " contains the value of variable C<first>.)
+C<for> itterates over a range of numbers.
+
+=item 
+
+Deck provides Perl/Tcl/shell-style variable interpolation in strings.
+(E.g. "$first " contains the value of variable C<first>.)
 
 =back
 
@@ -64,59 +74,76 @@ Less-obvious things:
 
 =over
 
-=item * If you think of a program "line" as not ending until all the
+=item
+
+If you think of a program "line" as not ending until all the
 brackets are closed, then the entire procedure can be thought of as
 one line.
 
-=item * The text between braces (C<{> and C<}>) is subdivided into
+=item
+
+The text between braces (C<{> and C<}>) is subdivided into
 "lines" as above, making a single "line" able to contain multiple
 other "lines".
 
-=item * Therefore, each Deck statement is a single "line".
+=item
+
+Therefore, each Deck statement is a single "line".
 Furthermore, the first item in the "line" is the procedure to call and
 the remaining items are the arguments to pass to it.
 
-=item * Expressions bracketted by round parentheses (C<(> and C<)>)
+=item
+
+Expressions bracketted by round parentheses (C<(> and C<)>)
 are parsed as infix expressions (e.g. (2 + 3) instead of [+ 2 3]).
 
-=item * Assignments (e.g. C<first = second>) have imaginary round
+=item
+
+Assignments (e.g. C<first = second>) have imaginary round
 brackets around them.  So does the expression after C<var>.
 
-=item * Notice the round brackets around the third argument top
-C<for>: C<(1 .. count)>.  This is an infix expression.  In fact, C<..>
-creates an object (type C<Interval>) which mimics a list containing
-the range of integers between the left-hand-side and right-hand-side
-arguments.  From this, it becomes clear that what C<for> actually does
-is evaluate its body for each element of a list-like object it
-receives.  (Unlike most Lispish languages, Deck lists are actually
-arrays (aka vectors).)
+=item
+
+Notice the round brackets around the third argument to the C<for>
+statement: C<(1 .. count)>.  This is an infix expression.  In fact,
+C<..> creates an object (type C<Interval>) which mimics a list
+containing the range of integers between the left-hand-side and
+right-hand-side arguments.  From this, it becomes clear that what
+C<for> actually does is evaluate its body for each element of a
+list-like object it receives.  (Unlike most Lispish languages, Deck
+lists are actually arrays (aka vectors).)
 
 =back
 
-=head3 Special Forms, absence of.
+=head3 Special Forms, Absence of
 
-Firstly, you'll notice that a lot of statements take arguments that
-look like they should be evaluated but aren't: the word C<printFibs>
-after C<proc>, the C<n> after C<for>, the variable names, etc.  In
-most Lisp dialects, the language has a fixed number of I<Special
-Forms>--things that look like functions but have their arguments
-parsed differently.
+You'll notice that a lot of statements take arguments that look like
+they should be evaluated but aren't: the word C<printFibs> after
+C<proc>, the C<n> after C<for>, the variable names, etc.  In most Lisp
+dialects, the language has a fixed number of I<Special Forms>--things
+that look like functions but have their arguments parsed differently.
 
 Deck has one special form, the quote symbol: C<:>.  Things prefixed by
-a colon are not evaluated.  As you can see, there is no quoting in the
-example above.  (Actually, that's not true: C<{> is an implicit
-quote.  But I'll get to that later.)
+a colon are not evaluated.  However, there is no quoting in the
+example above.  (Actually, that's not true: C<{> is an implicit quote,
+but I'm not going into that here.)
 
 Instead C<for>, C<var> and C<proc> are all macros.  In Deck, a macro
 is simply a function called by the compiler to modify the current
-expression in some way--a compiler plug-in, as it were.  Most of
-Deck's built-in functionality is actually implemented using macros.
+expression in some way--a compiler plug-in, as it were.  C<proc> (to
+pick an example) invokes a macro that replaces the C<proc> statement
+with another expression (a call to an undocumented internal procedure)
+in which all of the arguments have been normalized and the bare words
+quoted. 
+
+Most of Deck's built-in functionality is implemented this way.
 
 
-=head2 Recursive Implementation
+=head2 A Recursive Fibonacci Implementation
 
-Subject to the Laws of Computer Science, I am required to show you a
-recursive function, so here it is:
+Subject to the Laws of Computer Science, whenever I use the Fibonacci
+series in a programming example, I am required to show you a
+recursive implementation, so here it is:
 
     proc fib {index} {
         (index <= 2) && [return 1]
@@ -138,15 +165,27 @@ series.  However, from this code, I can point out a few more things:
 
 =over
 
-=item * Square brackets (C<[> and C<]>) delimit standard Deck
+=item
+
+Square brackets (C<[> and C<]>) delimit standard Deck
 expressions (i.e. prefix expressions) such as C<[fib n]>.
 
-=item * Like assignments, expressions made up of C<&&> and C<||> also
+=item
+
+Like assignments, expressions made up of C<&&> and C<||> also
 have implicit round brackets.  This lets you do Perl-style flow
 control with short-circuited boolean operators, as I do in the first
 line of C<fib>.
 
-=item * C<proc> lets you wrap the argument list in braces (C<{> and
+=item
+
+Counter-intuitively, the C<E<lt>=> expression needs to be surrounded by
+round parentheses so that the outer expression it lives in continues
+to be made up of only C<&&> and C<||> operations.
+
+=item
+
+C<proc> lets you wrap the argument list in braces (C<{> and
 C<}>) instead of square brackets.  This is pure syntactic sugar by
 C<proc> in oreder to make Tcl programmers a bit more comfortable.
 
@@ -159,31 +198,31 @@ Now, we start getting to the contrived examples:
 
     proc fibFn {} {
         var {first = 1; second = 1}
-
+    
         return {} => {
             var newSecond = first + second
             var result = first
-
+    
             first = second
             second = newSecond
-
+    
             next result
         }
     }
-
+    
     proc printFibs {count} {
         var ff = [fibFn]
-
+    
         for n in (1 .. count) {
             say [ff] " "
         }
         puts
     }
 
-As you know Bob, a closure (aka "sub") is an anonymous function that
-has access to the scope in which it was created.  The Deck operator
-C<=E<gt>> creates a closure: the left operand is the argument list and
-the right is the function body.
+As you know Bob, a closure is an anonymous function that has access to
+the scope in which it was created.  The Deck operator C<=E<gt>>
+creates a closure: the left operand is the argument list and the right
+is the function body.
 
 So proc C<fibFn> defines and initializes the variables C<first> and
 C<second>, then creates and returns a closure.  C<printFibs> takes the
@@ -196,16 +235,22 @@ Things to note:
 
 =over
 
-=item * The C<E<gt>> expression in C<fibFn> doesn't have round
+=item
+
+The C<=E<gt>> expression in C<fibFn> doesn't have round
 brackets around it, even though it should.  That's because the parser
-automatically surrounds a C<=E>gt>> expression with them in an infix
+automatically surrounds a C<=E<gt>> expression with them in an infix
 expression.  This is more syntactic sugar.
 
-=item * The C<return> statement has been renamed C<next> inside a
+=item
+
+The C<return> statement has been renamed C<next> inside a
 closure.  This is so that you can return from a closure without
 returning from the function that created it.
 
-=item * Closures are awesome!
+=item
+
+Closures are awesome!
 
 =back
 
@@ -225,24 +270,24 @@ currently calling>.  For example:
         ret 42
         puts "i2 done"
     }
-
+    
     proc i1 {ret} {
         i2 ret
         puts "i1 done."
     }
-
+    
     proc i0 {} {
         puts "starting i0"
         i1 return
         puts "done i0"
     }
-
+    
     proc outer {} {
         puts "calling i0"
         i0
         puts "done i0"
     }
-
+    
     outer
 
 when run, produces this output:
@@ -297,7 +342,7 @@ control structures.  For example, this:
     } {
         for i in (0 .. count - 1) {pr i}
     }
-    
+
 can be called like this:
 
     repeat 5 {puts "I like pie!"}
@@ -325,7 +370,7 @@ a class:
 
     class Node {
         public head tail
-
+        
         method _init {h t} {
             head = h
             tail = t
@@ -336,12 +381,16 @@ This is pretty straightforward:
 
 =over
 
-=item C<head> and C<tail> are instance variables (aka object fields).
-      The C<public> declaration means (obviously) that external code
-      can read and write the value.
+=item 
 
-=item C<_init_> is called when an instance of C<Node> is created to
-      initialize it.
+C<head> and C<tail> are instance variables (aka object fields).  The
+C<public> declaration means (obviously) that external code can read
+and write the value.
+
+=item 
+
+C<_init_> is called when an instance of C<Node> is created to
+initialize it.
 
 =back
 
@@ -353,15 +402,15 @@ need to process C<tail>, we need a function to evaluate it:
         if (node.tail.isCallable) {
             node.tail = [node.tail]
         }
-
+        
         return node.tail
     }
 
-This function returns the C<tail> field of C<Node> instance
-C<node>.  If C<node> is callable (i.e. a procedure), it first calls it
-and replaces the value of C<node> with the result.  (It also breaks
-if the list contains real callable values, but we're not going to
-worry about that now.)
+This function returns the C<tail> field of C<Node> instance C<node>.
+If C<node> is a callable object, it first calls it and replaces the
+value of C<node> with the result.  (It also breaks if the list
+contains real callable values, but we're not going to worry about that
+now.)
 
 The list gets set up by the function C<fib>:
 
@@ -391,12 +440,16 @@ Some more details:
 
 =over
 
-=item The C<.> operator is used to access the (public) fields of
-      C<Node>.  It can be on either side of an assignment.
+=item 
 
-=item C<.>, like C<=E<gt>> is treated specially by the parser.  The
-      sequence C< left . right > is automatically surrounded by round
-      brackets whenever it is seen in a prefix expression.
+The C<.> operator is used to access the (public) fields of C<Node>.
+It can be on either side of an assignment.
+
+=item 
+
+C<.>, like C<=E<gt>> is treated specially by the parser.  The sequence
+C< left . right > is automatically surrounded by round brackets
+whenever it is seen in a prefix expression.
 
 =back
 
@@ -455,28 +508,38 @@ attributes:
 
 =over
 
-=item In addition to C<var>, C<public> and C<readable>, fields can be
-      declared C<writable>.  This makes then settable but not
-      readable.
+=item
 
-=item It is also possible to override writing to a field by defining a
-      method which takes one argument and has the same name as the
-      field with C<_set> appended.  E.g. for field C<head>, it would
-      be named C<head_set>.
+In addition to C<var>, C<public> and C<readable>, fields can be
+declared C<writable>.  This makes then settable but not
+readable.
 
-=item So far, it looks like I'm implying that the C<_get> and C<_set>
-      methods are being called by a field access.  It's actually
-      backwards.  All class fields are private and declaring a field
-      C<public> (or C<readable> or C<writeable>) causes the compiler
-      to generate trivial getters and setters.
+=item
 
-=item The compiler will never generate a getter or setter if you've
-      already written one, so if you've declared a field public but
-      written your own getter, it is your getter that will be called.
+It is also possible to override writing to a field by defining a
+method which takes one argument and has the same name as the
+field with C<_set> appended.  E.g. for field C<head>, it would
+be named C<head_set>.
 
-=item You may write a getter or setter for a non-existent variable.
-      That is, the public interface does not need to correspond to the
-      internal structure of the class.
+=item 
+
+So far, it looks like I'm implying that the C<_get> and C<_set>
+methods are being called by a field access.  It's actually
+backwards.  All class fields are private and declaring a field
+C<public> (or C<readable> or C<writeable>) causes the compiler
+to generate trivial getters and setters.
+
+=item
+
+The compiler will never generate a getter or setter if you've
+already written one, so if you've declared a field public but
+written your own getter, it is your getter that will be called.
+
+=item
+
+You may write a getter or setter for a non-existent variable.
+That is, the public interface does not need to correspond to the
+internal structure of the class.
 
 =back
 
@@ -660,26 +723,32 @@ The class C<FibonacciList> does all of the heavy lifting:
         }
     }
 
-As you can see, the method C<_update> does all of the actual work.  It
-computes the C<reqIndex>'th Fibonacci number.  If the previous call's
-results come before C<reqIndex> in the list, then it computes them
-from there.  This is reasonably efficient if you only need to read the
-list from start to finish.
+The method C<_update> does all of the actual work.  It computes the
+C<reqIndex>'th Fibonacci number.  If the previous call's results come
+before C<reqIndex> in the list, then it computes them from there.
+This is reasonably efficient if you only need to read the list from
+start to finish.
 
 This class implements everything required to mimic a list.  We call
 this the I<Sequence Protocol>.  Specifically:
 
 =over
 
-=item C<isIndexible_get> returns true.  Class C<Object> implements
+=item
+
+C<isIndexible_get> returns true.  Class C<Object> implements
       a version of this that returns false.  All classes that mimic
       lists must make this attribute return true.
 
-=item C<size> needs to be implemented to return the number of items in
+=item
+
+C<size> needs to be implemented to return the number of items in
       the list.  As with all attributes, this can also be implemented
       with a C<_get> method.
 
-=item C<at> takes one argument--the index--and returns the
+=item
+
+C<at> takes one argument--the index--and returns the
       corresponding element.  The index must be an integer between 0
       and (size - 1).  In addition, negative indexes are allowed and
       interpreted as being relative to size.  E.g. index -4 is treated
@@ -688,7 +757,9 @@ this the I<Sequence Protocol>.  Specifically:
       handles out-of-range indexes is undefined.  This one allows
       them.
 
-=item C<atPut> (not shown) takes an index and a value and stores the
+=item
+
+C<atPut> (not shown) takes an index and a value and stores the
       value at the index.  The index has the same constraints as those
       for C<at>.  Only writeable objects need to implement this.
 

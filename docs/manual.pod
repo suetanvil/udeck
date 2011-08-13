@@ -1188,7 +1188,7 @@ work the same way.  The only exception to this is the C<package>
 declaration, which is a magic word stripped out by the interpreter
 when the package is loaded.
 
-XXXXXXXXXXXXXXXXXXXXXXXX
+
 
 =head2 Procedures
 
