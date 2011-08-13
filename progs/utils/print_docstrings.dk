@@ -1,5 +1,6 @@
 
-
+# This utility prints out the docstrings of the entire Deck systems.
+# This is not good code.
 
 =pod too slow
 
@@ -70,7 +71,7 @@ proc printFunctions {mproc} {
 
 	var keys = [_::docstring_keys filter]
 
-	puts "=head1 $heading\n"
+	puts "=head2 $heading\n"
 	puts "=over\n\n"
 
 	for key in keys {
@@ -101,7 +102,7 @@ proc printFunctions {mproc} {
 proc printMacros {} {
 	var keys = [_::docstring_keys :macro]
 
-	puts "=head1 Macros\n"
+	puts "=head2 Macros\n"
 	puts "=over\n\n"
 
 	for key in keys {
@@ -226,7 +227,7 @@ proc printMethods {name} {
 proc printClasses {} {
 	var classNames = [_::docstring_keys :class]
 
-	puts "=head1 Classes\n\n"
+	puts "=head2 Classes\n\n"
 	puts "=over\n\n"
 
 	for classNm in classNames {
