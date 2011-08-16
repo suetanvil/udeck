@@ -372,7 +372,8 @@ X		-ditto, not a symbol
 X		-default quoted list
 	-unquoted lists for sub default arg?
 	-disable (for now) subclassing non-struct classes
-	
+
+	-auto-infix operators at the start of a list should be allowed?
 	-check for argument mismatch between predeclared proc and actual 
      declaration.
 	-ensure _get and _set have correct arg count at compile time.
