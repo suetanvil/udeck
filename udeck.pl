@@ -2,6 +2,7 @@
 
 # Initial implementation of the Deck language.  Very, very slow.
 
+
 # The turtle lives 'twixt plated decks
 # Which practically conceal its sex.
 # I think it clever of the turtle
@@ -1497,7 +1498,7 @@ use File::Basename;
 
 sub NIL {return LL::Nil::NIL;}
 
-
+use constant VERSION => "0.01";
 use constant TRUE => LL::Number->new(1);
 
 our $Input = undef;		# Input filehandle or undef for stdin.
@@ -1561,6 +1562,9 @@ sub run {
   # Otherwise, drop into the REPL
   while (1) {
 	eval {
+	  print "Deck version @{[VERSION]}\n";
+	  print "Copyright (C) 2011 Chris Reuter, GLPv2+exception, NO WARRANTY!\n";
+	  print "See documentation for details.\n";
 	  readfile('', 'Main', 0, 1);
 	};
 	
@@ -3490,6 +3494,9 @@ sub initGlobals {
 	$Globals->defNamespace($ns);
   }
 
+  # Set the version number
+  $Globals->defsetconst('Lang::Version', LL::String->new(LL::Main::VERSION));
+
   # Set the initial load path
   $Globals->defset('Sys::ModPath', mkModPath());
 
@@ -3508,9 +3515,6 @@ sub initGlobals {
 
   # Externally-defined primitive procedures
   for my $special (
-#				   ['_::storestr',			\&builtin_storestr],
-#				   ['show',				\&builtin_show],
-
 				   ['_::puts',			"args",
 					"Identical to C<_::say> except that it also prints a" .
 					" newline.",

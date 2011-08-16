@@ -1,0 +1,18 @@
+Deck is Copyright (C) 2011 Chris Reuter.
+
+It is released under the terms of the GNU GPLv2.  A copy of this
+license should reside in the included file 'COPYING'.  
+
+There is NO WARRANTY to the extent permitted by law.
+
+For licensing purposes, an otherwise original program that runs on the
+Deck implementation and/or uses an included library module is not
+considered to be a derived work.
+
+Furthermore, if you compile an original program into some form of
+standalone executable, you may redistribute it without including the
+source code for the original program.  However, the licensing terms
+still apply to the parts derived from the Deck system.
+
+
+
