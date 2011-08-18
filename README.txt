@@ -68,7 +68,21 @@ containing the results of a previous run.
 Documentation
 =============
 
-The directory 'docs' contains the manuals.  
+The directory 'docs' contains the manuals, notably:
+
+	intro.pod	-- An introduction/tutorial.
+
+	manual.pod	-- The Deck language reference.
+
+	libref.pod	-- The Deck library reference.
+
+The script docs/make-docs.sh recreates those parts of the manual that
+were machine-generated and produces HTML manuals from the PODs.
+
+The directory 'progs' contains a number of Deck programs of varying
+quality.  They may be useful as examples.
+
+
 
 
 
