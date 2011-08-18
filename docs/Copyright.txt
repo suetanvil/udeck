@@ -10,9 +10,10 @@ Deck implementation and/or uses an included library module is not
 considered to be a derived work.
 
 Furthermore, if you compile an original program into some form of
-standalone executable, you may redistribute it without including the
-source code for the original program.  However, the licensing terms
-still apply to the parts derived from the Deck system.
+standalone executable that includes some or all of the Deck system,
+you may redistribute it without including the source code for your
+original program.  However, the licensing terms still apply to the
+parts derived from the Deck system.
 
 
 

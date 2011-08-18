@@ -7,13 +7,13 @@ set -e
 
 # Recreate the libref from docstrings *unless* print_docstrings.dk
 # fails.
-if ../udeck.pl ../progs/utils/print_docstrings.dk > ds.tmp; then
-	mv ds.tmp libref-body.pod
+if ../udeck.pl ../progs/utils/print_docstrings.dk > libref-body.pod; then
+	cat libref-head.pod libref-body.pod > libref.pod
+	rm libref-body.pod
 else
 	echo "Error creating libref-body.pod.  Using old version."
 fi
 
-cat libref-head.pod libref-body.pod > libref.pod
 pod2html --css format.css --no-index \
 --title "Deck Library Reference" libref.pod > libref.html
 
