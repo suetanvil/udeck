@@ -5,6 +5,12 @@
 Deck is a Lispish programming language.  The current implementation is
 written in Perl.  It is a work in progress.
 
+License and Disclaimer
+======================
+
+Deck is licensed under the GNU GPL with an exception and is provided
+without any warranty.  See the file 'docs/Copyright.txt' for details.
+
 
 Requirements
 ============
@@ -24,10 +30,11 @@ To run Deck, just go to the udeck directory and type './udeck.pl' (or
 'perl udeck.pl').  To run a Deck program, add it to the command line:
 './udeck.pl foo.dk'
 
+
 Installation
 ============
 
-Deck isn't really installable at this point, but...
+Deck isn't really useful at this point, but...
 
 	1) Copy udeck.pl and lib-deck to your installation directory.
 
