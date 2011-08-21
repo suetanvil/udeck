@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Given a test, run it and store its output in a matching .tst file.
+# Given a test, run it and store its output in a matching .txt file.
 
 set -e
 

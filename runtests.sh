@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Run all regression tests in udeck/tests/.  If a test name is given
+# as an argument, all the preceding tests are skipped.
+
 set -e
 
 tmp=/tmp/runtests-$$.txt
