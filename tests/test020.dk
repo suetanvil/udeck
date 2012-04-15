@@ -1,7 +1,7 @@
 
 proc outer {} {
-	return "return value"
-	puts "not reached"
+    return "return value"
+    puts "not reached"
 }
 
 puts [outer]
@@ -9,13 +9,13 @@ puts [outer]
 proc f2
 
 proc f1 {} {
-	f2 return
-	puts "not reached"
+    f2 return
+    puts "not reached"
 }
 
 proc f2 {r} {
-	r "return value 2"
-	puts "also not reached."
+    r "return value 2"
+    puts "also not reached."
 }
 
 puts [f1]
@@ -23,13 +23,13 @@ puts [f1]
 var s1 s2
 
 set s1 [sub {} {
-	s2 next
-	puts "not reached"
+    s2 next
+    puts "not reached"
 }]
 
 set s2 [sub {r} {
-	r "return value 3"
-	puts "also not reached."
+    r "return value 3"
+    puts "also not reached."
 }]
 
 puts [s1]

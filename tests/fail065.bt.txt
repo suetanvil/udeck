@@ -1,0 +1,5 @@
+Code error: Unknown variable 'undefinedVar' in 'Main::foo'.
+Backtrace:
+  _::proc
+  *top*
+  *top*

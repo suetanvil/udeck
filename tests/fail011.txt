@@ -1,1 +1,2 @@
-Unexpected docstring.
+Code error: Unexpected docstring.
+

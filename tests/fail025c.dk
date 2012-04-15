@@ -1,3 +1,3 @@
 # Test invalid infix case #2
 
-puts {for n = 1 to 500 by 5 {puts n}}	# Also not valid infix
+puts {for n = 1 to 500 by 5 {puts n}}    # Also not valid infix

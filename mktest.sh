@@ -22,5 +22,19 @@ function failed() {
 	echo ".  Files created."
 }
 
-./udeck.pl $test > $result 2>&1 || failed
+./udeck.pl --flush $test > $result 2>&1 || failed
+
+bn=`basename $test`
+if [[ ${bn:0:4} = "fail" ]]; then
+	echo "Emitting backtrace version..."
+	result2=${result%.txt}.bt.txt
+	./udeck.pl --flush --backtrace $test > $result2 2>&1 || failed
+
+	if diff $result $result2 > /dev/null 2>&1 ; then
+		echo "Results identical.  Deleting $result2"
+		rm $result2
+	fi
+fi
+
+
 

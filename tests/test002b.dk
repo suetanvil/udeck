@@ -1,0 +1,19 @@
+
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#var p = {} => {puts "p called"}
+
+#_::enableNewCompiler
+
+proc ncp1 {} {
+#    _::disableNewCompiler        # 'cuz of stuff that gets called
+    for x in (1..3) {puts "for loop $x"}
+}
+
+#_::disableNewCompiler
+
+ncp1
+
+

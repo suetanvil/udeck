@@ -3,7 +3,7 @@
 var x = :[1 2 3 4 5 6 7 8]
 
 foreach y in x {
-	puts "y = " y
+    puts "y = " y
 }
 puts
 
@@ -13,13 +13,13 @@ puts
 
 var a = "hello, world"
 foreach c in a {
-	puts c
+    puts c
 }
 puts
 
 a = :message_in_a_symbol
 foreach c in a {
-	puts c
+    puts c
 }
 puts
 

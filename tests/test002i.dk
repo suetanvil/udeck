@@ -1,0 +1,25 @@
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#_::enableNewCompiler
+
+
+class foo {
+    var a
+    var b
+
+    method p {} {
+        _::puts a
+        _::puts b
+    }
+
+     method _init {args} {
+         a = 42
+        b = 11
+     }
+}
+
+var f = [foo->new]
+_::puts f
+f->p

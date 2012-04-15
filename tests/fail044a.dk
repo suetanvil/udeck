@@ -1,11 +1,11 @@
 
 # Test strict symbol autoquote.
 mproc foo {
-	sub 1 fn
-	strict symbol s
+    sub 1 fn
+    strict symbol s
 } {
-	puts "calling " fn " on " s
-	fn s
+    puts "calling " fn " on " s
+    fn s
 }
 
 

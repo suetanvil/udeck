@@ -1,0 +1,26 @@
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#_::enableNewCompiler
+
+proc mk2subs {} {
+    var {a = 42; b = 11}
+    _::puts "Called mk2subs"
+
+    var outer = {
+        var c = 13
+        _::puts "called outer."
+        var inner = {
+            var d = 17
+            
+            _::puts "a == $a; b == $b; c = $c; d = $d"
+        }
+        value [sub {} inner]
+    }
+    return [sub {} outer]
+}
+
+var outerfn = [mk2subs]
+var innerfn = [outerfn]
+innerfn

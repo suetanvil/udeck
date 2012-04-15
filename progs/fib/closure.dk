@@ -1,27 +1,27 @@
 # Itterative closure to generate fibonacci sequence
 
 proc fibFn {} {
-	var {first = 1; second = 1}
+    var {first = 1; second = 1}
 
-	return {} => {
-		var newSecond = first + second
-		var result = first
+    return {} => {
+        var newSecond = first + second
+        var result = first
 
-		first = second
-		second = newSecond
+        first = second
+        second = newSecond
 
-		next result
-	}
+        next result
+    }
 }
 
 
 proc printFibs {count} {
-	var ff = [fibFn]
+    var ff = [fibFn]
 
-	for n in (1 .. count) {
-		say [ff] " "
-	}
-	puts
+    for n in (1 .. count) {
+        say [ff] " "
+    }
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]

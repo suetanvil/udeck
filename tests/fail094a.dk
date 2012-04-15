@@ -2,12 +2,12 @@
 
 
 proc foo {p} {
-	puts "foo calling p: "
-	puts [p]
-	puts "foo done."
-	return "foo return value"
+    puts "foo calling p: "
+    puts [p]
+    puts "foo done."
+    return "foo return value"
 } {
-	return 42
+    return 42
 }
 
 foo {} => {puts "w00t!"}

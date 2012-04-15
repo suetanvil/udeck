@@ -1,16 +1,16 @@
 
 mproc mmap {
-	strict sub 1 block
-	ls
+    strict sub 1 block
+    ls
 } {
-	var pos = 0
-	var result = [listSized [size ls]]
-	foreach elem in ls {
-		result@pos = [block elem]
-		pos = pos + 1
-	}
+    var pos = 0
+    var result = [listSized [size ls]]
+    foreach elem in ls {
+        result@pos = [block elem]
+        pos = pos + 1
+    }
 
-	return result
+    return result
 }
 
 var s1 = [sub {a}{puts a; value (a + 1)}]

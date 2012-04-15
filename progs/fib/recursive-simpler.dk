@@ -2,18 +2,18 @@
 # the clever boolean with an if statement.
 
 proc fib {index} {
-	if (index <= 2) {
-		return 1
-	}
+    if (index <= 2) {
+        return 1
+    }
 
-	return ([fib (index - 1)] + [fib (index - 2)])	
+    return ([fib (index - 1)] + [fib (index - 2)])    
 }
 
 proc printFibs {count} {
-	for n in (1 .. count) {
-		say [fib n] " "
-	}
-	puts
+    for n in (1 .. count) {
+        say [fib n] " "
+    }
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]

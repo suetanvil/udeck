@@ -1,8 +1,8 @@
 # Test the 'object' macro
 
 object foo Struct {
-	public x
-	method printable_get {} {return "foo: $x"}
+    public x
+    method printable_get {} {return "foo: $x"}
 }
 
 
@@ -11,7 +11,7 @@ puts foo.x
 puts foo
 
 object bar foo.class {
-	method printable_get {} {return "bar, the object!"}
+    method printable_get {} {return "bar, the object!"}
 }
 
 puts bar.x

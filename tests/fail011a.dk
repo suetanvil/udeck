@@ -1,10 +1,10 @@
 # Test redefinition of variable
 
 proc foo {} {
-	var a = 42
-	var a = 11;
+    var a = 42
+    var a = 11;
 
-	return a;
+    return a;
 }
 
 

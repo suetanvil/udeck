@@ -780,14 +780,14 @@ Most of the time, you won't need to call C<at> or C<atPut> directly.
 Instead, the C<@> and C<=> macros are used.  Reading a list item looks
 like this:
 
-	puts "Item: " (theList@42)
+    puts "Item: " (theList@42)
 
 In this case, C<@> is a macro that expands into to a call to the C<at>
 method of its left argument.
 
 Storing looks like this:
 
-	theList@42 = "item 42"
+    theList@42 = "item 42"
 
 In this case, the assignment macro (C<=>) expands the entire
 expression into a call to C<atPut> method of the first item with the

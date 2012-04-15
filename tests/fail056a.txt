@@ -1,1 +1,2 @@
-Undefined symbol 'Test::Util::_foo'
+Code error: Undefined symbol 'Test::Util::_foo'
+

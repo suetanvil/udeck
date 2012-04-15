@@ -1,7 +1,7 @@
 # test several built-in functions
 
 foreach n in [list 1.2 -1.2 5.0 4.9999999 (-6.725/0.025)] {
-	puts [int n]
+    puts [int n]
 }
 
 # Also test abs
@@ -11,16 +11,16 @@ puts [abs 0]
 
 # Test intervals and 'say'
 foreach r in [list (0 .. 5) (5 .. 0) (-3 .. -9) [range 23 26] (-3 .. 4)] {
-	puts "Range " r.start " .. " r.end ":"
-	foreach e in r {
-		say " " e
-	}
-	say "\n"
+    puts "Range " r.start " .. " r.end ":"
+    foreach e in r {
+        say " " e
+    }
+    say "\n"
 }
 
 say "Reverse: "
 for r in (5 .. 1) {
-	say r " "
+    say r " "
 }
 puts
 

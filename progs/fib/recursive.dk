@@ -1,15 +1,15 @@
 # Classic recursive Fibonacci sequence generator. Not fast.
 
 proc fib {index} {
-	(index <= 2) && [return 1]
-	return ([fib (index - 1)] + [fib (index - 2)])	
+    (index <= 2) && [return 1]
+    return ([fib (index - 1)] + [fib (index - 2)])    
 }
 
 proc printFibs {count} {
-	for n in (1 .. count) {
-		say [fib n] " "
-	}
-	puts
+    for n in (1 .. count) {
+        say [fib n] " "
+    }
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]

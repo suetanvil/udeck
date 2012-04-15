@@ -1,11 +1,11 @@
 
 # Test non-arg sub modifier.
 mproc foo {
-	sub 1 fn
-	list l
+    sub 1 fn
+    list l
 } {
-	puts "calling " fn " on " l
-	fn l
+    puts "calling " fn " on " l
+    fn l
 }
 
 

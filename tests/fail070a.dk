@@ -1,11 +1,11 @@
 # Test scoping rules
 class Ninja {
-	var shuriken katana
+    var shuriken katana
 }
 
 class SuperNinja Ninja {
-	var crossbow
-	method snipe {} {crossbow = crossbow - 1}
-	method attack {} {shuriken = shuriken - 1}	# fail!
+    var crossbow
+    method snipe {} {crossbow = crossbow - 1}
+    method attack {} {shuriken = shuriken - 1}    # fail!
 }
 

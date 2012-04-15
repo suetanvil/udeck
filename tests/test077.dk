@@ -8,9 +8,9 @@ puts ("foo" != "bar")
 
 
 proc ifne {s n} {
-	if ([str2num s] != n) {
-		die "Test failed.\n"
-	}
+    if ([str2num s] != n) {
+        die "Test failed.\n"
+    }
 }
 
 ifne "42" 42

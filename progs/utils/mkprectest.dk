@@ -7,48 +7,48 @@
 
 
 mproc permutations_for {
-	seq
-	sub 1 func
+    seq
+    sub 1 func
 } {
-	if (seq.size <= 1) {
-		return [func seq]
-	}
+    if (seq.size <= 1) {
+        return [func seq]
+    }
 
-	var first = seq@0
-	var rest = [slice seq 1 seq.last]
+    var first = seq@0
+    var rest = [slice seq 1 seq.last]
 
-	permutations_for rest {
-		for index in (0 .. a.size) {
-			var left = [slice a 0 (index - 1)]
-			var right = [slice a index a.last]
+    permutations_for rest {
+        for index in (0 .. a.size) {
+            var left = [slice a 0 (index - 1)]
+            var right = [slice a index a.last]
 
-			func (left + [list first] + right)
-		}
-	}
+            func (left + [list first] + right)
+        }
+    }
 }
 
 proc withVarsAdded {opList} {
-	var result = :[v0]
+    var result = :[v0]
 
-	var n = 1
-	for op in opList {
-		result = result + [list op "v$n"]
-		n = n + 1
-	}
-	
-	return result
+    var n = 1
+    for op in opList {
+        result = result + [list op "v$n"]
+        n = n + 1
+    }
+    
+    return result
 }
 
 # Supported operators.  '!!!!' is the stand-in user-defined op.
 var operators = :['.' '@' '=>' '->'
-				  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
-				  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
-				  '&&' '||' '!!!!' '=']
+                  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
+                  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
+                  '&&' '||' '!!!!' '=']
 
 permutations_for operators {
-	say "puts :("
-	for exprPart in [withVarsAdded a] {
-		say exprPart " "
-	}
-	puts ")"
+    say "puts :("
+    for exprPart in [withVarsAdded a] {
+        say exprPart " "
+    }
+    puts ")"
 }

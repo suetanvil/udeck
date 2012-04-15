@@ -124,23 +124,23 @@ puts "---"
 
 # Test 'dofile'
 dofile "non-existant-file.txt" :read {
-	var f = [fh->slurp]
-	puts "File contents: $f"
+    var f = [fh->slurp]
+    puts "File contents: $f"
 } catch {
-	puts Error.printable
+    puts Error.printable
 }
 puts "---"
 
 dofile t1 :read {
-	say "Slurping $t1: " [fh->slurp]
+    say "Slurping $t1: " [fh->slurp]
 }
 puts "---"
 
 dofile t1 :write {
-	fh->puts "We Meet Again, World!"
+    fh->puts "We Meet Again, World!"
 }
 dofile t1 :read {
-	say "Slurping $t1: " [fh->slurp]
+    say "Slurping $t1: " [fh->slurp]
 }
 puts "---"
 
@@ -153,10 +153,10 @@ puts "name = " status.name
 
 # Status failure
 try {
-	var x = [stat "nonexistant-file.txt" Error]
-	puts x
+    var x = [stat "nonexistant-file.txt" Error]
+    puts x
 } catch {
-	puts Error
+    puts Error
 }
 puts "------------"
 
@@ -164,24 +164,24 @@ puts "------------"
 var tmpdir = "tmp-test097"
 
 puts "This should succeed: " [mkdir tmpdir]
-puts "This should fail: " [mkdir tmpdir]	
+puts "This should fail: " [mkdir tmpdir]    
 
 try {
-	mkdir tmpdir :[7 7 7] Error
+    mkdir tmpdir :[7 7 7] Error
 } catch {
-	puts "Expected exception: " Error
+    puts "Expected exception: " Error
 }
 puts "---"
 
 puts "Contents: " [lsdir tmpdir]
 dofile "$tmpdir/foo" :write {
-	fh->puts "This is not a line of text."
+    fh->puts "This is not a line of text."
 }
 puts "New Contents: " [lsdir tmpdir]
 puts "lsdir failure: " [lsdir ("xxx" + tmpdir)]
 
 try {
-	lsdir ("xxx" + tmpdir) Error
+    lsdir ("xxx" + tmpdir) Error
 } catch {puts "Expected exception: " Error}
 puts "---"
 
@@ -190,13 +190,13 @@ puts "Stat foo: " [stat (tmpdir + "/foo")]
 puts "Should succeed: " [unlink (tmpdir + "/foo")]
 puts "Should fail: " [unlink (tmpdir + "/foo")]
 try {
-	unlink (tmpdir + "/foo") Error
+    unlink (tmpdir + "/foo") Error
 } catch {puts "Expected exception: " Error}
 
 puts "Stat foo (should be nil): " [stat (tmpdir + "/foo")]
 
 try {
-	stat (tmpdir + "/foo") Error
+    stat (tmpdir + "/foo") Error
 } catch {puts "Expected exception: " Error}
 puts "---"
 
@@ -204,60 +204,60 @@ puts "---"
 puts "Should succeed: " [rmdir tmpdir]
 puts "Should fail: " [rmdir tmpdir]
 try {
-	rmdir tmpdir Error
+    rmdir tmpdir Error
 } catch {puts "Expected exception: " Error}
 puts "---"
 
 
 # Test FileHandle without exceptions
 do {
-	var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
-	puts "These should fail:"
-	puts "eof: " fh.eof
-	puts "getLine: " [fh->getLine]
-	puts "slurp: " [fh->slurp]
-	puts "getChar: " [fh->getChar]
-	puts "getChars: " [fh->getChars 10]
-	puts "put: " [fh->put "xxx"]
-	puts "puts: " [fh->puts "xxx" "yyy"]
-	puts "write: " [fh->write [byteArray 1 2 3 4 5]]
-	puts "read: " [fh->read 10]
-	puts "pos: " fh.pos
-	puts "seek: " [fh->seek 1 SEEK_SET]
-	puts "isOpen: " fh.isOpen
-	puts "---"
+    var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
+    puts "These should fail:"
+    puts "eof: " fh.eof
+    puts "getLine: " [fh->getLine]
+    puts "slurp: " [fh->slurp]
+    puts "getChar: " [fh->getChar]
+    puts "getChars: " [fh->getChars 10]
+    puts "put: " [fh->put "xxx"]
+    puts "puts: " [fh->puts "xxx" "yyy"]
+    puts "write: " [fh->write [byteArray 1 2 3 4 5]]
+    puts "read: " [fh->read 10]
+    puts "pos: " fh.pos
+    puts "seek: " [fh->seek 1 SEEK_SET]
+    puts "isOpen: " fh.isOpen
+    puts "---"
 }
 
 # Test FileHandle with exceptions
 try {
-	say "This should throw an exception: "
-	var fh = [FileHandle->new "nonexistentfile.txt" :read Error]
+    say "This should throw an exception: "
+    var fh = [FileHandle->new "nonexistentfile.txt" :read Error]
 } catch {puts Error}
 
 proc doot {fh desc pr} {
-	say desc " "
-	try {
-		fh.exception = Error
-		pr
-	} catch {
-		puts Error
-	}
+    say desc " "
+    try {
+        fh.exception = Error
+        pr
+    } catch {
+        puts Error
+    }
 }
 
 do {
-	var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
-	puts "These should fail:"
+    var fh = [FileHandle->new "nonexistentfile.txt" :read nil]
+    puts "These should fail:"
 
-	doot fh "getLine: " {}=>{fh->getLine}
-	doot fh "slurp: " {}=>{fh->slurp}
-	doot fh "getChar: " {}=>{fh->getChar}
-	doot fh "getChars: " {}=>{fh->getChars 10}
-	doot fh "put: " {}=>{fh->put "xxx"}
-	doot fh "puts: " {}=>{fh->puts "xxx" "yyy"}
-	doot fh "write: " {}=>{fh->write [byteArray 1 2 3 4 5]}
-	doot fh "read: " {}=>{fh->read 10}
-	doot fh "seek: " {}=>{fh->seek 1 SEEK_SET}
-	puts "---"
+    doot fh "getLine: " {}=>{fh->getLine}
+    doot fh "slurp: " {}=>{fh->slurp}
+    doot fh "getChar: " {}=>{fh->getChar}
+    doot fh "getChars: " {}=>{fh->getChars 10}
+    doot fh "put: " {}=>{fh->put "xxx"}
+    doot fh "puts: " {}=>{fh->puts "xxx" "yyy"}
+    doot fh "write: " {}=>{fh->write [byteArray 1 2 3 4 5]}
+    doot fh "read: " {}=>{fh->read 10}
+    doot fh "seek: " {}=>{fh->seek 1 SEEK_SET}
+    puts "---"
 }
 
 

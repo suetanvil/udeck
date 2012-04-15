@@ -2,17 +2,17 @@
 
 var i = [intern ""]
 if {value i} {
-	puts "true"
+    puts "true"
 } else {
-	puts "false!"
+    puts "false!"
 }
 
 
 i = [intern "foo"]
 if {value i} {
-	puts "true"
+    puts "true"
 } else {
-	puts "false!"
+    puts "false!"
 }
 
 puts i

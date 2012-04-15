@@ -1,16 +1,17 @@
 # Basic itterative Fibonacci number calculation
 
 proc printFibs [count] {
-	var {first = 1; second = 1}
+    var {first = 1; second = 1}
 
-	for n in (1 .. count) {
-		say "$first "
+    for n in (1 .. count) {
+        say "$first "
 
-		var ns = first + second
-		first = second
-		second = ns
-	}
-	puts
+        var ns = first + second
+        first = second
+        second = ns
+    }
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]
+

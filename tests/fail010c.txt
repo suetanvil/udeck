@@ -1,1 +1,2 @@
-Illegal argument name 'args'
+Code error: 'args' not last in the argument list.
+

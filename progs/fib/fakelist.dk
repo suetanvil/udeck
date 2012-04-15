@@ -2,45 +2,45 @@
 # sequence protocol.
 
 class FibonacciList {
-	var first second
-	var prevCallIndex
-	readable size
+    var first second
+    var prevCallIndex
+    readable size
 
-	method isIndexable_get {} {return true}
+    method isIndexable_get {} {return true}
 
-	method _init {sz} {
-		size = sz
-		self->_reset
-	}
+    method _init {sz} {
+        size = sz
+        self->_reset
+    }
 
-	method _reset {} {
-		first = 1
-		second = 1
-		prevCallIndex = 0
-	}
+    method _reset {} {
+        first = 1
+        second = 1
+        prevCallIndex = 0
+    }
 
-	method at {index} {
-		self->_update [self->_sanitizeIndex index]
-		return first
-	}
+    method at {index} {
+        self->_update [self->_sanitizeIndex index]
+        return first
+    }
 
-	method _update {reqIndex} {
-		(reqIndex >= prevCallIndex) || [self->_reset]
+    method _update {reqIndex} {
+        (reqIndex >= prevCallIndex) || [self->_reset]
 
-		repeat (reqIndex - prevCallIndex) {
-			var ns = first + second
-			first = second
-			second = ns
-		}
+        repeat (reqIndex - prevCallIndex) {
+            var ns = first + second
+            first = second
+            second = ns
+        }
 
-		prevCallIndex = reqIndex
-	}
+        prevCallIndex = reqIndex
+    }
 }
 
 
 proc printFibs {count} {
-	for n in [FibonacciList->new count] {say n " "}
-	puts
+    for n in [FibonacciList->new count] {say n " "}
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]

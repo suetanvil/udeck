@@ -1,8 +1,8 @@
 # Test short-circuited boolean expressions
 
 proc bp {msg val} {
-	puts "$msg ($val)"
-	return val
+    puts "$msg ($val)"
+    return val
 }
 
 

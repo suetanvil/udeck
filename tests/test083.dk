@@ -6,17 +6,17 @@ doot2 {puts "First!"} {puts "Second!"}
 
 
 mproc doot {
-	sub fn
+    sub fn
 }
 
 proc foo {} {
-	doot {puts "foo!"}
+    doot {puts "foo!"}
 }
 
 mproc doot {
-	sub fn
+    sub fn
 } {
-	return [fn]
+    return [fn]
 }
 
 foo

@@ -1,14 +1,14 @@
 # Test string and symbol comparisons
 
 proc test {l r} {
-	puts "Comparing '$l' and '$r'..."
+    puts "Comparing '$l' and '$r'..."
 
-	if (l < r) {puts l " < " r}
-	if (l <= r) {puts l " <= " r}
-	if (l == r) {puts l " == " r}
-	if (l != r) {puts l " != " r}
-	if (l >= r) {puts l " >= " r}
-	if (l > r) {puts l " > " r}
+    if (l < r) {puts l " < " r}
+    if (l <= r) {puts l " <= " r}
+    if (l == r) {puts l " == " r}
+    if (l != r) {puts l " != " r}
+    if (l >= r) {puts l " >= " r}
+    if (l > r) {puts l " > " r}
 }
 
 test "aaa" "bbb"

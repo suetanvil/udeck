@@ -2,7 +2,7 @@
 # Basic perlproc
 perlproc test1 {a} '''
     print "[$a]\n";
-	return 42;
+    return 42;
 '''
 
 puts [test1 "Hello, world"]

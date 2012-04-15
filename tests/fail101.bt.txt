@@ -1,0 +1,4 @@
+Code error: Attempted to call a non-procedure as a procedure.
+Backtrace:
+  *top*
+  *top*

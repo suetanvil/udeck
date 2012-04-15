@@ -1,1 +1,1 @@
-Symbol 'Main:: variable with spaces in it' is not a valid variable name.
+Type error: Expected quoted Symbol, got List in a variable declaration.

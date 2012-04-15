@@ -4,16 +4,16 @@ proc foo
 proc bar
 
 proc quux {} {
-	foo
-	bar
+    foo
+    bar
 }
 
 proc foo {} {
-	bar
+    bar
 }
 
 proc bar {} {
-	puts "bar called"
+    puts "bar called"
 }
 
 quux

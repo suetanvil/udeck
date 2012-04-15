@@ -10,7 +10,7 @@ Newline\n
 World!"
 
 puts \
-	"Hello
+    "Hello
      World
 !"
 

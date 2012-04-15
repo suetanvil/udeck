@@ -1,64 +1,64 @@
 # Test class inheritance
 
 class Base {
-	public p
-	readable r
-	writeable w
-	var pvar
+    public p
+    readable r
+    writeable w
+    var pvar
 
-	method _init {np nr nw npv} {
-		p = np		# Heh
-		r = nr
-		w = nw
-		pvar = npv
-	}
-	
-	method foo {} {
-		puts "base foo"
-	}
+    method _init {np nr nw npv} {
+        p = np        # Heh
+        r = nr
+        w = nw
+        pvar = npv
+    }
+    
+    method foo {} {
+        puts "base foo"
+    }
 
-	method putall {label} {
-		puts label
-		puts p "\n" r "\n" w "\n" pvar
-	}
+    method putall {label} {
+        puts label
+        puts p "\n" r "\n" w "\n" pvar
+    }
 
-	method superPublicBob {} {
-		self->_bob
-	}
+    method superPublicBob {} {
+        self->_bob
+    }
 
-	method xxx_get {} {return "base xxx"}
+    method xxx_get {} {return "base xxx"}
 }
 
 class Derived Base {
-	method foo {} {
-		puts "derived foo"
-	}
+    method foo {} {
+        puts "derived foo"
+    }
 
-	method foofoo  {} {
-		self->foo
-		super->foo
-	}
+    method foofoo  {} {
+        self->foo
+        super->foo
+    }
 
-	method _bob {} {
-		puts "_bob called."
-	}
+    method _bob {} {
+        puts "_bob called."
+    }
 
-	method publicBob {} {
-		self->_bob
-	}
+    method publicBob {} {
+        self->_bob
+    }
 
-	method xxx_get {} {return "derived xxx"}
+    method xxx_get {} {return "derived xxx"}
 
-	method printxxx {} {
-		puts self.xxx
-		puts super.xxx
-	}
+    method printxxx {} {
+        puts self.xxx
+        puts super.xxx
+    }
 }
 
 
 var b = [new Base "public var" "readable var" "writable var" "private var"]
 var d = [new Derived "public var2" "readable var2" "writable var2"
-		 "private var2"]
+         "private var2"]
 
 b->foo
 d->foo

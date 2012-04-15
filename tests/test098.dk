@@ -2,59 +2,59 @@
 
 # Test basic finalizer, possibly with early return
 mproc foo {p} {
-	puts "foo calling p: "
-	puts [p]
-	puts "foo done."
-	return "foo return value"
+    puts "foo calling p: "
+    puts [p]
+    puts "foo done."
+    return "foo return value"
 } {
-	puts "foo finalizer called."
+    puts "foo finalizer called."
 }
 
 # Test finalizer with early return of foo
 mproc bar {} {
-	puts "Calling 'foo'."
-	foo {} => {puts "bye!"; return "bar return value"}
-	return 0
+    puts "Calling 'foo'."
+    foo {} => {puts "bye!"; return "bar return value"}
+    return 0
 }
 
 # Test hook call inside finalizer
 mproc quux {p} {
-	puts "ho hum"
-	return "quux return value"
+    puts "ho hum"
+    return "quux return value"
 } {
-	puts "Calling quux{p}:"
-	p
+    puts "Calling quux{p}:"
+    p
 }
 
 # Test return by continuation from block defined inside finalizer
 mproc bobo {} {
-	puts "called bobo"
-	return "bobo return value"
+    puts "called bobo"
+    return "bobo return value"
 } {
-	do {puts "xxx"; foo next; puts "yyy"}
+    do {puts "xxx"; foo next; puts "yyy"}
 }
 
 # Test ability to access locals from final block
 mproc narf {f} {
-	puts "narf:"
+    puts "narf:"
 
-	var thingy = 44
-	f return
+    var thingy = 44
+    f return
   
-	thingy = thingy - 2
+    thingy = thingy - 2
 } {
-	puts thingy
+    puts thingy
 }
 
 # Test ability to access locals from final block after it's been
 # returned
 mproc sneep {} {
-	var l = 42
-	return l
+    var l = 42
+    return l
 } {
-	puts l
+    puts l
 }
-	
+    
 
 foo {} => {puts "w00t!"}
 puts "---"

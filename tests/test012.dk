@@ -1,7 +1,7 @@
 # More closure returns
 
 proc foo {a} {
-	return [sub {puts a}]
+    return [sub {puts a}]
 }
 
 var a b c

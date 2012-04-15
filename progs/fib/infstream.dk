@@ -1,33 +1,33 @@
 # Fibonacci infinite stream.
 
 class Node {
-	readable head
-	var tail
+    readable head
+    var tail
 
-	method _init {h t} {
-		head = h
-		tail = t
-	}
+    method _init {h t} {
+        head = h
+        tail = t
+    }
 
-	method tail_get {} {
-		(tail.isCallable) && (tail = [tail])	# Breaks if value is callable
-		return tail
-	}
+    method tail_get {} {
+        (tail.isCallable) && (tail = [tail])    # Breaks if value is callable
+        return tail
+    }
 }
 
 
 proc fibs {v1 v2} {
-	return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
+    return [new Node v2 {}=>{fibs v2 (v1 + v2)} ]
 }
 
 
 proc printFibs {count} {
-	var stream = [fibs 0 1]
-	repeat count {
-		say stream.head " "
-		stream = stream.tail
-	}
-	puts
+    var stream = [fibs 0 1]
+    repeat count {
+        say stream.head " "
+        stream = stream.tail
+    }
+    puts
 }
 
 printFibs [str2num (Sys::Argv@0)]

@@ -3,12 +3,12 @@
 
 # Test default return value for basic class
 for obj in [list Class [list 1 2 3] 'xxx' :yyy [byteArray 1 2 3] 42 ::42
-			nil puts (1..5)] {
-	if (obj.self === obj) {
-		puts "Matches for " obj.class
-	} else {
-		puts "NO MATCH for " obj.class
-	}
+            nil puts (1..5)] {
+    if (obj.self === obj) {
+        puts "Matches for " obj.class
+    } else {
+        puts "NO MATCH for " obj.class
+    }
 }
 
 

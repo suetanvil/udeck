@@ -1,10 +1,10 @@
 
 # Test non-arg sub modifier.
 mproc foo {
-	sub t
-	sub 27 s
+    sub t
+    sub 27 s
 } {
-	s; t
+    s; t
 }
 
 puts "Foo!"

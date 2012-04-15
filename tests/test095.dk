@@ -2,42 +2,42 @@
 
 # Test basic finalizer, possibly with early return
 var foo = \
-	[sub {p} {
-		puts "foo calling p: "
-		puts [p]
-		puts "foo done."
-		next "foo return value"
+    [sub {p} {
+        puts "foo calling p: "
+        puts [p]
+        puts "foo done."
+        next "foo return value"
     } {
-	    puts "foo finalizer called."
+        puts "foo finalizer called."
     }]
 
 # Test finalizer with early return of foo
 var bar = \
-	[sub {} {
-		var barNext = next
-		puts "Calling 'foo'."
-		foo {} => {puts "bye!"; barNext "bar return value"}
-		next 0
-	}]
+    [sub {} {
+        var barNext = next
+        puts "Calling 'foo'."
+        foo {} => {puts "bye!"; barNext "bar return value"}
+        next 0
+    }]
 
 # Test hook call inside finalizer
 var quux  = \
-	[sub {p} {
-		puts "ho hum"
-		next "quux return value"
-	} {
-		puts "Calling quux{p}:"
-		p
-	}]
+    [sub {p} {
+        puts "ho hum"
+        next "quux return value"
+    } {
+        puts "Calling quux{p}:"
+        p
+    }]
 
 # Test return by continuation from block defined inside finalizer
 var bobo = \
-	[sub {} {
-		puts "called bobo"
-		next "bobo return value"
-	} {
-		do {puts "xxx"; foo next; puts "yyy"}
-	}]
+    [sub {} {
+        puts "called bobo"
+        next "bobo return value"
+    } {
+        do {puts "xxx"; foo next; puts "yyy"}
+    }]
 
 
 

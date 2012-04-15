@@ -6,37 +6,37 @@ set a 3
 set b 4
 
 if {< a b} {
-	puts "a"
+    puts "a"
 } else {
-	puts "b"
+    puts "b"
 }
 
 if {> a b} {
-	puts "a"
+    puts "a"
 } else {
-	puts "b"
+    puts "b"
 }
 
 
 if {< a b} {
-	puts "a"
+    puts "a"
 } {
-	puts "b"
+    puts "b"
 }
 
 if {> a b} {
-	puts "a"
+    puts "a"
 } {
-	puts "b"
+    puts "b"
 }
 
 
 if {< a b} {
-	puts "a"
+    puts "a"
 }
 
 if {> a b} {
-	puts "a"
+    puts "a"
 }
 
 

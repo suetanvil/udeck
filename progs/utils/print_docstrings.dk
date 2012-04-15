@@ -2,161 +2,144 @@
 # This utility prints out the docstrings of the entire Deck systems.
 # This is not good code.
 
-=pod too slow
+use IO
 
-proc trimSpc {text} {
-	'''Remove all spaces following a newline in a string.'''
-	var index = 0
-	var startOfLine = true
-	var result = [stringSized text.size]
-	var skipSpace = true
+# These are written in Perl for speed and to get at the Perl regexp
+# system.  (To do: add Regexp interface.)
 
-	for c in text {
-		[not c.isSpace] && (skipSpace = false)
+perlproc trimSpc {ts_s} '''
+    LL::Main::fail ("trimSpc called with undefined value.")
+        unless defined ($ts_s);
 
-		if [not skipSpace] {
-			result@index = c
-			index = index + 1
-
-			if (c.isSpace) {
-				skipSpace = true
-			}
-		}
-	}
-
-	return [slice result 0 (index - 1)]
-}
-
-=cut
-
-perlproc trimSpc {s} '''
-    my @paragraphs = split(/\n\n+/, $s);
+    my @paragraphs = split(/\n\n+/, $ts_s);
 
     for my $par (@paragraphs) {
-	    $par =~ s/\A\s*//gmx;	
-	    $par =~ s/\s*\z//gmx;
-	    $par =~ s/\s+/ /gmx;
+        $par =~ s/\A\s*//gmx;   
+        $par =~ s/\s*\z//gmx;
+        $par =~ s/\s+/ /gmx;
     }
 
-    return join("\n\n", @paragraphs);
+    my $result = join("\n\n", @paragraphs);
+    return $result;
 '''
 
 perlproc podClean {s} '''
-my $r = {'<' => 'lt', '>' => 'gt', '|' => 'verbar', '/' => 'sol'};
-$s =~ s{([<>|/])}{"E<".$r->{$1}.">"}eg;
+    my $r = {'<' => 'lt', '>' => 'gt'};
+    $s =~ s{([<>])}{"E<".$r->{$1}.">"}eg;
 
-return $s;
+    return $s;
 '''
 
 
 proc isProcOrMProc {doc} {
-	"Test if C<doc> is a proc or mproc."
+    "Test if C<doc> is a proc or mproc."
 
-	(doc@0 == :proc && ([slice (doc@1) 0 3] != '__::')) && [return true]
-	(doc@0 == :mproc) && [return true]
-	return false
+    (doc@0 == :proc && ([slice (doc@1) 0 3] != '__::')) && [return true]
+    (doc@0 == :mproc) && [return true]
+    return false
+}
+
+proc printFunctions {mproc pkg} {
+    var filter = :proc
+    var heading = "Procedures"
+    var procType = "proc"
+
+    if (mproc) {
+        filter = :mproc
+        heading = "MProcs"
+        procType = "mproc"
+    }
+
+    var keys = [_::docstring_keys filter pkg]
+    (keys.size > 0) || [return]
+
+    puts "=head3 $heading\n"
+    puts "=over\n\n"
+
+    for key in keys {
+        var doc = [_::docstring_get key]
+
+        var ftag = (doc@0)
+        var fname = (doc@1)
+        var fbuiltin = (doc@2)
+        var fnargs = (doc@3)
+        var fdoc = [trimSpc (doc@4)]
+
+        var biText = ""
+        fbuiltin && (biText = " B<(Built-in)>")
+
+        if (ftag != :mproc) {
+            fnargs = "{$fnargs}"
+        }
+
+        puts "=item B<$procType $fname $fnargs>$biText\n"
+
+        puts fdoc "\n"
+    }
+
+    puts "\n\n=back\n"
 }
 
 
-proc printFunctions {mproc} {
-	var filter = :proc
-	var heading = "Procedures"
-	var procType = "proc"
+proc printMacros {pkg} {
+    var keys = [_::docstring_keys :macro pkg]
+    (keys.size > 0) || [return]
 
-	if (mproc) {
-		filter = :mproc
-		heading = "MProcs"
-		procType = "mproc"
-	}
+    puts "=head3 Macros\n"
+    puts "=over\n\n"
 
-	var keys = [_::docstring_keys filter]
+    for key in keys {
+        var doc = [_::docstring_get key]
 
-	puts "=head2 $heading\n"
-	puts "=over\n\n"
+        var ftag = (doc@0)
+        var fname = [podClean (doc@1)]
+        var fbuiltin = (doc@2)
+        var fnargs = (doc@3)
+        var fdoc = [trimSpc (doc@4)]
 
-	for key in keys {
-		var doc = [_::docstring_get key]
+        var biText = ""
+        fbuiltin && (biText = " B<(Built-in)>")
 
-		var ftag = (doc@0)
-		var fname = (doc@1)
-		var fbuiltin = (doc@2)
-		var fnargs = (doc@3)
-		var fdoc = [trimSpc (doc@4)]
+        puts "=item B<macro $fname {$fnargs}>$biText\n"
 
-		var biText = ""
-		fbuiltin && (biText = " B<(Built-in)>")
+        puts fdoc "\n"
+    }
 
-		if (ftag != :mproc) {
-			fnargs = "{$fnargs}"
-		}
-
-		puts "=item B<$procType $fname $fnargs>$biText\n"
-
-		puts fdoc "\n"
-	}
-
-	puts "\n\n=back\n"
-}
-
-
-proc printMacros {} {
-	var keys = [_::docstring_keys :macro]
-
-	puts "=head2 Macros\n"
-	puts "=over\n\n"
-
-	for key in keys {
-		var doc = [_::docstring_get key]
-
-		var ftag = (doc@0)
-		var fname = [podClean (doc@1)]
-		var fbuiltin = (doc@2)
-		var fnargs = (doc@3)
-		var fdoc = [trimSpc (doc@4)]
-
-		var biText = ""
-		fbuiltin && (biText = " B<(Built-in)>")
-
-		puts "=item B<macro $fname {$fnargs}>$biText\n"
-
-		puts fdoc "\n"
-	}
-
-	puts "\n\n=back\n"
+    puts "\n\n=back\n"
 }
 
 
 
 
 proc printMethodDoc {doc} {
-	var builtin = (doc@2)
-	var methodName = (doc@4)
-	var args = (doc@5)
-	var fdoc = [trimSpc (doc@6)]
-	
-	var biText = ""
-	builtin && (biText = " B<(Built-in)>")
+    var builtin = (doc@2)
+    var methodName = (doc@4)
+    var args = (doc@5)
+    var fdoc = [trimSpc (doc@6)]
+    
+    var biText = ""
+    builtin && (biText = " B<(Built-in)>")
 
-	puts "=item B<method $methodName {$args}>$biText\n"
-	puts fdoc "\n"
+    puts "=item B<method $methodName {$args}>$biText\n"
+    puts fdoc "\n"
 }
 
 
 
 proc uniq {aSeq} {
-	var result = [aSeq.maker aSeq.size]
+    var result = [aSeq.maker aSeq.size]
 
-	var index = 0
-	var prev = nil
-	for elem in aSeq {
-		if (elem != prev) {
-			result@index = elem
-			prev = elem
-			index = index + 1
-		}
-	}
+    var index = 0
+    var prev = nil
+    for elem in aSeq {
+        if (elem != prev) {
+            result@index = elem
+            prev = elem
+            index = index + 1
+        }
+    }
 
-	return [slice result 0 (index - 1)]
+    return [slice result 0 (index - 1)]
 }
 
 perlproc _attribName{s} '''
@@ -166,106 +149,127 @@ perlproc _attribName{s} '''
 '''
 
 proc printAttribDoc {doc} {
-	var builtin = (doc@2)
-	var access = [unintern (doc@4)]
-	var attribName = (doc@5)
-	var docstr = [trimSpc (doc@6)]
-	
-	var biText = ""
-	builtin && (biText = " B<(Built-in)>")
+    var builtin = (doc@2)
+    var access = [unintern (doc@4)]
+    var attribName = (doc@5)
+    var docstr = [trimSpc (doc@6)]
+    
+    var biText = ""
+    builtin && (biText = " B<(Built-in)>")
 
-	puts "=item B<$access $attribName>$biText\n"
-	puts docstr "\n"
+    puts "=item B<$access $attribName>$biText\n"
+    puts docstr "\n"
 }
 
 proc printAttributes {name} {
-	var cl = [lookup [intern name]]
+    var cl = [lookup [intern name]]
 
-	var attributes = [map {_attribName a} cl.methods]
-	attributes = [reduce {value a} attributes]
-	attributes = [sort cmp attributes]
-	attributes = [uniq attributes]
+    var attributes = [map {_attribName a} cl.methods]
+    attributes = [reduce {value a} attributes]
+    attributes = [sort cmp attributes]
+    attributes = [uniq attributes]
 
-	if (attributes.size == 0) {
-		return
-	}
+    if (attributes.size == 0) {
+        return
+    }
 
-	puts "I<Attributes>\n"
-	puts "=over\n"
+    puts "I<Attributes>\n"
+    puts "=over\n"
 
-	for attr in attributes {
-		var doc = [_::docstring_get "$name.$attr"]
-		doc && [printAttribDoc doc]
-	}
+    for attr in attributes {
+        var doc = [_::docstring_get "$name.$attr"]
+        doc && [printAttribDoc doc]
+    }
 
-	puts "=back\n"
+    puts "=back\n"
 }
 
 
 proc printMethods {name} {
-	var cl = [lookup [intern name]]
-	var selectors = [sort cmp cl.selectors]
+    var cl = [lookup [intern name]]
+    var selectors = [sort cmp cl.selectors]
 
-	if (selectors.size == 0) {
-		return
-	}
+    if (selectors.size == 0) {
+        return
+    }
 
-	puts "I<Methods>\n"
-	puts "=over\n"
+    puts "I<Methods>\n"
+    puts "=over\n"
 
-	foreach sel in selectors {
-		var doc = [_::docstring_get "$name->$sel"]
-		if (doc) {
-			printMethodDoc doc
-		}
-	}
+    foreach sel in selectors {
+        var doc = [_::docstring_get "$name->$sel"]
+        if (doc) {
+            printMethodDoc doc
+        }
+    }
 
-	puts "=back\n"
+    puts "=back\n"
 }
 
 
-proc printClasses {} {
-	var classNames = [_::docstring_keys :class]
+proc printClasses {pkg} {
+    var classNames = [_::docstring_keys :class pkg]
+    (classNames.size > 0) || [return]
 
-	puts "=head2 Classes\n\n"
-	puts "=over\n\n"
+    puts "=head3 Classes\n\n"
+    puts "=over\n\n"
 
-	for classNm in classNames {
-		var doc = [_::docstring_get classNm]
+    for classNm in classNames {
+        var doc = [_::docstring_get classNm]
 
-		var name = doc@1
-		var builtin = doc@2
-		var docstring = [trimSpc (doc@3)]
+        var name = doc@1
+        var builtin = doc@2
+        var docstring = [trimSpc (doc@3)]
 
-		var biText = ""
-		builtin && (biText = " B<-- Built-in>")
+        var biText = ""
+        builtin && (biText = " B<-- Built-in>")
 
-		var cl = [lookup [intern name]]
+        var cl = [lookup [intern name]]
 
-		var sc = 'none'
+        var sc = 'none'
 
-		(cl == Object) || (sc = cl.superclass.name)
-		sc = "($sc)"
+        (cl == Object) || (sc = cl.superclass.name)
+        sc = "($sc)"
 
-		puts "=item B<$name $sc> $biText\n"
+        puts "=item B<$name $sc> $biText\n"
 
-		puts docstring "\n"
-		
-		printAttributes name
+        puts docstring "\n"
+        
+        printAttributes name
 
-		printMethods name
+        printMethods name
 
-	}
+    }
 
-	puts "=back\n"
+    puts "=back\n"
+}
+
+proc printPackageHeader {pkg} {
+
+    var pkgBase = [slice pkg 0 (pkg.last - 2)]
+    puts "=head2 Package $pkgBase\n"
+
+    var desc = [_::docstring_get pkg]@2
+    puts desc
+    puts "\n"
 }
 
 
-printFunctions true
-printFunctions false
-printMacros
-printClasses
+proc printPackage {pkg} {
+    printPackageHeader pkg
+    printFunctions true pkg
+    printFunctions false pkg
+    printMacros pkg
+    printClasses pkg
+}
 
 
-#printAttributes "Lang::Function"
-#printMethods "Lang::Interval"
+# Lang needs to go first
+var packages = [_::docstring_keys :package nil]
+packages = [reduce { value (a != [intern "Lang::"]) } packages]
+packages = [concat [list [intern "Lang::"]] packages]
+
+for pkg in packages {
+    printPackage pkg
+}
+

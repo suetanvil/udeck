@@ -2,31 +2,31 @@
 
 
 proc withVarsAdded {opList} {
-	var result = [listSized (opList.size * 2 + 1)]
-	result@0 = "v0"
+    var result = [listSized (opList.size * 2 + 1)]
+    result@0 = "v0"
 
-	var n = 1
-	for op in opList {
-		result@n = op
-		result@(n+1) = "v$n"
-		n = n + 2
-	}
-	
-	return result
+    var n = 1
+    for op in opList {
+        result@n = op
+        result@(n+1) = "v$n"
+        n = n + 2
+    }
+    
+    return result
 }
 
 # Supported operators.  '!!!!' is the stand-in user-defined op.
 var operators = :['.' '@' '=>' '->'
-				  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
-				  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
-				  '&&' '||' '!!!!' '=']
+                  '**' '*' '/' '//' '%' '+' '-' '<<' '>>'
+                  '>>>' '<<<' '==' '===' '!=' '<' '>' '<=' '>=' '&' '|' '^'
+                  '&&' '||' '!!!!' '=']
 
 for count in (1..30) {
-#	puts [shuffled operators]
-	say "puts :("
-	for exprPart in [withVarsAdded [shuffled operators]] {
-		say exprPart " "
-	}
-	puts ")"
+#   puts [shuffled operators]
+    say "puts :("
+    for exprPart in [withVarsAdded [shuffled operators]] {
+        say exprPart " "
+    }
+    puts ")"
 }
 

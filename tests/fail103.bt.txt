@@ -1,0 +1,19 @@
+Code error: Failing in a map!
+Backtrace:
+  Lang::fail
+  [[Main::foo]]
+  [[Main::foo]]
+  [__::Lang::map]
+  [__::Lang::map]
+  _::foreach
+  __::Lang::map
+  __::Lang::map
+  [Main::foo]
+  [Main::foo]
+  _::foreach
+  Main::foo
+  Main::foo
+  Main::bar
+  Main::bar
+  *top*
+  *top*

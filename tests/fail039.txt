@@ -1,2 +1,2 @@
-Attempted to call macro '<macro>' as a procedure.  (The macro was
-not defined when the expression was compiled).
+Code error: Macro called as a function (i.e. by something other than
+the compiler).

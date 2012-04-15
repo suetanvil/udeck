@@ -1,0 +1,5 @@
+Code error: Unknown variable 'foo' in 'Main::foo'.
+Backtrace:
+  _::macro
+  *top*
+  *top*

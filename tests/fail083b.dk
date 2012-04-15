@@ -2,17 +2,17 @@
 # could make this not an error.)
 
 mproc doot {
-	sub fn
+    sub fn
 }
 
 proc foo {} {
-	doot {puts "foo!"}
+    doot {puts "foo!"}
 }
 
 mproc doot {
-	sub fn2
+    sub fn2
 } {
-	return [fn2]
+    return [fn2]
 }
 
 foo

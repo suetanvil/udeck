@@ -1,9 +1,9 @@
 # Default arg. with incompatible type for modifier
 
 mproc foo {
-	word w [default "hello, world"]
+    word w [default "hello, world"]
 } {
-	puts 42
+    puts 42
 }
 
-	
+    

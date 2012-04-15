@@ -1,1 +1,1 @@
-Use of a qualified private name ('Test::Util::_foo') in procedure '*top*'
+Code error: Use of an undefined or private name 'Test::Util::_foo'.

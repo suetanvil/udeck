@@ -1,18 +1,18 @@
 # Test mprocs with default arguments
 
 mproc mp1 {
-	word foo
-	sub 0 fn
-	list ls [default :[a b c]]
-	nothing [default nil]
-	someNum [default 42]
+    word foo
+    sub 0 fn
+    list ls [default :[a b c]]
+    nothing [default nil]
+    someNum [default 42]
 } {
-	puts foo
-	puts fn
-	puts ls
-	puts nothing
-	puts someNum
-	puts "---"
+    puts foo
+    puts fn
+    puts ls
+    puts nothing
+    puts someNum
+    puts "---"
 }
 
 mp1 foo {} [1 2 3] "some text" 1
@@ -23,11 +23,11 @@ mp1 foo {} [this is another list] nil
 
 
 mproc mp2 {
-	strict sub [x] fn
-	word and [default :and]
-	strict sub [x] fn2 [default {}]
+    strict sub [x] fn
+    word and [default :and]
+    strict sub [x] fn2 [default {}]
 } {
-	puts [fn 1] " " and " " [fn2 2]
+    puts [fn 1] " " and " " [fn2 2]
 }
 
 mp2 {value 42}
@@ -37,9 +37,9 @@ puts "---"
 
 
 mproc mp3 {
-	strict sub [x] fn [default {value (x+11)}]
+    strict sub [x] fn [default {value (x+11)}]
 } {
-	puts [fn 1]
+    puts [fn 1]
 }
 
 mp3 {value (x + 33)}
@@ -47,28 +47,28 @@ mp3
 
 
 mproc mp4 {
-	strict symbol s [default :aSymbol]
+    strict symbol s [default :aSymbol]
 } {
-	puts "mp4: $s"
+    puts "mp4: $s"
 }
 
 mp4
 mp4 someOtherSymbol
 
 mproc mp4a {
-	symbol s [default :aSymbol]
+    symbol s [default :aSymbol]
 } {
-	puts "mp4a: $s"
+    puts "mp4a: $s"
 }
 
 mp4a notAStrictArg
-mp4a [value 42]		# see, not strict
+mp4a [value 42]        # see, not strict
 
 
 mproc mp5 {
-	l [default :[1 2 3]]
+    l [default :[1 2 3]]
 } {
-	puts "mp5: $l"
+    puts "mp5: $l"
 }
 
 mp5
@@ -76,9 +76,9 @@ mp5 42
 mp5 :[4 5 6]
 
 mproc mp5a {
-	list l [default :[1 2 3]]
+    list l [default :[1 2 3]]
 } {
-	puts "mp5a: $l"
+    puts "mp5a: $l"
 }
 
 mp5a

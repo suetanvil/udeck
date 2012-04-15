@@ -1,1 +1,1 @@
-Argument count mismatch in call to _init.  Expecting at least 4, got 3.
+Code error: '_init' expects at least 4 arguments but got 3.

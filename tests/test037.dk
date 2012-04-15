@@ -15,10 +15,10 @@ puts 42.0
 # start except for directly after the dot in a float constant.
 puts 123_456
 puts 12_34___567
-puts 1_2_4_		# Yeah, blech!
+puts 1_2_4_        # Yeah, blech!
 puts 1_000_000 " dollars!!!"
 
-puts 1_000_000.000_000_001
+puts 1_000_000.0_0_1
 puts 3.14_15_92
 puts 3.14_15_92_
 puts 3_.14_15_92_

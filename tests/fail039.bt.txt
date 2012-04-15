@@ -1,0 +1,7 @@
+Code error: Macro called as a function (i.e. by something other than
+the compiler).
+Backtrace:
+  Main::bobo
+  Main::bobo
+  *top*
+  *top*

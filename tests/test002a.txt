@@ -1,0 +1,3 @@
+xxx
+x == 42
+x (in a function) == 42

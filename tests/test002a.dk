@@ -1,0 +1,19 @@
+
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#_::enableNewCompiler
+
+_::puts "xxx"
+
+var x = 42
+
+_::puts "x == $x"
+
+proc foo {} {
+    _::puts "x (in a function) == $x"
+}
+foo
+
+

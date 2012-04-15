@@ -1,0 +1,6 @@
+Code error: 'bar' expects 1 argument but got 0.
+Backtrace:
+  bar
+  bar
+  *top*
+  *top*

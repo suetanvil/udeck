@@ -1,10 +1,10 @@
 # Test returning closures
 
 proc foo {} {
-	var a
-	set a 42
-	
-	return [sub {puts a}]
+    var a
+    set a 42
+    
+    return [sub {puts a}]
 }
 
 var x = [foo]

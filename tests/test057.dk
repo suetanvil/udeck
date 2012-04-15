@@ -10,11 +10,11 @@ foo "local"
 puts Test::Util::num
 
 proc blort {} {
-	puts "local blort!"
+    puts "local blort!"
 }
 
 puts [defined :blort]
 blort
 
-		   
+           
 

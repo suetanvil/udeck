@@ -1,4 +1,4 @@
 
 proc foo (a) {
-	val a
-	# No close brace.
+    val a
+    # No close brace.

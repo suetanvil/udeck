@@ -1,0 +1,7 @@
+Code error: '_init' expects at least 4 arguments but got 3.
+Backtrace:
+  _init
+  _init
+  Lang::new
+  *top*
+  *top*

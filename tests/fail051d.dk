@@ -3,7 +3,7 @@
 use Test::Util
 
 proc xxx {} {
-	puts Test::Util::_foo
+    puts Test::Util::_foo
 }
 
 

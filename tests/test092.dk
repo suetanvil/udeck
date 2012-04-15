@@ -3,44 +3,44 @@
 proc bar
 
 proc foo {ex} {
-	bar ex
-	puts "Unthrown!"
+    bar ex
+    puts "Unthrown!"
 }
 
 proc bar {ex} {
-	ex.id = :cuzIfeltLikeIt
-	ex->throw "Exception thrown."
+    ex.id = :cuzIfeltLikeIt
+    ex->throw "Exception thrown."
 }
 
 try {
-	puts "Pre-throw:"
-	foo Error
-	puts "Post-throw."		# unreached
+    puts "Pre-throw:"
+    foo Error
+    puts "Post-throw."        # unreached
 } catch {
-	puts "Caught exception: " Error.id " " Error.info " " Error.message
-	puts "Done."
-	Error->throw "nothing should happen here"
+    puts "Caught exception: " Error.id " " Error.info " " Error.message
+    puts "Done."
+    Error->throw "nothing should happen here"
 }
 
 
 try {
-	puts "Pre-throw 2:"
-	foo Error
-	puts "Post-throw 2."		# unreached
+    puts "Pre-throw 2:"
+    foo Error
+    puts "Post-throw 2."        # unreached
 }
 
 
 try {
-	puts "Pre-throw 3:"
-	foo Error
-	puts "Post-throw 3."		# unreached
-} catch			# dangling catch.  Allowed but ugly.
+    puts "Pre-throw 3:"
+    foo Error
+    puts "Post-throw 3."        # unreached
+} catch            # dangling catch.  Allowed but ugly.
 
 
 try {
-	Error->throw "test throw" :cuzifeltlikeit 1 2 3 4 5
+    Error->throw "test throw" :cuzifeltlikeit 1 2 3 4 5
 } catch {
-	puts Error.id
-	puts Error.message
-	puts Error.info
+    puts Error.id
+    puts Error.message
+    puts Error.info
 }

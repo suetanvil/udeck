@@ -1,0 +1,2 @@
+Code error: Unknown variable '_foo' in '*top*'.
+Backtrace:

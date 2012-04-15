@@ -1,0 +1,12 @@
+Type error: Expected integer from 0 to 255, got String
+Backtrace:
+  Lang::atput
+  [Lang::_write_seq]
+  [Lang::_write_seq]
+  _::foreach
+  Lang::_write_seq
+  Lang::_write_seq
+  op_Add
+  op_Add
+  *top*
+  *top*

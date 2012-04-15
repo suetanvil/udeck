@@ -1,17 +1,17 @@
 # Test the magical -> operator
 
 class Foo {
-	readable r
-	writeable w
-	public p
-	var x
+    readable r
+    writeable w
+    public p
+    var x
 
-	method _init {} {
-		r = "var r"
-		w = "var w"
-		p = "var p"
-		x = "var x"
-	}
+    method _init {} {
+        r = "var r"
+        w = "var w"
+        p = "var p"
+        x = "var x"
+    }
 }
 
 var x = [new Foo]

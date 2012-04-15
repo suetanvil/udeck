@@ -1,7 +1,7 @@
-Expected symbol, got List in strict mproc argument.
 calling <procedure> on :foo
 :foo
 calling <procedure> on :bar
 :bar
 calling <procedure> on :x
 :x
+Type error: Expected symbol, got List in strict mproc argument.

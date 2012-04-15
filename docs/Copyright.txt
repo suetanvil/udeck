@@ -1,4 +1,4 @@
-Deck is Copyright (C) 2011 Chris Reuter.
+Deck is Copyright (C) 2011-2012 Chris Reuter.
 
 It is released under the terms of the GNU GPLv2.  A copy of this
 license should reside in the included file 'COPYING'.  

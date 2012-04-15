@@ -1,0 +1,13 @@
+npc1 called (42)
+5
+Called in a 'do' and x = 42
+x is now 5
+while loop n = 0
+while loop n = 1
+while loop n = 2
+while loop n = 3
+while loop n = 2
+while loop n = 1
+for loop 1
+for loop 2
+for loop 3

@@ -1,9 +1,9 @@
 # Test redefinition of variable
 
 proc foo {a} {
-	var a = 11;
+    var a = 11;
 
-	return a;
+    return a;
 }
 
 

@@ -1,0 +1,9 @@
+Code error: Failed!
+Backtrace:
+  Lang::fail
+  Main::foo
+  Main::foo
+  Main::bar
+  Main::bar
+  *top*
+  *top*

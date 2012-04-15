@@ -1,6 +1,6 @@
 
 proc foo {} {
-	puts undefinedVar
+    puts undefinedVar
 }
 
 puts "Should die before getting here."

@@ -1,5 +1,3 @@
-WARNING: Found a ';' inside a list.  Probably not what you want.
-WARNING: Found a ';' inside a list.  Probably not what you want.
 Hello, World
 Yo!
 1
@@ -11,4 +9,6 @@ Yo!
 1
 2
 3
+WARNING: Found a ';' inside a list.  Probably not what you want.
+WARNING: Found a ';' inside a list.  Probably not what you want.
 nil

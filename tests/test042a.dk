@@ -2,18 +2,18 @@
 
 
 mproc zot {
-	sub [first second third] fn
+    sub [first second third] fn
 } {
-	return [fn 1 2 3]
+    return [fn 1 2 3]
 }
 
 puts [zot {value (first + second + third)}]
 
 
 mproc foo {
-	word bar
+    word bar
 } {
-	puts bar
+    puts bar
 }
 
 puts "---"

@@ -1,9 +1,9 @@
 # Default arg. with incompatible type for modifier
 
 mproc foo {
-	word w [default :someSymbol]
+    word w [default :someSymbol]
 } {
-	puts 42
+    puts 42
 }
 
-	
+    

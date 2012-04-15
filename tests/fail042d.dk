@@ -1,9 +1,9 @@
 # Default arg. with incompatible type for modifier
 
 mproc foo {
-	symbol s [default 42]
+    symbol s [default 42]
 } {
-	puts 42
+    puts 42
 }
 
-	
+    

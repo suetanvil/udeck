@@ -1,10 +1,10 @@
 
 proc xcmp {a b} {
-	if {==  a b} {
-		puts a.printable " == " b.printable
-	} else {
-		puts a.printable " != " b.printable
-	}
+    if {==  a b} {
+        puts a.printable " == " b.printable
+    } else {
+        puts a.printable " != " b.printable
+    }
 }
 
 
@@ -54,29 +54,29 @@ puts
 
 # Class tests
 class Foo {
-	readable a b
-	method _init {ia ib} {
-		a = ia
-		b = ib
-	}
+    readable a b
+    method _init {ia ib} {
+        a = ia
+        b = ib
+    }
 
-	method printable_get {} {
-		var cl = self.class.name
-		return "[$cl->new $a $b]"
-	}
+    method printable_get {} {
+        var cl = self.class.name
+        return "[$cl->new $a $b]"
+    }
 
-	method op_Equals {other} {
-		(other.class == Foo) || [return false]
-		return (a == other.a && b == other.b)		
-	}
+    method op_Equals {other} {
+        (other.class == Foo) || [return false]
+        return (a == other.a && b == other.b)        
+    }
 }
 
 class Bar Foo {
-	method op_Equals {other} {
-		(other.class == Bar || other.class == Foo) && \
-			[return [super->op_Equals other]]
-		return false
-	}
+    method op_Equals {other} {
+        (other.class == Bar || other.class == Foo) && \
+            [return [super->op_Equals other]]
+        return false
+    }
 } 
 
 

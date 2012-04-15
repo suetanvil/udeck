@@ -1,0 +1,12 @@
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#_::enableNewCompiler
+
+proc mk2subs {code} {
+    return 42
+}
+
+var o = [mk2subs]
+

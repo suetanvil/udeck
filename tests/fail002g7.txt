@@ -1,0 +1,1 @@
+Code error: 'bar' expects at least 2 arguments but got 1.

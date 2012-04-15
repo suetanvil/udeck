@@ -6,12 +6,12 @@ proc baz
 proc bobo
 
 proc quux {} {
-	foo
-	bar
+    foo
+    bar
 }
 
 proc foo {} {
-	bar
+    bar
 }
 
 puts "Done!"

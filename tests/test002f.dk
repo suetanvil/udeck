@@ -1,0 +1,34 @@
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+#_::enableNewCompiler
+
+proc foofn {code} {
+    var {a = 42; b = 11}
+
+    return [sub {} code]
+}
+
+var inner = {
+     var c = 9
+     next {} => {_::puts "a == $a; b == $b; c == $c\nDone!"}
+}
+
+var outer = {
+    var r = [sub {} inner]
+    next r
+}
+
+var x = [foofn outer]
+_::puts "x: $x"
+
+var y = [x]
+_::puts "y: $y"
+
+var z = [y]
+_::puts "z: $z"
+
+var w = [z]
+_::puts "w: $w"
+

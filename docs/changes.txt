@@ -1,0 +1,34 @@
+
+
+Changes in 0.02
+
+    +  Deck code is now executed by being compiled into Perl code and
+       run by the Perl interpreter.  This should significantly improve
+       performance.  The new command-line argument '--show-perl' will
+       print the generated Perl code.
+
+    +  Deck now defines local variables at the start of a procedure,
+       regardless of the location of the 'var' statement as documented
+       in manual.pod.  (It's still an error to use a variable before
+       its declaration, however.)
+
+    +  Struct-derived classes are no longer prevented from sharing a
+       a variable name with an ancestor.
+
+    +  Returns ('return' and 'next') are now instances of the new
+       class 'Continuation'.
+
+    +  Slight changes to built-in procedures 'lookup' and 'defined'.
+
+    +  Added rudimentary backtrace capability.
+
+    +  Lots of internal cleanup.
+
+    +  Now supports module docstrings.
+
+    +  Library docs are now complete.  (A bug in the docstring system
+       was losing a lot of them.)
+
+Changes in 0.1
+
+    1) Initial release.

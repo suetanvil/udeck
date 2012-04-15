@@ -3,13 +3,13 @@
 proc bar
 
 proc foo {ex} {
-	bar ex
-	puts "Unthrown!"
+    bar ex
+    puts "Unthrown!"
 }
 
 proc bar {ex} {
-	ex.id = :cuzIfeltLikeIt
-	ex->throw "Exception thrown."
+    ex.id = :cuzIfeltLikeIt
+    ex->throw "Exception thrown."
 }
 
 bar Fatal

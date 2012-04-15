@@ -1,0 +1,14 @@
+# Test the backtrace mechanism
+
+proc foo {} {
+    for i in :[1 2 3 4 5] {
+        map {fail "Failing in a map!"} :[9 8 7 6 5]
+    }
+}
+
+proc bar {} {
+    foo
+}
+
+
+bar

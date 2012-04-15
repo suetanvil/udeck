@@ -1,0 +1,2 @@
+Type error: Expected quoted Symbol, got List in a variable declaration.
+Backtrace:

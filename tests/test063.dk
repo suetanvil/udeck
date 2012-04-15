@@ -1,13 +1,13 @@
 # Basic class definition
 
 class Foo {
-	var a b c
+    var a b c
 
-	method x {t} {puts t}
-	method seta {newA} {a = newA}
-	method puta {} {puts a}
+    method x {t} {puts t}
+    method seta {newA} {a = newA}
+    method puta {} {puts a}
 
-	method retself {} {puts "should return self."}
+    method retself {} {puts "should return self."}
 }
 
 var z = [new Foo]

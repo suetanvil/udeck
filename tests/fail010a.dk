@@ -4,12 +4,12 @@ proc foo
 proc bar
 
 proc quux {} {
-	foo
-	bar
+    foo
+    bar
 }
 
 proc foo {} {
-	bar
+    bar
 }
 
 quux

@@ -1,1 +1,1 @@
-Unknown variable: 'Main::_foo'
+Code error: Unknown variable '_foo' in '*top*'.

@@ -2,29 +2,29 @@ var n
 
 n = 0
 while {< n 10} {
-	puts "n = " n
-	n = n + 1
+    puts "n = " n
+    n = n + 1
 }
 
 puts "n = 11: should be nothing here."
 n = 11
 while {< n 10} {
-	puts "n = " n
-	n = n + 1
+    puts "n = " n
+    n = n + 1
 }
 puts "Ta-da"
 
 
 n = 0
 while (n < 10) {
-	puts "infix compare: n = " n
-	n = n + 1
+    puts "infix compare: n = " n
+    n = n + 1
 }
 
 n = 0
 while [< n 10] {
-	puts "prefix compare: n = " n
-	n = n + 1
+    puts "prefix compare: n = " n
+    n = n + 1
 }
 
 n = 0

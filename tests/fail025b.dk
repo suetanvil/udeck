@@ -1,4 +1,4 @@
 # Test invalid infix case #1
 
-puts {a + b + c}		# not a valid infix
+puts {a + b + c}        # not a valid infix
 

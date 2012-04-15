@@ -2,14 +2,14 @@
 # Test recursive macro definitions.  Just an undefined var. reference.
 # I *think* this is no longer possible as its own case.
 macro foo {args} {
-	puts "Macro 'foo' called with " args
+    puts "Macro 'foo' called with " args
 
-	args@0 = :bar
-	return [foo 1 args]
+    args@0 = :bar
+    return [foo 1 args]
 }
 
 proc bar {args} {
-	puts "bar called with '" args "'"
+    puts "bar called with '" args "'"
 }
 
 foo 1 2 3 4 5

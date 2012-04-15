@@ -1,0 +1,6 @@
+Code error: Redefinition of 'a'
+
+Backtrace:
+  _::proc
+  *top*
+  *top*

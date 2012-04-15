@@ -1,9 +1,9 @@
 # Test word argument mismatch
 
 mproc foo {
-	word bar
+    word bar
 } {
-	puts bar
+    puts bar
 }
 
 foo baz

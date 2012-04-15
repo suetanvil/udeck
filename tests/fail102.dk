@@ -1,0 +1,11 @@
+# Test the backtrace mechanism
+
+proc foo {a} {
+    fail "Failed!"
+}
+
+proc bar {} {
+    foo 1
+}
+
+bar

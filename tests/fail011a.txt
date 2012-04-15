@@ -1,1 +1,2 @@
-Redefinition of name 'a'.
+Code error: Redefinition of 'a'
+

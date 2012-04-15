@@ -1,0 +1,5 @@
+Code error: Use of an undefined or private name 'shuriken'.
+Backtrace:
+  _::class
+  *top*
+  *top*

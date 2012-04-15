@@ -1,11 +1,15 @@
-
-=pod
-
-This module is a first attempt at providing basic file I/O.
-
-=cut
-
 package IO
+
+"
+This module provides basic file support.  Actual file access is
+performed using instances of the class C<FileHandle> while path
+management (e.g. file existence checks, directory listings) are
+performed using various procedures and/or mprocs.  In addition, there
+are some convenience mprocs.
+
+C<IO> allows you to use C<Exceptions> for error detection but does not
+require it.
+"
 
 
 # Interface to Perl file support:
@@ -32,17 +36,17 @@ perlproc _getline {fh eol} '''
 '''
 
 perlproc _read {fh len} '''
-	my $buf = "";
-	my $count = $fh->read($buf, $len);
-	return undef unless defined($count);
+    my $buf = "";
+    my $count = $fh->read($buf, $len);
+    return undef unless defined($count);
 
-	return $buf;	
+    return $buf;    
 '''
 
 perlproc _binread {fh len} '''
-	my $buf = "";
-	my $count = $fh->read($buf, $len);
-	return undef unless defined($count);
+    my $buf = "";
+    my $count = $fh->read($buf, $len);
+    return undef unless defined($count);
 
     return LL::ByteArray->newContaining(\$buf);
 '''
@@ -57,18 +61,18 @@ perlproc _tell {fh} '''return $fh->tell();'''
 
 
 const _FILEMODES = :[ [read "<"]
-					  [write ">"]
-					  [readwrite "+<"] ]
+                      [write ">"]
+                      [readwrite "+<"] ]
 
 const {
-	SEEK_SET = 0
-	SEEK_CUR = 1
-	SEEK_END = 2
+    SEEK_SET = 0
+    SEEK_CUR = 1
+    SEEK_END = 2
 };
 
 
 class FileHandle {
-	"FileHandle represents access to a file on disk.  The filename is passed
+    "FileHandle represents access to a file on disk.  The filename is passed
      to the initializer along with a symbol indicating the mode (C<:read>,
      C<:write> or C<:readwrite>) and an Exception to throw if an error
      occurs.  If C<nil> is given instead, no exception is thrown.  Instead,
@@ -90,255 +94,255 @@ class FileHandle {
      is no finalization mechanism (yet) to close them when they are
      garbage-collected."
 
-	readable errorException
-	public eol
+    readable errorException
+    public eol
 
-	var fh
-	var mode
-	var filename
+    var fh
+    var mode
+    var filename
 
-	method _init {name modeSymbol exception} {
-		errorException = exception
-		self->_exceptionSanityCheck
+    method _init {name modeSymbol exception} {
+        errorException = exception
+        self->_exceptionSanityCheck
 
-		eol = [chr 10]		# The UNIX default
+        eol = [chr 10]      # The UNIX default
 
-		mode = modeSymbol
-		self->_checkMode
+        mode = modeSymbol
+        self->_checkMode
 
-		filename = name
-		self->_openFh
-	}
+        filename = name
+        self->_openFh
+    }
 
-	method _openFh {} {
-		fh = [_newfh filename [self->_modeStr]]
-		fh || [self->_throw "Unable to open file '$filename'." 
-			   :openError return]
-	}
+    method _openFh {} {
+        fh = [_newfh filename [self->_modeStr]]
+        fh || [self->_throw "Unable to open file '$filename'." 
+               :openError return]
+    }
 
-	method _checkMode {} {
-		for legalMode in _FILEMODES {
-			(legalMode@0 == mode) && [return]
-		}
+    method _checkMode {} {
+        for legalMode in _FILEMODES {
+            (legalMode@0 == mode) && [return]
+        }
 
-		die "Invalid file mode: '$mode' to class FileHandle."
-	}
+        die "Invalid file mode: '$mode' to class FileHandle."
+    }
 
-	method _modeStr {} {
-		for modePair in _FILEMODES {
-			if (modePair@0 == mode) {return (modePair@1)}
-		}
-		die "Internal error: Illegal mode symbol: $mode"
-	}
+    method _modeStr {} {
+        for modePair in _FILEMODES {
+            if (modePair@0 == mode) {return (modePair@1)}
+        }
+        die "Internal error: Illegal mode symbol: $mode"
+    }
 
-	method _sanity {op ret} {
-		(op == :read && [not self.canRead]) && \
-			[self->_throw "FileHandle not open for reading." :modeErr ret]
+    method _sanity {op ret} {
+        (op == :read && [not self.canRead]) && \
+            [self->_throw "FileHandle not open for reading." :modeErr ret]
 
-		(op == :write && [not self.canWrite]) && \
-			[self->_throw "FileHandle not open for writing." :modeErr ret]
+        (op == :write && [not self.canWrite]) && \
+            [self->_throw "FileHandle not open for writing." :modeErr ret]
 
-		fh || [self->_throw "Attempted operation on closed filehandle."
-			   :closedFhErr ret]
-	}
+        fh || [self->_throw "Attempted operation on closed filehandle."
+               :closedFhErr ret]
+    }
 
-	method _throw {msg op ret} {
-		(errorException.isNil) && [ret nil]
-		(errorException->throw) msg op
-	}
+    method _throw {msg op ret} {
+        (errorException.isNil) && [ret nil]
+        (errorException->throw) msg op
+    }
 
-	method close {} {
-		"Close the underlying system file handle associated with this
+    method close {} {
+        "Close the underlying system file handle associated with this
          file.  After C<close> has been called, this object should no
          longer be used."
-		fh && [_closefh fh]
-		fh = nil
-	}
+        fh && [_closefh fh]
+        fh = nil
+    }
 
-	method exception_set {e} {
-		"Get/set the error exception.  This is the exception that gets thrown
+    method exception_set {e} {
+        "Get/set the error exception.  This is the exception that gets thrown
          if there is an I/O error."
 
-		errorException = e
-		self->_exceptionSanityCheck
-	}
+        errorException = e
+        self->_exceptionSanityCheck
+    }
 
-	method _exceptionSanityCheck {} {
-		[errorException.class->can :throw] || \
-			(errorException.isNil) || \
-			[die "Attempted to store non-exception as FileHandle exception."]
-	}
+    method _exceptionSanityCheck {} {
+        [errorException.class->can :throw] || \
+            (errorException.isNil) || \
+            [die "Attempted to store non-exception as FileHandle exception."]
+    }
 
 
-	method canRead_get {} {
-		"Test if this C<FileHandle> is readable."
-		return (mode != :write)
-	}
+    method canRead_get {} {
+        "Test if this C<FileHandle> is readable."
+        return (mode != :write)
+    }
 
-	method canWrite_get {} {
-		"Test if this C<FileHandle> is writeable."
-		return (mode != :read)
-	}
+    method canWrite_get {} {
+        "Test if this C<FileHandle> is writeable."
+        return (mode != :read)
+    }
 
-	method eof_get {} {
-		"Test if this file handle is at the end of the file."
-		fh || [return true]
-		return [_eof fh].isTrue
-	}
+    method eof_get {} {
+        "Test if this file handle is at the end of the file."
+        fh || [return true]
+        return [_eof fh].isTrue
+    }
 
-	method getLine {} {
-		"Read one line of text and return it as a String.  The line delimiter
+    method getLine {} {
+        "Read one line of text and return it as a String.  The line delimiter
          is determined by the attribute C<eol>.  It defaults to the UNIX
          newline (0x0a).  The delimiter is not stripped from the string.  If
          the C<FileHandle> is at the end of the file, C<getLine> returns an
          empty string."
-		self->_sanity :read return
+        self->_sanity :read return
 
-		(eol.class == String && eol != "") \
-			|| [die "Illegal line separator: '$eol'."]
+        (eol.class == String && eol != "") \
+            || [die "Illegal line separator: '$eol'."]
 
-		var line = [_getline fh eol]
-		(line == nil) && [return ""]
-		return line
-	}
+        var line = [_getline fh eol]
+        (line == nil) && [return ""]
+        return line
+    }
 
-	method slurp {} {
-		"Read the remaining contents of this file and return them as a
+    method slurp {} {
+        "Read the remaining contents of this file and return them as a
          string.  This can be an empty string if the file position is already
          at the end of the file."
-		self->_sanity :read return
-		return [_getline fh nil]
-	}
+        self->_sanity :read return
+        return [_getline fh nil]
+    }
 
-	method getChar {} {
-		"Read a single character from this file and return it as a string."
-		return [self->getChars 1]
-	}
+    method getChar {} {
+        "Read a single character from this file and return it as a string."
+        return [self->getChars 1]
+    }
 
-	method getChars {count} {
-		"Read C<count> characters from the current input file and return them
+    method getChars {count} {
+        "Read C<count> characters from the current input file and return them
          in a string.  If C<count> is more than the number of characters to
          the end of the file, the remaining characters are returned.  This is
          true even if the C<FileHandle> is already at the end of the file.  In
          that case, the return value is an empty string."
-		self->_sanity :read return
+        self->_sanity :read return
 
-		var line = [_read fh count]
-		if (line == nil) {
-			var errmsg = [_errmsg]
-			self->_throw "IO Error: $errmsg" :ioErr return
-		}
+        var line = [_read fh count]
+        if (line == nil) {
+            var errmsg = [_errmsg]
+            self->_throw "IO Error: $errmsg" :ioErr return
+        }
 
-		return line
-	}
+        return line
+    }
 
 
-	method put {string} {
-		"Writes C<string> at the current file position."
-		self->_sanity :write return
+    method put {string} {
+        "Writes C<string> at the current file position."
+        self->_sanity :write return
 
-		[_put fh string] || \
-			[self->_throw "Error writing string to '$filename'."  :ioError
-			 return]
-		return true
-	}
+        [_put fh string] || \
+            [self->_throw "Error writing string to '$filename'."  :ioError
+             return]
+        return true
+    }
 
-	method puts {args} {
-		"Writes the printable form of each argument to the file starting from
+    method puts {args} {
+        "Writes the printable form of each argument to the file starting from
          the current position, then appends a newline (as defined by C<eol>).
          Analogous to the C<puts> function."
-		self->_sanity :write return
+        self->_sanity :write return
 
-		for obj in [concat args [list eol]] {
-			[_put fh obj.printable] || \
-				[self->_throw "Error writing string to '$filename'." :ioError
-				 return]
-		}
-		return true
-	}
+        for obj in [concat args [list eol]] {
+            [_put fh obj.printable] || \
+                [self->_throw "Error writing string to '$filename'." :ioError
+                 return]
+        }
+        return true
+    }
 
 
-	method write {bytes} {
-		"Writes the bytes in C<bytes>, a ByteArray, to the current file at
+    method write {bytes} {
+        "Writes the bytes in C<bytes>, a ByteArray, to the current file at
          the current position."
-		self->_sanity :write return
+        self->_sanity :write return
 
-		(bytes.class == ByteArray) || \
-			[die "FileHandle->write argument must be ByteArray."]
+        (bytes.class == ByteArray) || \
+            [die "FileHandle->write argument must be ByteArray."]
 
-		[_put fh bytes] || \
-			[self->_throw "Error writing ByteArray to '$filename'."  :ioError 
-			 return]
-		return true
-	}
+        [_put fh bytes] || \
+            [self->_throw "Error writing ByteArray to '$filename'."  :ioError 
+             return]
+        return true
+    }
 
-	method read {numBytes} {
-		"Reads C<numBytes> bytes from the file starting at the current
+    method read {numBytes} {
+        "Reads C<numBytes> bytes from the file starting at the current
          position, then returns them in a ByteArray.  If C<numBytes> is more
          than the number of bytes remaining in the file, only the number of
          remaining bytes are read.  If the current position is at the end of
          the file, returns an empty ByteArray."
-		self->_sanity :read return
+        self->_sanity :read return
 
-		var line = [_binread fh numBytes]
+        var line = [_binread fh numBytes]
 
-		if (line == nil) {
-			var errmsg = [_errmsg]
-			self->_throw "IO Error: $errmsg" :ioErr return
-		}
+        if (line == nil) {
+            var errmsg = [_errmsg]
+            self->_throw "IO Error: $errmsg" :ioErr return
+        }
 
-		return line
-	}
+        return line
+    }
 
-	method pos_get {} {
-		"Returns the position B<in bytes> of this C<FileHandle> relative to the
+    method pos_get {} {
+        "Returns the position B<in bytes> of this C<FileHandle> relative to the
          start of the file."
 
-		fh || [return -1]
-		return [_tell fh]		
-	}
+        fh || [return -1]
+        return [_tell fh]       
+    }
 
-	method seek {pos whence} {
-		"Sets the position of this C<FileHandle> to C<pos>.  C<whence>
+    method seek {pos whence} {
+        "Sets the position of this C<FileHandle> to C<pos>.  C<whence>
          controls how C<pos> is used: C<SEEK_SET> sets the position to C<pos>,
          C<SEEK_CUR> sets it to C<pos> plus the current position and
          C<SEEK_END> sets it to C<pos> plus the end of the file (C<pos> is
          typically negative."
          
-		self->_sanity :seek return
-		[_seek fh pos whence] || \
-			[self->_throw "Seek error." :seekError]
-		return true
-	}
+        self->_sanity :seek return
+        [_seek fh pos whence] || \
+            [self->_throw "Seek error." :seekError]
+        return true
+    }
 
-	method isOpen_get {} {
-		"Test if this FileHandle is open.  If it has been closed (via
+    method isOpen_get {} {
+        "Test if this FileHandle is open.  If it has been closed (via
          C<close>), this attribute will return false; otherwise, it will
          return true.  Naturally, this attribute is safe to call on a closed
          C<FileHandle>."
-		return fh.isTrue
-	}
+        return fh.isTrue
+    }
 }
 
 
 mproc dofile {
-	name
-	mode
-	strict sub [fh] fileBlock
-	word catch [default :catch]
-	strict sub [Error] catchBlock [default {}]
+    name
+    mode
+    strict sub [fh] fileBlock
+    word catch [default :catch]
+    strict sub [Error] catchBlock [default {}]
 } {
-	var fh = nil
+    var fh = nil
 
-	try {
-		fh = [new FileHandle name mode Error]
-		fileBlock fh
-	} catch {
-		catchBlock Error
-	}
+    try {
+        fh = [new FileHandle name mode Error]
+        fileBlock fh
+    } catch {
+        catchBlock Error
+    }
 
 } {
-	fh && [fh->close]
+    fh && [fh->close]
 }
 
 
@@ -352,7 +356,7 @@ perlproc _lsdir {dir} '''
         or return undef;
     my @dirs = readdir($dh);
     close($dh);
-
+    @dirs = sort @dirs;
     return \@dirs;
 '''
 
@@ -363,131 +367,131 @@ perlproc _stat {file} '''return [stat($file)];'''
 # Throw C<exc> with C<msg> and C<id> if it is not nil; otherwise
 # call ret (a continuation) with false.
 proc _bail {msg id exc ret} {
-	exc || [ret false]
-	exc->throw msg id
+    exc || [ret false]
+    exc->throw msg id
 }
 
 
 mproc unlink {
-	file
-	onError [default nil]
+    file
+    onError [default nil]
 } {
-	"Delete (unlink) C<file>.  Returns C<true> on success and C<false>.  If
+    "Delete (unlink) C<file>.  Returns C<true> on success and C<false>.  If
      Exception C<onError> is given, it is thrown instead on error."
 
-	[_unlink file] || [_bail "Unable to unlink '$file'" :unlinkError 
-					   onError return]
-	return true
+    [_unlink file] || [_bail "Unable to unlink '$file'" :unlinkError 
+                       onError return]
+    return true
 }
 
 
 mproc mkdir {
-	path
-	mask [default 0o777]
-	onError [default nil]
+    path
+    mask [default 0o777]
+    onError [default nil]
 } {
-	"Create a directory specified by C<path>.  C<mask> is the directory
+    "Create a directory specified by C<path>.  C<mask> is the directory
      umask (standard Unix file permissions--see the perl documentation on
      umask for an explanation). This is typically an octal constant.
      with the individual bits specifing read, write and execute bits for
      the user, group and other permisions.  C<onError>, if not nil, is thrown
      as an Exception if an error occurs.  Otherwise, returns false on error
      and true on success."
- 	[_mkdir path mask] || \
-		[_bail ("Error creating '$path': " + [_errmsg]) :mkdirErr 
-		 onError return]
-	return true
+    [_mkdir path mask] || \
+        [_bail ("Error creating '$path': " + [_errmsg]) :mkdirErr 
+         onError return]
+    return true
 }
 
 
 mproc rmdir {
-	dir
-	onError [default nil]
+    dir
+    onError [default nil]
 } {
-	"Delete directory C<dir>.  Returns C<true> on success and C<false>.  If
+    "Delete directory C<dir>.  Returns C<true> on success and C<false>.  If
      Exception C<onError> is given, it is thrown instead on error.  The
      directory must be empty."
 
- 	[_rmdir dir] || \
-		[_bail ("Error removing '$dir': " + [_errmsg]) :rmdirErr
-		 onError return]
-	return true
+    [_rmdir dir] || \
+        [_bail ("Error removing '$dir': " + [_errmsg]) :rmdirErr
+         onError return]
+    return true
 }
 
 
 mproc lsdir {
-	dir
-	onError [default nil]
+    dir
+    onError [default nil]
 } {
-	"Return a list containing the names of all directory entries in C<dir>.
+    "Return a list containing the names of all directory entries in C<dir>.
      On error, return C<nil>.  If exception C<onError> is not nil, it is
      thrown when an error occurs."
 
-	var items = [_lsdir dir]
+    var items = [_lsdir dir]
 
-	(items == nil) && \
-		[_bail ("Error listing '$dir': " + [_errmsg]) :listErr
-		 onError return]
-		
-	return items
+    (items == nil) && \
+        [_bail ("Error listing '$dir': " + [_errmsg]) :listErr
+         onError return]
+        
+    return items
 }
 
 
 
 class StatResult {
-	"StatResult is a data structure holding the results of a successful
+    "StatResult is a data structure holding the results of a successful
      stat call.  Readable fields are:
 
      =over
 
-	 name dev ino mode nlink uid gid rdev size atime mtime ctime
-	 blksize blocks
+     name dev ino mode nlink uid gid rdev size atime mtime ctime
+     blksize blocks
 
      =back
     "
 
-	readable name
-	readable dev ino mode nlink uid gid rdev size atime mtime ctime
-	readable blksize blocks
+    readable name
+    readable dev ino mode nlink uid gid rdev size atime mtime ctime
+    readable blksize blocks
 
-	method _init {path itm} {
-		name	= path
+    method _init {path itm} {
+        name    = path
 
-		dev		= itm@0
-		ino		= itm@1
-		mode	= itm@2
-		nlink	= itm@3
-		uid		= itm@4
-		gid		= itm@5
-		rdev	= itm@6
-		size	= itm@7
-		atime	= itm@8
-		mtime	= itm@9
-		ctime	= itm@10
-		blksize = itm@11
-		blocks	= itm@12
-	}
+        dev     = itm@0
+        ino     = itm@1
+        mode    = itm@2
+        nlink   = itm@3
+        uid     = itm@4
+        gid     = itm@5
+        rdev    = itm@6
+        size    = itm@7
+        atime   = itm@8
+        mtime   = itm@9
+        ctime   = itm@10
+        blksize = itm@11
+        blocks  = itm@12
+    }
 
-	method printable_get {} {
-		"Return a human-readable representation."
-		return "[stat '$name']";
-	}
+    method printable_get {} {
+        "Return a human-readable representation."
+        return "[stat '$name']";
+    }
 }
 
 
 mproc stat {
-	file
-	onError [default nil]
+    file
+    onError [default nil]
 } {
-	"Perform a stat operation on C<file>.  If successful, returns a
+    "Perform a stat operation on C<file>.  If successful, returns a
      StatResult describing the object.  On error, returns C<nil> unless
      C<onError> is non-nil (and is an Exception), in which case it is
      thrown with an error message."
-	var elements = [_stat file]
+    var elements = [_stat file]
 
-	elements || \
-		[_bail ("Error statting '$file': " + [_errmsg]) :statErr
-		 onError return]
+    elements || \
+        [_bail ("Error statting '$file': " + [_errmsg]) :statErr
+         onError return]
 
-	return [StatResult->new file elements]
+    return [StatResult->new file elements]
 }

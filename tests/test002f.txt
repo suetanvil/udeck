@@ -1,0 +1,6 @@
+x: <procedure>
+y: <procedure>
+z: <procedure>
+a == 42; b == 11; c == 9
+Done!
+w: nil

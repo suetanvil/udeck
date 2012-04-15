@@ -1,84 +1,87 @@
-# The Deck system library.  Contents are imported into module Lang
-# after startup.
+package Lang
 
-# no package declaration because this module has already been created.
+"
+Package C<Lang> contains core language features of Deck.  It is
+automatically imported into each module and should be considered part
+of the language implementation.
+"
+
 
 const {
-	true = 1
-	false = nil
+    true = 1
+    false = nil
 }
 
 proc _seq_Equals
 proc _write_seq
 proc puts
 proc slice
+proc \!=
 
 perlproc sprintf {fmt args} '''sprintf ($fmt, @args)'''
 perlproc _str_lte {left right} '''return ($left lt $right || $left eq $right)'''
 
 
-
-
 # Base class for all traditional structured objects
-_class_ext Object {
-	"C<Object> is the root class.  All other classes in Deck are derived
-	 from Object.
+_::class_ext Object {
+    "C<Object> is the root class.  All other classes in Deck are derived
+     from Object.
 
-	 C<Object> is a pure abstract base class.  It cannot be instantiated."
+     C<Object> is a pure abstract base class.  It cannot be instantiated."
 
-	# Docs for builtin methods:
-	mdoc class_get {} "Return the class of this object."
-	mdoc isTrue_get{} "Return this object's truth value.  Somewhat magical."
+    # Docs for builtin methods:
+    mdoc class_get {} "Return the class of this object."
+    mdoc isTrue_get{} "Return this object's truth value.  Somewhat magical."
 
-	method doesNotUnderstand {name args} {
-		"This method is called when the object receives a message it does not
-		 understand (i.e. there is no corresponding method implemented.)
+    method doesNotUnderstand {name args} {
+        "This method is called when the object receives a message it does not
+         understand (i.e. there is no corresponding method implemented.)
 
-		 Default behaviour is to exit with an error message."
-		die "Unknown method '$name' in class '" self.class.name "'"
-	}
+         Default behaviour is to exit with an error message."
+        die "Unknown method '$name' in class '" self.class.name "'"
+    }
 
 
-	method _init {args} {
-		"This is the message that each object receives when it is first
-		 created. Its implementation is expected to initialize the new object."
-	}
+    method _init {args} {
+        "This is the message that each object receives when it is first
+         created. Its implementation is expected to initialize the new object."
+    }
 
-	method isNil_get {} {
-		"Returns a true value if this object is nil, false otherwise."
-		return nil
-	}
+    method isNil_get {} {
+        "Returns a true value if this object is nil, false otherwise."
+        return nil
+    }
 
-	method op_Equals {other} {
-		"C<==> operator: Test if C<self> and C<other> are equal with respect
+    method op_Equals {other} {
+        "C<==> operator: Test if C<self> and C<other> are equal with respect
          to their types.  Should be overridden by subclass; defaults to using
          C<===>."
-		return (self === other)
-	}
+        return (self === other)
+    }
 
-	method maker_get {} {
-		"Sequence protocol: return a procedure which will create a collection
-		 suitable for holding the contents of self and which takes one
+    method maker_get {} {
+        "Sequence protocol: return a procedure which will create a collection
+         suitable for holding the contents of self and which takes one
          argument,a number specifying the size.  It defaults to C<listSized>."
-		return listSized
-	}
+        return listSized
+    }
 
-	method isIndexable_get {} {
-		"Tests if this object can be treated as a sequence (i.e. implements
+    method isIndexable_get {} {
+        "Tests if this object can be treated as a sequence (i.e. implements
          the sequence protocol).  If true, the object must implement at least
-		 C<at>, C<size> and C<maker> as expected and C<atPut> should either
-		 behave as expected as well or fail with an error."
-		return false
-	}
+         C<at>, C<size> and C<maker> as expected and C<atPut> should either
+         behave as expected as well or fail with an error."
+        return false
+    }
 
-	method last_get {} {
-		"Sequence Protocol: Return the index of the last item in this
-		 object."
-		return (self.size - 1)
-	}
+    method last_get {} {
+        "Sequence Protocol: Return the index of the last item in this
+         object."
+        return (self.size - 1)
+    }
 
-	method _sanitizeIndex {index} {
-		"Sequence Protocol: Given an index into a sequence, return the normal
+    method _sanitizeIndex {index} {
+        "Sequence Protocol: Given an index into a sequence, return the normal
          index for the object (i.e. an integer between 0 and the last index or
          die with an error if it cannot be mapped to a valid index.
 
@@ -86,653 +89,653 @@ _class_ext Object {
          matching positive index.  (Negative indexes are relative to the end
          of the sequence.)"         
 
-		index = [int index]
+        index = [int index]
 
-		if (index < 0) {
-			index = self.size + index
-		}
-		
-		(index >= self.size) && [die "Index '$index' is out of range."]
+        if (index < 0) {
+            index = self.size + index
+        }
+        
+        (index >= self.size) && [die "Index '$index' is out of range."]
 
-		return index
-	}
+        return index
+    }
 
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		var cl = self.class.name
-		var a = [if ((cl@0).isVowel) {value "an"} {value "a"}]
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        var cl = self.class.name
+        var a = [if ((cl@0).isVowel) {value "an"} {value "a"}]
 
-		return "$a $cl"
-	}
+        return "$a $cl"
+    }
 
-	# Copy protocol.
-	method shallowCopy {} {
-		"Make a copy of this object without copying the objects it references."
-		die "Called abstract shallowCopy"
-	}
-	method copy {} {
-		"Make a copy of this object."
-		return [self->shallowCopy]
-	}
+    # Copy protocol.
+    method shallowCopy {} {
+        "Make a copy of this object without copying the objects it references."
+        die "Called abstract shallowCopy"
+    }
+    method copy {} {
+        "Make a copy of this object."
+        return [self->shallowCopy]
+    }
 
-	# Needed for test case
-	method self_get {} {
-		"Return this object."
-	}
+    # Needed for test case
+    method self_get {} {
+        "Return this object."
+    }
 
-	# Comparison behaviour
-	method op_Lt {obj} {
-		"Operator C<E<lt>>: Test if self is less than C<obj>."
-		return (self <= obj && self != obj)
-	}
+    # Comparison behaviour
+    method op_Lt {obj} {
+        "Operator C<E<lt>>: Test if self is less than C<obj>."
+        return (self <= obj && self != obj)
+    }
 
-	method op_Lte {obj} {
-		"Operator C<E<lt>=>: Abstract method. Subclasses must implement this."
-		die "Called abstract op_Lte on " self.class.name
-	}
+    method op_Lte {obj} {
+        "Operator C<E<lt>=>: Abstract method. Subclasses must implement this."
+        die "Called abstract op_Lte on " self.class.name
+    }
 
-	method op_Gt {obj} {
-		"Operator C<E<gt>>: Test if self is greather than C<obj>."
-		return [not (self <= obj)]
-	}
+    method op_Gt {obj} {
+        "Operator C<E<gt>>: Test if self is greather than C<obj>."
+        return [not (self <= obj)]
+    }
 
-	method op_Gte {obj} {
-		"Operator C<E<gt>=>: Test if self is greater than or equal to C<obj>."
-		return (self > obj || self == obj)
-	}
+    method op_Gte {obj} {
+        "Operator C<E<gt>=>: Test if self is greater than or equal to C<obj>."
+        return (self > obj || self == obj)
+    }
 
-	method hashKey_get {} {
-		"Deprecated.  Return a string suitable for representing this object
+    method hashKey_get {} {
+        "Deprecated.  Return a string suitable for representing this object
          as the key in a Perl hash.  By default, calling this is an error."
-		die "Attempted to use '$self' as a hash key."
-	}
+        die "Attempted to use '$self' as a hash key."
+    }
 
-	method isCallable_get {} {
-		"Tell if instances of this class are callable."
-		return false
-	}
+    method isCallable_get {} {
+        "Tell if instances of this class are callable."
+        return false
+    }
 }
 
-_class_ext Number {
-	"C<Number> is the class of all (built-in) number types in Deck.
-	 Instances are floating-point values."
+_::class_ext Number {
+    "C<Number> is the class of all (built-in) number types in Deck.
+     Instances are floating-point values."
 
-	# Double-dispatch methods
-	mdoc addNumber {num} "Add self to number C<num>"
-	method op_Add {obj} {
-		"C<+> operator.  Performs addition."
-		return [obj->addNumber self]
-	}
+    # Double-dispatch methods
+    mdoc addNumber {num} "Add self to number C<num>"
+    method op_Add {obj} {
+        "C<+> operator.  Performs addition."
+        return [obj->addNumber self]
+    }
 
-	mdoc subNumber {num} "Subtract self from C<num>"
-	method op_Sub {obj} {
-		"C<-> operator.  Performs subtraction."
-		return [obj->subNumber self]
-	}
+    mdoc subNumber {num} "Subtract self from C<num>"
+    method op_Sub {obj} {
+        "C<-> operator.  Performs subtraction."
+        return [obj->subNumber self]
+    }
 
-	mdoc modNumber {num} "Return C<num> modulo self."
-	method op_Mod {obj} {
-		"C<%> operator.  Performs the modulo operation."
-		return [obj->modNumber self]
-	}
+    mdoc modNumber {num} "Return C<num> modulo self."
+    method op_Mod {obj} {
+        "C<%> operator.  Performs the modulo operation."
+        return [obj->modNumber self]
+    }
 
-	mdoc multNumber {num} "Return C<num> multiplied by C<self>."
-	method op_Mult {obj} {
-		"C<*> operator.  Performs multiplication."
-		return [obj->multNumber self]
-	}
+    mdoc multNumber {num} "Return C<num> multiplied by C<self>."
+    method op_Mult {obj} {
+        "C<*> operator.  Performs multiplication."
+        return [obj->multNumber self]
+    }
 
-	mdoc divNumber {num} "Return C<num> divided by C<self>."
-	method op_Div {obj} {
-		"C</> operator.  Performs division."
-		return [obj->divNumber self]
-	}
+    mdoc divNumber {num} "Return C<num> divided by C<self>."
+    method op_Div {obj} {
+        "C</> operator.  Performs division."
+        return [obj->divNumber self]
+    }
 
-	mdoc divTruncNumber {num} "Return C<num> divided by C<self> and rounded
+    mdoc divTruncNumber {num} "Return C<num> divided by C<self> and rounded
        toward zero."
-	method op_DivTrunc {obj} {
-		"C<//> operator.  Performs division, truncating to the nearest int."
-		return [obj->divTruncNumber self]
-	}
+    method op_DivTrunc {obj} {
+        "C<//> operator.  Performs division, truncating to the nearest int."
+        return [obj->divTruncNumber self]
+    }
 
-	mdoc lteNumber {num} "Return true if C<num> is less than or equal to 
+    mdoc lteNumber {num} "Return true if C<num> is less than or equal to 
        C<self>."
-	method op_Lte {obj} {
-		"C<E<lt>=> operator.  Performs greater-than-or-equal-to test."
-		return [obj->lteNumber self]
-	}
+    method op_Lte {obj} {
+        "C<E<lt>=> operator.  Performs greater-than-or-equal-to test."
+        return [obj->lteNumber self]
+    }
 
-	mdoc powNumber {num} "Return C<num> raised to the power of C<self>."
-	method op_Pow {obj} {
-		"C<**> operator.  Return C<self> raised to the power of C<other>."
-		return [obj->powNumber self]
-	}
+    mdoc powNumber {num} "Return C<num> raised to the power of C<self>."
+    method op_Pow {obj} {
+        "C<**> operator.  Return C<self> raised to the power of C<other>."
+        return [obj->powNumber self]
+    }
 
-	mdoc bitOrNumber {num} "Return C<num> bitwise ORed with C<self>.
+    mdoc bitOrNumber {num} "Return C<num> bitwise ORed with C<self>.
        Both are first truncated to the nearest integer."
-	method op_BitOr	{obj} {
-		"C<|> operator.  Perform bitwise OR operation.  Fractional arguments
+    method op_BitOr {obj} {
+        "C<|> operator.  Perform bitwise OR operation.  Fractional arguments
          are first truncated toward zero."
-		return [obj->bitOrNumber self]
-	}
+        return [obj->bitOrNumber self]
+    }
 
-	mdoc bitXorNumber {num} "Return C<num> bitwise XORed with C<self>.
+    mdoc bitXorNumber {num} "Return C<num> bitwise XORed with C<self>.
        Both are first truncated to the nearest integer."
-	method op_BitXor {obj} {
-		"C<^> operator.  Perform bitwise exclusive-OR operation.  Fractional
+    method op_BitXor {obj} {
+        "C<^> operator.  Perform bitwise exclusive-OR operation.  Fractional
          arguments are first truncated toward zero."
-		return [obj->bitXorNumber self]
-	}
+        return [obj->bitXorNumber self]
+    }
 
-	mdoc bitAndNumber {num} "Return C<num> bitwise ANDed with C<self>.
+    mdoc bitAndNumber {num} "Return C<num> bitwise ANDed with C<self>.
        Both are first truncated to the nearest integer."
-	method op_BitAnd {obj} {
-		"C<&> operator.  Perform bitwise AND operation.  Fractional arguments
+    method op_BitAnd {obj} {
+        "C<&> operator.  Perform bitwise AND operation.  Fractional arguments
          are first truncated toward zero."
-		return [obj->bitAndNumber self]
-	}
+        return [obj->bitAndNumber self]
+    }
 
-	# Optional comparisons.  Object already implements them but these
-	# versions are (probably) faster.
-	mdoc ltNumber {num} "Test if C<num> is less than C<self>."
-	method op_Lt {obj} {
-		"C<E<lt>> operator. Test if C<self> is less than C<obj>.  
+    # Optional comparisons.  Object already implements them but these
+    # versions are (probably) faster.
+    mdoc ltNumber {num} "Test if C<num> is less than C<self>."
+    method op_Lt {obj} {
+        "C<E<lt>> operator. Test if C<self> is less than C<obj>.  
          This overrides the version in C<Object> for no good reason."
-		return [obj->ltNumber self]
-	}
+        return [obj->ltNumber self]
+    }
 
-	mdoc gtNumber {num} "Test if C<num> is greater than C<self> "
-	method op_Gt {obj} {
-		"C<E<gt>> operator. Test if C<self> is greater than C<obj>.
+    mdoc gtNumber {num} "Test if C<num> is greater than C<self> "
+    method op_Gt {obj} {
+        "C<E<gt>> operator. Test if C<self> is greater than C<obj>.
          This overrides the version in C<Object> for no good reason."
-		return [obj->gtNumber self]
-	}
+        return [obj->gtNumber self]
+    }
 
-	mdoc gteNumber {num} "Test if C<num> is greater than or equal to C<self> "
-	method op_Gte {obj} {
-		"C<E<gt>=> operator.  Test if C<self> is greater than or equal to
+    mdoc gteNumber {num} "Test if C<num> is greater than or equal to C<self> "
+    method op_Gte {obj} {
+        "C<E<gt>=> operator.  Test if C<self> is greater than or equal to
          C<self>.  This overrides the version in C<Object> for no good reason."
-		return [obj->gteNumber self]
-	}
+        return [obj->gteNumber self]
+    }
 
-	mdoc shiftRight {num} "Return C<num> shifted right by C<self>"
-	method op_RShift {obj} {
-		"C<E<gt>E<gt>> operator.  Shift self right by C<obj>."
-		return [obj->shiftRight self]
-	}
+    mdoc shiftRight {num} "Return C<num> shifted right by C<self>"
+    method op_RShift {obj} {
+        "C<E<gt>E<gt>> operator.  Shift self right by C<obj>."
+        return [obj->shiftRight self]
+    }
 
-	mdoc shiftLeft {num} "Return C<num> shifted left by C<self>"
-	method op_LShift {obj} {
-		"C<E<lt>E<lt>> operator.  Shift self left by C<obj>."
-		return [obj->shiftLeft self]
-	}
+    mdoc shiftLeft {num} "Return C<num> shifted left by C<self>"
+    method op_LShift {obj} {
+        "C<E<lt>E<lt>> operator.  Shift self left by C<obj>."
+        return [obj->shiftLeft self]
+    }
 
-	mdoc op_Equals {obj} \
-		"Test if C<self> and C<obj> have the same numeric value.
+    mdoc op_Equals {obj} \
+        "Test if C<self> and C<obj> have the same numeric value.
          (Non-numbers clearly do not.)"
 
-	method shallowCopy {} {
-		"Return self, since Numbers are immutable."
-		return self
-	}
+    method shallowCopy {} {
+        "Return self, since Numbers are immutable."
+        return self
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "$self"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "$self"
+    }
 
-	method hashKey_get {} {
-		"Deprecated.  Return a string suitable for representing this object
+    method hashKey_get {} {
+        "Deprecated.  Return a string suitable for representing this object
          as the key in a Perl hash.  Used in class C<Hash>."
-		return "n.$self"
-	}
+        return "n.$self"
+    }
 
 }
 
-_class_ext Nil {
-	"C<Nil> is the type of the object representing uninitialized variables.
-	 There is only one instance, the global constant C<nil>.  Unset variables
-	 are initialized to nil, as are empty lists."
+_::class_ext Nil {
+    "C<Nil> is the type of the object representing uninitialized variables.
+     There is only one instance, the global constant C<nil>.  Unset variables
+     are initialized to nil, as are empty lists."
 
-	method isNil_get {} {
-		"Test if this object is C<nil>. Returns true."
-		return true
-	}
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "nil"
-	}
+    method isNil_get {} {
+        "Test if this object is C<nil>. Returns true."
+        return true
+    }
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "nil"
+    }
 
-	method shallowCopy {} {
-		"Return C<self> since nil is immutable."
-		return self
-	}
+    method shallowCopy {} {
+        "Return C<self> since nil is immutable."
+        return self
+    }
 }
 
-_class_ext List {
-	"C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
-	 Deck does not present its lists as linked lists of cells.  Instead, a
-	 Deck C<List> is an array (i.e. a 'vector') of object references whose
-	 individual items can be accessed with the C<at> and C<atPut> methods
-	 (usually hidden by the C<@> operator).  The indexes start at zero and
-	 increase to the number of items minus one.
+_::class_ext List {
+    "C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
+     Deck does not present its lists as linked lists of cells.  Instead, a
+     Deck C<List> is an array (i.e. a 'vector') of object references whose
+     individual items can be accessed with the C<at> and C<atPut> methods
+     (usually hidden by the C<@> operator).  The indexes start at zero and
+     increase to the number of items minus one.
 
-	 This is different from most Lispish languages, where a list is implemented
-	 as a linked list of pairs of references (CONS cells).
+     This is different from most Lispish languages, where a list is implemented
+     as a linked list of pairs of references (CONS cells).
 
-	 C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
-	 C<maker> C<isIndexable> returns true."
+     C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
+     C<maker> C<isIndexable> returns true."
 
-	mdoc at {index} \
-		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		 must be contiguous and start at zero.  Negative indexes are
+    mdoc at {index} \
+        "Sequence Protocol: Return the item at position C<index>.  Indexes
+         must be contiguous and start at zero.  Negative indexes are
          subtracted from the list's size."
 
-	mdoc atPut {index value} \
-		"Sequence Protocol: Store C<value> at position C<index> and
-		 return C<value>.  Indexes start at zero and must be
-		 contiguous.  Negative indexes are subtracted from the list's size."
+    mdoc atPut {index value} \
+        "Sequence Protocol: Store C<value> at position C<index> and
+         return C<value>.  Indexes start at zero and must be
+         contiguous.  Negative indexes are subtracted from the list's size."
 
-	mdoc size_get {} \
-		"Sequence Protocol: Return the number of items in this object."
+    mdoc size_get {} \
+        "Sequence Protocol: Return the number of items in this object."
 
-	mdoc shallowCopy {} \
-		"Return a copy of C<self> without copying the items it references."
+    mdoc shallowCopy {} \
+        "Return a copy of C<self> without copying the items it references."
 
-	method isIndexable_get {} {
-		"Returns true, since C<List> implements the sequence protocol."
-		return true
-	}
+    method isIndexable_get {} {
+        "Returns true, since C<List> implements the sequence protocol."
+        return true
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this C<List>."
-		const MAX = 5
-		(self.size < MAX + 3) && [return "[@{self}]"]
+    method printable_get {} {
+        "Return a human-readable textual represention of this C<List>."
+        const MAX = 5
+        (self.size < MAX + 3) && [return "[@{self}]"]
 
-		var sublist = [listSized MAX]
+        var sublist = [listSized MAX]
 
-		var index = 0
-		while (index < MAX) {
-			sublist@index = self@index
-			index = index + 1
-		}
+        var index = 0
+        while (index < MAX) {
+            sublist@index = self@index
+            index = index + 1
+        }
 
-		var last = self @ -1
-		return "[@sublist .. $last]"
-	}
+        var last = self @ -1
+        return "[@sublist .. $last]"
+    }
 
-	method op_Equals {obj} {
-		"C<==> operator: True if C<obj> is also a List and all elements
+    method op_Equals {obj} {
+        "C<==> operator: True if C<obj> is also a List and all elements
          equal (via C<op_Equals>) the corresponding element in C<obj>."
-		return [_seq_Equals self obj]
-	}
+        return [_seq_Equals self obj]
+    }
 
-	method op_Add {otherSeq} {
-		"C<+> operator, overloaded: Returns C<self> and C<other> concatenated
+    method op_Add {otherSeq} {
+        "C<+> operator, overloaded: Returns C<self> and C<other> concatenated
          together.  The result is the type returned by C<maker> (C<list> in
          this case)."
-		var result = [listSized (self.size + otherSeq.size)]
-		_write_seq self otherSeq result
-		return result
-	}
+        var result = [listSized (self.size + otherSeq.size)]
+        _write_seq self otherSeq result
+        return result
+    }
 
 }
 
-_class_ext Stringlike {
-	"This is the abstract base class for several classes representing
-	 various sequences of binary or specially-encoded data.  It should
-	 not be used directly."
+_::class_ext Stringlike {
+    "This is the abstract base class for several classes representing
+     various sequences of binary or specially-encoded data.  It should
+     not be used directly."
 
-	mdoc at {index} \
-		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		must be contiguous and start at zero.  Negative indexes are
+    mdoc at {index} \
+        "Sequence Protocol: Return the item at position C<index>.  Indexes
+        must be contiguous and start at zero.  Negative indexes are
          subtracted from the list's size."
 
-	mdoc atPut {index value} \
-		"Sequence Protocol: Store C<value> at position C<index> and
-		 return C<value>.  Indexes start at zero and must be
-		 contiguous. Negative indexes are subtracted from the list's size.
+    mdoc atPut {index value} \
+        "Sequence Protocol: Store C<value> at position C<index> and
+         return C<value>.  Indexes start at zero and must be
+         contiguous. Negative indexes are subtracted from the list's size.
          C<value> must be of a type that can be stored in this object."
 
-	mdoc size_get {} \
-		"Sequence Protocol: Return the number of items in this object."
+    mdoc size_get {} \
+        "Sequence Protocol: Return the number of items in this object."
 
-	method isIndexable_get {} {
-		"Returns true, since all C<Stringlike> subclasses implement the
+    method isIndexable_get {} {
+        "Returns true, since all C<Stringlike> subclasses implement the
          sequence protocol."
-		return 1
-	}
+        return 1
+    }
 }
 
 
-perlproc _downcase {s} '''$s =~ y/A-Z/a-z/;return $s;'''
-perlproc _isspace {s} '''return $s =~ /^\s+$/;'''
+perlproc _downcase {dc_s} '''$dc_s =~ y/A-Z/a-z/;return $dc_s;'''
+perlproc _isspace {is_s} '''return $is_s =~ /^\s+$/;'''
 
-_class_ext String {
-	"C<String> instances contain human-readable text which can be
-	 printed to the console or stored in a file.  The class implements
-	 the sequence protocol but the objects stored or retrieved from a
-	 C<String> must themselves be strings of length 1.  
+_::class_ext String {
+    "C<String> instances contain human-readable text which can be
+     printed to the console or stored in a file.  The class implements
+     the sequence protocol but the objects stored or retrieved from a
+     C<String> must themselves be strings of length 1.  
 
-	 Unlike many other languages, Deck does not have a character type.
-	 Instead, strings are encoded in some manner and it is best not to
-	 make assumptions about the details.  In particular, you should
-	 B<never> use a C<String> to hold arbitrary binary data as this
-	 will break when Deck switches to using UTF8.  Use C<ByteArray> for
-	 that.
+     Unlike many other languages, Deck does not have a character type.
+     Instead, strings are encoded in some manner and it is best not to
+     make assumptions about the details.  In particular, you should
+     B<never> use a C<String> to hold arbitrary binary data as this
+     will break when Deck switches to using UTF8.  Use C<ByteArray> for
+     that.
 
-	 That being said, C<Strings> are currently 7-bit ASCII and all operations
-	 are performed within the C<C> locality."
+     That being said, C<Strings> are currently 7-bit ASCII and all operations
+     are performed within the C<C> locality."
 
-	mdoc op_Equals {obj} \
-		"C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
+    mdoc op_Equals {obj} \
+        "C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
          and all characters match the the corresponding characters in C<obj>."
 
-	mdoc shallowCopy {} \
-		"Create and return a copy of C<self>."
+    mdoc shallowCopy {} \
+        "Create and return a copy of C<self>."
 
-	mdoc ord_get {} \
-		"Return the numeric code of the first character of self.  If self is
+    mdoc ord_get {} \
+        "Return the numeric code of the first character of self.  If self is
          empty, returns 0.  Note that while Deck currently encodes strings
          in ASCII or some variant, it is not safe to assume that this will
          continue in later versions."
 
-	method maker_get {} {
-		"Sequence protocol: return a procedure which will create a collection
-		 suitable for holding the contents of self and which takes one
+    method maker_get {} {
+        "Sequence protocol: return a procedure which will create a collection
+         suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<stringSized>."
-		return stringSized
-	}
+        return stringSized
+    }
 
-	method isVowel_get {} {
-		"Return true if C<self> contains one character and that character
+    method isVowel_get {} {
+        "Return true if C<self> contains one character and that character
          is an ASCII vowel."
-		(self.size != 1) && [return false]
+        (self.size != 1) && [return false]
 
-		var lc = [self->lowercase]
+        var lc = [self->lowercase]
 
-		for v in [list "a" "e" "i" "o" "u"] {
-			if (lc == v) {
-				return true
-			}
-		}
-		return false
-	}
+        for v in [list "a" "e" "i" "o" "u"] {
+            if (lc == v) {
+                return true
+            }
+        }
+        return false
+    }
 
-	method isSpace_get {} {
-		"Test if C<self> is all ASCII whitespace."
-		return [_isspace self]
-	}
+    method isSpace_get {} {
+        "Test if C<self> is all ASCII whitespace."
+        return [_isspace self]
+    }
 
-	method lowercase {} {
-		"Return a copy of C<self> with all uppercase characters replaced
+    method lowercase {} {
+        "Return a copy of C<self> with all uppercase characters replaced
          with their lowercase equivalents."
-		return [_downcase self]
-	}
+        return [_downcase self]
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object; in this
-		 case just C<self>; a string is its own printable."
-		return self
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object; in this
+         case just C<self>; a string is its own printable."
+        return self
+    }
 
-	method op_Add {otherString} {
-		"C<+> operator, overloaded: Returns C<self> and C<otherString>
+    method op_Add {otherString} {
+        "C<+> operator, overloaded: Returns C<self> and C<otherString>
          concatenated together.  The result is the type returned by C<maker>
          (C<String> in this case).  Note that C<otherString> does B<not> have
          to be a string but B<must> contain only strings of length 1
          (i.e. characters)."
-		var result = [stringSized (self.size + otherString.size)]
-		_write_seq self otherString result
-		return result
-	}
+        var result = [stringSized (self.size + otherString.size)]
+        _write_seq self otherString result
+        return result
+    }
 
-	method op_Lte {other} {
-		"C<E<lt>=> operator: lexically compares C<self> with C<other> (which
+    method op_Lte {other} {
+        "C<E<lt>=> operator: lexically compares C<self> with C<other> (which
          B<must> be a C<String> or C<Symbol>) and returns true if self comes
          before C<other> or if they are equal.  The other comparisons are
          implemented in C<Object>."
-		if (other.class == Symbol) {
-			other = [unintern other]
-		}
+        if (other.class == Symbol) {
+            other = [unintern other]
+        }
 
-		(other.class == String) \
-			|| [die "Comparing string with " other.class ]
+        (other.class == String) \
+            || [die "Comparing string with " other.class ]
 
-		return [_str_lte self other]
-	}
+        return [_str_lte self other]
+    }
 
-	method hashKey_get {} {
-		"Deprecated.  Return a string suitable for representing this object
+    method hashKey_get {} {
+        "Deprecated.  Return a string suitable for representing this object
          as the key in a Perl hash.  Used in class C<Hash>."
-		return "s.$self"
-	}
+        return "s.$self"
+    }
 }
 
 
-_class_ext Symbol {
-	"Symbols are mostly used to represent names in expressions.  They
-	 are similar to strings in that they contain human-readable text.  However,
-	 there are some notable differences:
+_::class_ext Symbol {
+    "Symbols are mostly used to represent names in expressions.  They
+     are similar to strings in that they contain human-readable text.  However,
+     there are some notable differences:
 
-	 =over
+     =over
 
-	 =item 1.
+     =item 1.
 
-	 Symbols are immutable.  C<atPut> will fail on one.
+     Symbols are immutable.  C<atPut> will fail on one.
 
-	 =item 2.
+     =item 2.
 
-	 Symbols are unique.  There is only ever one symbol with a particular
-	 value.
+     Symbols are unique.  There is only ever one symbol with a particular
+     value.
 
-	 =back
+     =back
 
-	 C<Symbol> implements the sequence protocol but as mentioned above, the
-	 C<atPut> method will fail.
+     C<Symbol> implements the sequence protocol but as mentioned above, the
+     C<atPut> method will fail.
 
-	 C<Symbols> can be converted to and from strings via the C<intern> and 
-	 C<unintern> procedures.  Symbol literals are created by prefixing the
+     C<Symbols> can be converted to and from strings via the C<intern> and 
+     C<unintern> procedures.  Symbol literals are created by prefixing the
      symbol with the C<:> character, e.g. C<:foo>.  This works as expected,
      with the quote delaying evaluation and so yielding the symbol instead of
      the variable it would represent."
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return ":$self"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return ":$self"
+    }
 
-	method op_Equals {obj} {
-		"C<==> operator: true if self === obj or if obj is a string with the
+    method op_Equals {obj} {
+        "C<==> operator: true if self === obj or if obj is a string with the
          same characters in it."
-		(obj.class == String) && [return ("$self" == obj)]
-		return (self === obj)
-	}
+        (obj.class == String) && [return ("$self" == obj)]
+        return (self === obj)
+    }
 
-	method op_Add {obj} {
-		"C<+> operator, overloaded: Returns C<self> and C<obj>
+    method op_Add {obj} {
+        "C<+> operator, overloaded: Returns C<self> and C<obj>
          concatenated together.  The result is the type returned by C<maker>
          (C<String> in this case).  Note that C<obj> does B<not> have
          to be a C<String> or C<Symbol> but B<must> contain only strings
          of length 1 (i.e. characters)."
-		var result = [stringSized (self.size + obj.size)]
-		_write_seq self obj result
-		return result
-	}
+        var result = [stringSized (self.size + obj.size)]
+        _write_seq self obj result
+        return result
+    }
 
-	method shallowCopy {} {
-		"Symbols are immutable so just return C<self>."
-		return self
-	}
+    method shallowCopy {} {
+        "Symbols are immutable so just return C<self>."
+        return self
+    }
 
-	method op_Lte {other} {
-		"C<E<lt>=> operator: See C<String-E<gt>op_Lte>."
-		return ([unintern self] <= other)
-	}
+    method op_Lte {other} {
+        "C<E<lt>=> operator: See C<String-E<gt>op_Lte>."
+        return ([unintern self] <= other)
+    }
 
-	method maker_get {} {
-		"Sequence protocol: return a procedure which will create a collection
-		 suitable for holding the contents of self and which takes one
+    method maker_get {} {
+        "Sequence protocol: return a procedure which will create a collection
+         suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<stringSized>."
-		return stringSized
-	}
+        return stringSized
+    }
 
-	method hashKey_get {} {
-		"Deprecated.  Return a string suitable for representing this object
+    method hashKey_get {} {
+        "Deprecated.  Return a string suitable for representing this object
          as the key in a Perl hash.  Used in class C<Hash>."
-		return "y.$self"
-	}
+        return "y.$self"
+    }
 }
 
 
 
-_class_ext ByteArray {
-	"A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
-	 is allowed.
+_::class_ext ByteArray {
+    "A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
+     is allowed.
 
-	 C<ByteArray> implements the sequence protocol but will fail if you
-	 attempt to store a value in it that is not an integer between 0 and 255."
+     C<ByteArray> implements the sequence protocol but will fail if you
+     attempt to store a value in it that is not an integer between 0 and 255."
 
-	mdoc shallowCopy {} \
-		"Return a copy of C<self>."
+    mdoc shallowCopy {} \
+        "Return a copy of C<self>."
 
-   	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		const MAXSIZE = 5
-		var count = MAXSIZE
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        const MAXSIZE = 5
+        var count = MAXSIZE
 
-		var dotdot = " .. "
-		var last
+        var dotdot = " .. "
+        var last
 
-		if (self.size < MAXSIZE + 3) {
-			dotdot = ""
-			last = ""
-			count = self.size
-		} else {
-			last = [sprintf "0x%02x" (self@ -1)]
-		}
+        if (self.size < MAXSIZE + 3) {
+            dotdot = ""
+            last = ""
+            count = self.size
+        } else {
+            last = [sprintf "0x%02x" (self@ -1)]
+        }
 
-		var formatted = [listSized count]
-		var index = 0
-		while (index < count) {
+        var formatted = [listSized count]
+        var index = 0
+        while (index < count) {
 
-			formatted@index = [sprintf "0x%02x" (self@index)]
-			index = index + 1
-		}
+            formatted@index = [sprintf "0x%02x" (self@index)]
+            index = index + 1
+        }
 
-		return "[byteArray @formatted$dotdot$last]"
-   	}
+        return "[byteArray @formatted$dotdot$last]"
+    }
 
 
-	method op_Equals {obj} {
-		"C<==> operator: True if C<obj> is also a ByteArray and all elements
+    method op_Equals {obj} {
+        "C<==> operator: True if C<obj> is also a ByteArray and all elements
          equal the corresponding element in C<obj>."
-		return [_seq_Equals self obj]
-	}
+        return [_seq_Equals self obj]
+    }
 
-	method op_Add {otherBArray} {
-		"C<+> operator, overloaded: Returns C<self> and C<obj>
+    method op_Add {otherBArray} {
+        "C<+> operator, overloaded: Returns C<self> and C<obj>
          concatenated together.  The result is the type returned by C<maker>
          (C<ByteArray> in this case).  Note that C<obj> does B<not> have
          to be a C<ByteArray> but B<must> contain only bytes (i.e. integers
-         between 0 and 255."		
-		var result = [bytesSized (self.size + otherBArray.size)]
-		_write_seq self otherBArray result
-		return result
-	}
+         between 0 and 255."        
+        var result = [bytesSized (self.size + otherBArray.size)]
+        _write_seq self otherBArray result
+        return result
+    }
 
-	method maker_get {} {
-		"Sequence protocol: return a procedure which will create a collection
-		 suitable for holding the contents of self and which takes one
+    method maker_get {} {
+        "Sequence protocol: return a procedure which will create a collection
+         suitable for holding the contents of self and which takes one
          argument, a number specifying the size.  In this case, it's
          C<bytesSized>."
-		return bytesSized
-	}
+        return bytesSized
+    }
 }
 
-_class_ext Struct {
-	"C<Struct> is the base class for all traditional classes.  A traditional
-	 class is a class whose data is stored in named fields.
+_::class_ext Struct {
+    "C<Struct> is the base class for all traditional classes.  A traditional
+     class is a class whose data is stored in named fields.
 
-	 This is an abstract base class and cannot be instantiated.  All subclasses
-	 should implement the method C<init> to initialize the fields when an
-	 instance is created.
+     This is an abstract base class and cannot be instantiated.  All subclasses
+     should implement the method C<init> to initialize the fields when an
+     instance is created.
 
-	 C<Struct> subclasses are typically instantiated using the C<new> method or
-	 procedure."
+     C<Struct> subclasses are typically instantiated using the C<new> method or
+     procedure."
 
-	mdoc _structShallowCopy {} \
-		"Return a copy of C<self> with all instance variables referencing
+    mdoc _structShallowCopy {} \
+        "Return a copy of C<self> with all instance variables referencing
          the same objects the original references.  A subclass should use this
          to implement C<shallowCopy> only if the new copy does not interfere
          with the internal state of the original."
 
-	method shallowCopy {} {
-		"Create a suitably shallow copy of self such that the copy cannot
+    method shallowCopy {} {
+        "Create a suitably shallow copy of self such that the copy cannot
          interfere with the operation of the original.  (For example, if the
          original contains a private list that it modifies, that list should
          be copied.  Otherwise, both instances will modify the same (formerly)
          private list.)"
-		die "Class '" self.class.printable "' does not implement shallowCopy."
-	}
+        die "Class '" self.class.printable "' does not implement shallowCopy."
+    }
 }
 
 
-_class_ext Class {
-	"All classes (i.e. types) in Deck are themselves objects and those objects
-	 are instances of type C<Class>.  This includes C<Class> itself.
+_::class_ext Class {
+    "All classes (i.e. types) in Deck are themselves objects and those objects
+     are instances of type C<Class>.  This includes C<Class> itself.
 
-	 C<Class> serves two purposes: to provide information about the class and
-	 to create new instances via its C<new> method."
+     C<Class> serves two purposes: to provide information about the class and
+     to create new instances via its C<new> method."
 
-	mdoc new {args} \
-		"Create a new instance of this class and return it.  The argument list
+    mdoc new {args} \
+        "Create a new instance of this class and return it.  The argument list
          is passed to the new object's C<_init> method, which C<new> calls 
          first."
 
-	mdoc name_get {} \
-		"The class's name.  Note that unnamed classes may exist and
+    mdoc name_get {} \
+        "The class's name.  Note that unnamed classes may exist and
          that the C<name> attribute is not necessarily the same as the global
          symbol (if present) that references the class.  This is the common
          case but it is not guaranteed."
-	mdoc name_set {} "xxx"
+    mdoc name_set {} "xxx"
 
-	mdoc selectors_get {} \
-		"Return a C<List> of C<Symbols>, each one the name of a method
+    mdoc selectors_get {} \
+        "Return a C<List> of C<Symbols>, each one the name of a method
          implemented by this method or one of its superclasses."
 
-	mdoc methods_get {} \
-		"Return a C<List> of C<Symbols>, each one the name of a method
+    mdoc methods_get {} \
+        "Return a C<List> of C<Symbols>, each one the name of a method
          implemented by B<this class> and B<not> one of its superclasses."
 
-	mdoc superclass_get {} \
-		"Return a reference to this class's superclass.  This can be C<nil>
+    mdoc superclass_get {} \
+        "Return a reference to this class's superclass.  This can be C<nil>
          if the class does not have a superclass.  Currently, only C<Object>
          is like that."
 
-	mdoc can {message} \
-		"Test if this class implements a method named by C<message>.
+    mdoc can {message} \
+        "Test if this class implements a method named by C<message>.
          C<message> must be  a symbol."
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		var nm = self.name
-		(nm.size == 0) && [return "a Class"]
-		
-		return "class $nm"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        var nm = self.name
+        (nm.size == 0) && [return "a Class"]
+        
+        return "class $nm"
+    }
 }
 
-_class_ext Quote {
-	"C<Quote> instances are used to represent quotation in Deck expressions.
+_::class_ext Quote {
+    "C<Quote> instances are used to represent quotation in Deck expressions.
      They are typically represented in Deck source code via the colon operator
      (C<:>).
 
-	 Each C<Quote> contains a single data value which may be retrieved using
-	 the C<value> attribute.  A C<Quote> in an expression evaluates to its
+     Each C<Quote> contains a single data value which may be retrieved using
+     the C<value> attribute.  A C<Quote> in an expression evaluates to its
      wrapped value.  For example, the compiler will evaluate this
 
      C<[a b c]>
@@ -756,114 +759,114 @@ _class_ext Quote {
      to use a C<Quote> when creating Deck expressions to be compiled later
      by the Deck compiler."
 
-	mdoc value_get {} \
-		"The thing being wrapped."
+    mdoc value_get {} \
+        "The thing being wrapped."
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		var v = self.value
-		return "[quote $v]"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        var v = self.value
+        return "[quote $v]"
+    }
 
-	method op_Equals {obj} {
-		"C<==> operator: True if C<obj> is also a C<Quote> and both objects'
+    method op_Equals {obj} {
+        "C<==> operator: True if C<obj> is also a C<Quote> and both objects'
          values are also equal according to C<op_Equals>."
-		(self.class == obj.class) || [return false]
-		return (self.value == obj.value)
-	}
+        (self.class == obj.class) || [return false]
+        return (self.value == obj.value)
+    }
 
-	method shallowCopy {} {
-		"Create a new C<Quote> wrapping the same object."
-		return [quote self.value]
-	}
+    method shallowCopy {} {
+        "Create a new C<Quote> wrapping the same object."
+        return [quote self.value]
+    }
 }
 
-_class_ext Macro {
-	"C<Macro> is the class of all Deck macros."
+_::class_ext Macro {
+    "C<Macro> is the class of all Deck macros."
 
-	method shallowCopy {} {
-		"C<Macros> are immutable so we just return the same instance."
-		return self
-	}
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "<macro>"
-	}
-	method isCallable_get {} {
-		"Tell if instances of this class are callable.  Yes, in this case."
-		return true
-	}
+    method shallowCopy {} {
+        "C<Macros> are immutable so we just return the same instance."
+        return self
+    }
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "<macro>"
+    }
+    method isCallable_get {} {
+        "Tell if instances of this class are callable.  Yes, in this case."
+        return true
+    }
 }
 
-_class_ext Procedure {
-	"C<Procedure> is the class of most Deck procedures (procs, subs, etc)."
+_::class_ext Procedure {
+    "C<Procedure> is the class of most Deck procedures (procs, subs, etc)."
 
-	method shallowCopy {} {
-		"C<Procedures> are immutable so we just return the same instance."
-		return self
-	}
+    method shallowCopy {} {
+        "C<Procedures> are immutable so we just return the same instance."
+        return self
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "<procedure>"
-	}
-	method isCallable_get {} {
-		"Tell if instances of this class are callable.  Yes, in this case."
-		return true
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "<procedure>"
+    }
+    method isCallable_get {} {
+        "Tell if instances of this class are callable.  Yes, in this case."
+        return true
+    }
 }
 
-_class_ext Method {
-	"C<Method> is the class of all Deck methods."
-	method shallowCopy {} {
-		"C<Methods> are immutable so we just return the same instance."
-		return self
-	}
+_::class_ext Method {
+    "C<Method> is the class of all Deck methods."
+    method shallowCopy {} {
+        "C<Methods> are immutable so we just return the same instance."
+        return self
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "<method>"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "<method>"
+    }
 }
 
-_class_ext MethodCall {
-	"C<MethodCall> is the class of all method call objects.  Method calls are
-	 callable objects that will call a specific method on a specific object,
-	 both of which are captured inside the C<MethodCall>.
+_::class_ext MethodCall {
+    "C<MethodCall> is the class of all method call objects.  Method calls are
+     callable objects that will call a specific method on a specific object,
+     both of which are captured inside the C<MethodCall>.
 
-	 Instances of C<MethodCall> are the result of a call to C<getMethod> or
-	 C<getSuperMethod> (which are usually called by the macro C<-E<gt>>)."
+     Instances of C<MethodCall> are the result of a call to C<getMethod> or
+     C<getSuperMethod> (which are usually called by the macro C<-E<gt>>)."
 
-	method shallowCopy {} {
-		"C<MethodCalls> are immutable so we just return the same instance."
-		return self
-	}
+    method shallowCopy {} {
+        "C<MethodCalls> are immutable so we just return the same instance."
+        return self
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		return "<method call>"
-	}
-	method isCallable_get {} {
-		"Tell if instances of this class are callable.  Yes, in this case."
-		return true
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        return "<method call>"
+    }
+    method isCallable_get {} {
+        "Tell if instances of this class are callable.  Yes, in this case."
+        return true
+    }
 }
 
-_class_ext PerlObj {
-	"C<PerlObj> is a wrapper around some Perl data.  Perl functions created
-	 using C<perlproc> can return Perl data that has no meaningful
-	 representation inside Deck and these can then be passed to other Perl
-	 procedures.
+_::class_ext PerlObj {
+    "C<PerlObj> is a wrapper around some Perl data.  Perl functions created
+     using C<perlproc> can return Perl data that has no meaningful
+     representation inside Deck and these can then be passed to other Perl
+     procedures.
 
-	 For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
-	 hold a reference to an instance of a class defined in the library.
+     For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
+     hold a reference to an instance of a class defined in the library.
 
-	 There is no way to modify a PerlObj in Deck."
+     There is no way to modify a PerlObj in Deck."
 
-	mdoc shallowCopy {} \
-		"C<MethodCalls> are immutable so we just return the same instance."
-	mdoc printable_get {} \
-		"Return a human-readable textual represention of this object."
+    mdoc shallowCopy {} \
+        "C<MethodCalls> are immutable so we just return the same instance."
+    mdoc printable_get {} \
+        "Return a human-readable textual represention of this object."
 
 }
 
@@ -871,87 +874,87 @@ _class_ext PerlObj {
 # Equality support.  This should really be part of a trait, but Deck
 # doesn't implement them yet.
 proc _seq_Equals {left right} {
-	(left.class === right.class) || [return false]
-	(left.size == right.size) || [return false]
+    (left.class === right.class) || [return false]
+    (left.size == right.size) || [return false]
 
-	var index = 0
-	while (index < left.size) {
-		(left@index == right@index) || [return false]
-		index = index + 1
-	}
+    var index = 0
+    while (index < left.size) {
+        (left@index == right@index) || [return false]
+        index = index + 1
+    }
 
-	return true
+    return true
 }
 
 
 # Write the contents of src1 and src2 sequentially onto dest.  Assumes
 # that dest is long enough and of the right type to hold the contents.
 proc _write_seq {src1 src2 dest} {
-	var index = 0
-	for item in src1 {
-		dest@index = item
-		index = index + 1
-	}
+    var index = 0
+    for item in src1 {
+        dest@index = item
+        index = index + 1
+    }
 
-	for item in src2 {
-		dest@index = item
-		index = index + 1
-	}
+    for item in src2 {
+        dest@index = item
+        index = index + 1
+    }
 }
 
 
 proc cmp {left right} {
-	"Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less
+    "Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less
      than, equal to or greater than C<right> respectively.  Operator
      C<E<lt>=E<gt>> (i.e. the spaceship operator) is an alias to C<cmp>."
 
-	(left == right)	&& [return 0]
-	(left > right)	&& [return 1]
-	return -1
+    (left == right) && [return 0]
+    (left > right)  && [return 1]
+    return -1
 }
 const \<=> = cmp
 
 proc abs {aNum} {
-	"Return the absolute value of C<aNum>, a Number."
-	if (aNum < 0) {
-		return [-aNum]
-	}
-	return aNum
+    "Return the absolute value of C<aNum>, a Number."
+    if (aNum < 0) {
+        return [-aNum]
+    }
+    return aNum
 }
 
 proc \!= {left right} {
-	"Return C<true> if C<left> and C<right> are not equal according to C<==>."
-	return [not (left == right)]
+    "Return C<true> if C<left> and C<right> are not equal according to C<==>."
+    return [not (left == right)]
 }
 
 
 proc size {aSeq} {
-	"Return the number of items in sequence C<aSeq>."
-	return aSeq.size
+    "Return the number of items in sequence C<aSeq>."
+    return aSeq.size
 }
 
 proc last {aSeq} {
-	"Return the index of the last item in sequence C<aSeq>."
-	return aSeq.last
+    "Return the index of the last item in sequence C<aSeq>."
+    return aSeq.last
 }
 
 proc typeof {obj} {
-	"Return the name of the type of C<obj>."
-	return [intern obj.class.name]
+    "Return the name of the type of C<obj>."
+    return [intern obj.class.name]
 }
 
 proc asList {seq} {
-	"Return a list containing the contents of C<seq>, an object that
-	 implements the list protocol."
+    "Return a list containing the contents of C<seq>, an object that
+     implements the list protocol."
 
-	var result = [listSized seq.size]
-	var index = 0
-	for elem in seq {
-		result@index = elem
-		index = index + 1
-	}
+    var result = [listSized seq.size]
+    var index = 0
+    for elem in seq {
+        result@index = elem
+        index = index + 1
+    }
 
-	return result
+    return result
 }
 
 
@@ -962,370 +965,375 @@ perlproc _perlsort {pr ls} '''
 '''
 
 mproc sort {
-	sub 2 ucmp
-	seq
+    sub 2 ucmp
+    seq
 } {
-	"Return a copy of C<seq> with the elements sorted according to C<ucmp>.
+    "Return a copy of C<seq> with the elements sorted according to C<ucmp>.
 
-	 C<ucmp> should take two arguments and return -1, 0 or 1 depending on
-	 whether the first argument is less than, equal to or greater than the
-	 second argument.  (This is the same interface as C<cmp>).
+     C<ucmp> should take two arguments and return -1, 0 or 1 depending on
+     whether the first argument is less than, equal to or greater than the
+     second argument.  (This is the same interface as C<cmp>).
 
-	 C<seq> is an object that implements the sequence protocol and the return
-	 value is constructed by the procedure returned by C<seq>'s C<maker>
-	 attribute."
+     C<seq> is an object that implements the sequence protocol and the return
+     value is constructed by the procedure returned by C<seq>'s C<maker>
+     attribute."
 
-	var sortList = seq
-	if (sortList.class != List) {
-		sortList = [asList sortList]
-	}
+    var sortList = seq
+    if (sortList.class != List) {
+        sortList = [asList sortList]
+    }
 
-	var resultList = [_perlsort [perlobj ucmp] [perlobj sortList]]
+    var resultList = [_perlsort [perlobj ucmp] [perlobj sortList]]
 
-	(seq.class == List) && [return resultList]
+    (seq.class == List) && [return resultList]
 
-	var result = [(seq.maker) seq.size]
-	_write_seq resultList :[] result
+    var result = [(seq.maker) seq.size]
+    _write_seq resultList :[] result
 
-	return result
+    return result
 }
 
 mproc reduce {
-	sub 1 filter
-	seq
+    sub 1 filter
+    seq
 } {
-	"Apply procedure C<filter> to every element of sequence C<seq> and return
-	 another sequence containing only the elements on which C<filter> returned
-	 a true value.  The return value's type is compatible with C<seq>'s."
+    "Apply procedure C<filter> to every element of sequence C<seq> and return
+     another sequence containing only the elements on which C<filter> returned
+     a true value.  The return value's type is compatible with C<seq>'s."
 
-	var result = [(seq.maker) seq.size]
-	var index = 0
+    var result = [(seq.maker) seq.size]
+    var index = 0
 
-	for elem in seq {
-		if ([filter elem]) {
-			result@index = elem
-			index = index + 1
-		}
-	}
+    for elem in seq {
+        if ([filter elem]) {
+            result@index = elem
+            index = index + 1
+        }
+    }
 
-	return [slice result 0 (index - 1)]
+    return [slice result 0 (index - 1)]
 }
 
 
-			
+            
 mproc map {
-	sub 1 transPr
-	seq
+    sub 1 transPr
+    seq
 } {
-	"Call procedure C<transPr> on each element in C<seq> and return another
+    "Call procedure C<transPr> on each element in C<seq> and return another
      sequence containing the results of the calls on the corresponding input
      elements.  The return value's type is compatible with C<seq>'s."
 
-	var result = [seq.maker seq.size]
-	var index = 0
+    var result = [seq.maker seq.size]
+    var index = 0
 
-	for elem in seq {
-		result@index = [transPr elem]
-		index = index + 1
-	}
+    for elem in seq {
+        result@index = [transPr elem]
+        index = index + 1
+    }
 
-	return result
+    return result
 }
-	
+    
 mproc do {
-	strict sub body
-	strict sub final [default {}]
+    strict sub body
+    strict sub final [default {}]
 } {
-	"Evaluate C<body> once and return its result.  If C<final> is given,
+    "Evaluate C<body> once and return its result.  If C<final> is given,
      evaluate it after C<body> finishes."
-	return [body]
+    return [body]
 } {
-	final
+    final
 }
 
 
 mproc dofor {
-	sub 1 pr
-	seq
+    sub 1 pr
+    seq
 } {
-	"Call procedure C<pr> on each element in C<seq>, discarding the result.
+    "Call procedure C<pr> on each element in C<seq>, discarding the result.
      This is a slightly more compact, less flexible form of the C<for> loop."
 
-	for elem in seq {
-		pr elem
-	}
+    for elem in seq {
+        pr elem
+    }
 }
 
 
 class Interval Struct {
-	"Instances of C<Interval> mimic a list containing a consecutive series of
-	 numbers as defined by the C<new> arguments C<startVal>, C<endVal> and
-	 C<incrVal>, all Numbers truncated to the nearest integer. C<startVal> is
-	 the first number, C<endVal> is the last (possibly approximated) and 
-	 C<incrVal> is the increment from one value to the next.
+    "Instances of C<Interval> mimic a list containing a consecutive series of
+     numbers as defined by the C<new> arguments C<startVal>, C<endVal> and
+     C<incrVal>, all Numbers truncated to the nearest integer. C<startVal> is
+     the first number, C<endVal> is the last (possibly approximated) and 
+     C<incrVal> is the increment from one value to the next.
 
-	 The main purpose of C<Interval> is to provide a way to do a for/foreach
-	 loop over a series of integers without having to create an actual array
-	 of integers.  This allows you to do stuff like this:
+     The main purpose of C<Interval> is to provide a way to do a for/foreach
+     loop over a series of integers without having to create an actual array
+     of integers.  This allows you to do stuff like this:
 
-	    C<for i in (1 .. 10000000) { ... }>
+        C<for i in (1 .. 10000000) { ... }>
 
-	 instead of
+     instead of
 
-	    C<var x = 0; while (x < 10000000) { ... ; x = x + 1 }>
+        C<var x = 0; while (x < 10000000) { ... ; x = x + 1 }>
 
-	 (The C<..> operator creates an C<Interval>.)
+     (The C<..> operator creates an C<Interval>.)
 
-	 C<Intervals> implement the sequence protocol but C<atPut> fails with
-	 an error since they are naturally not writable."
+     C<Intervals> implement the sequence protocol but C<atPut> fails with
+     an error since they are naturally not writable."
 
-	readable start
-	var length
-	var incr
+    readable start
+    var length
+    var incr
 
-	method op_Equals {other} {
-		"C<==> operator: True if C<other> is also an C<Interval> containing
+    method op_Equals {other} {
+        "C<==> operator: True if C<other> is also an C<Interval> containing
          the same sequence of numbers."
-		(other.class == self.class) || [return false]
-		return (start == other.start && length == other.size)
-	}
+        (other.class == self.class) || [return false]
+        return (start == other.start && length == other.size)
+    }
 
-	method end_get {} {
-		"The last value in C<self>."
-		return (self @ (length - 1))
-	}
+    method end_get {} {
+        "The last value in C<self>."
+        return (self @ (length - 1))
+    }
 
-	method _init {startVal endVal incrVal} {
-		start = [int startVal]
-		var end = [int endVal]
-		incr = [int incrVal]
+    method _init {startVal endVal incrVal} {
+        start = [int startVal]
+        var end = [int endVal]
+        incr = [int incrVal]
 
-		length = ([abs (end - start)] + 1)
-	}
+        length = ([abs (end - start)] + 1)
+    }
 
-	method isIndexable_get {} {
-		"True.  C<Intervals> are indexable."
-		return true
-	}
-	
-	method atPut {index value} {
-		"Dies with an error if called."
-		die "Attempted to write to read-only object."
-	}
+    method isIndexable_get {} {
+        "True.  C<Intervals> are indexable."
+        return true
+    }
+    
+    method atPut {index value} {
+        "Dies with an error if called."
+        die "Attempted to write to read-only object."
+    }
 
-	method size_get {} {
-		"Sequence Protocol: Number of (imaginary) items."
-		return length
-	}
+    method size_get {} {
+        "Sequence Protocol: Number of (imaginary) items."
+        return length
+    }
 
-	method at {index} {
-		"Sequence Protocol: Return the item at position C<index>.  Indexes
-		 must be contiguous and start at zero.   Negative indexes are
+    method at {index} {
+        "Sequence Protocol: Return the item at position C<index>.  Indexes
+         must be contiguous and start at zero.   Negative indexes are
          subtracted from the list's size."
 
-		index = [self->_sanitizeIndex index]
-		return (start + (index * incr))
-	}
+        index = [self->_sanitizeIndex index]
+        return (start + (index * incr))
+    }
 
-	method printable_get {} {
-		"The human-friendly description of C<self>."
-		var end = start + (length * incr) - 1
+    method printable_get {} {
+        "The human-friendly description of C<self>."
+        var end = start + (length * incr) - 1
 
-		var by = ""
-		if ([abs incr] != 1) {
-			by = " (by $incr)"
-		}
+        var by = ""
+        if ([abs incr] != 1) {
+            by = " (by $incr)"
+        }
  
-		return "$start .. $end$by"
-	}
+        return "$start .. $end$by"
+    }
 
-	method isTrue_get {} {
-		"This object's truth value.  Like other sequences, true unless empty."
-		return (self.size > 0)
-	}
+    method isTrue_get {} {
+        "This object's truth value.  Like other sequences, true unless empty."
+        return (self.size > 0)
+    }
 
-	method shallowCopy {} {
-		"Make a copy of this C<Interval>."
-		return [self->_structShallowCopy]
-	}
+    method shallowCopy {} {
+        "Make a copy of this C<Interval>."
+        return [self->_structShallowCopy]
+    }
 }
 
 
 proc \.. {start end} {
-	"Create an C<Interval> for the range from C<start> to C<end> with an 
-	 increment of 1.  C<range> is an alias for this procedure."
-	var by = 1
-	if (end < start) {
-		by = -1
-	}
-	return [Interval->new start end by]
+    "Create an C<Interval> for the range from C<start> to C<end> with an 
+     increment of 1.  C<range> is an alias for this procedure."
+    var by = 1
+    if (end < start) {
+        by = -1
+    }
+    return [Interval->new start end by]
 }
 const range = \..
 
 
 mproc repeat {
-	count
-	sub 1 pr
+    count
+    sub 1 pr
 } {
-	"Evaluate procedure C<pr> C<count> times.  C<pr> takes one argument, the
+    "Evaluate procedure C<pr> C<count> times.  C<pr> takes one argument, the
      itteration number starting from zero.  Does nothing if C<count> is not
      greater than zero.  Returns the result of the last evaluation of pr or 
      nil if there is none."
-	(count > 0) || [return nil]
+    (count > 0) || [return nil]
 
-	var result
-	for i in (0 .. count - 1) {
-		result = [pr i]
-	}
+    var result
+    for i in (0 .. count - 1) {
+        result = [pr i]
+    }
 
-	return result
+    return result
 }
 
 
 proc slice {seq start end} {
-	"Return a sequence containing the elements of C<seq> in the index
+    "Return a sequence containing the elements of C<seq> in the index
      range between C<start> and C<end>.  If C<end> is nil, the last index
      in C<seq> is used instead.  The return type is determined by the
      C<maker> attribute of C<seq>."
-	if (end == nil || end > seq.last) {
-		end = seq.last
-	}
+    if (end == nil || end > seq.last) {
+        end = seq.last
+    }
 
-	if (start > end || start > seq.last) {
-		return [(seq.maker) 0]
-	}
+    if (start > end || start > seq.last) {
+        return [(seq.maker) 0]
+    }
 
-	var range = (start .. end)
-	var result = [(seq.maker) range.size]
-	var index = 0
-	foreach n in range {
-		result@index = seq@n
-		index = index + 1
-	}
+    var range = (start .. end)
+    var result = [(seq.maker) range.size]
+    var index = 0
+    foreach n in range {
+        result@index = seq@n
+        index = index + 1
+    }
 
-	return result
+    return result
 }
 
 proc concat {args} {
-	"Return a sequence containing the contents of all arguments (which must
+    "Return a sequence containing the contents of all arguments (which must
      be sequences) concatenated together.  The return type is determined by
      the first argument's C<maker>.  Under some circumstances, this may be
      faster than C<+>."
-	var len = 0
-	foreach l in args {
-		len = len + [size l]
-	}
+    var len = 0
+    foreach l in args {
+        len = len + [size l]
+    }
 
-	var result = [((args@0).maker) len]
-	var pos = 0
-	foreach l in args {
-		foreach elem in l {
-			result@pos = elem
-			pos = pos + 1
-		}
-	}
+    var result = [((args@0).maker) len]
+    var pos = 0
+    foreach l in args {
+        foreach elem in l {
+            result@pos = elem
+            pos = pos + 1
+        }
+    }
 
-	return result
+    return result
 }
 
 
 proc lolcat {args} {
-	"CREATE LoL CONTAININ TEH LISTS IN ALL ELEMENTS.  EACH ARGUMENT
+    "CREATE LoL CONTAININ TEH LISTS IN ALL ELEMENTS.  EACH ARGUMENT
      MUST ALSO BE LoL."
 
-	var resultLen = 0
-	dofor {resultLen = resultLen + a.size} args
+    var resultLen = 0
+    dofor {resultLen = resultLen + a.size} args
 
-	var result = [listSized resultLen]
-	var index = 0
-	var arg = 0
-	for lol in args {
-		(lol.class == List) || \
-			[die "lolcat: expecting list, got " lol.class.printable]
+    var result = [listSized resultLen]
+    var index = 0
+    var arg = 0
+    for lol in args {
+        (lol.class == List) || \
+            [die "lolcat: expecting list, got " lol.class.printable]
 
-		for elem in lol {
-			(elem.class == List) || \
-				[die "lolcat: found non-List in argument '$elem' in $arg."]
-			result@index = elem
-			index = index + 1
-		}
+        for elem in lol {
+            (elem.class == List) || \
+                [die "lolcat: found non-List in argument '$elem' in $arg."]
+            result@index = elem
+            index = index + 1
+        }
 
-		arg = arg + 1
-	}
+        arg = arg + 1
+    }
 
-	return result
+    return result
 }
 
 
 perlproc _rand {} ''' return rand(1); '''
 
 proc rand {max} {
-	"Return a random non-negative real number less than C<max>."
-	return (max * [_rand])
+    "Return a random non-negative real number less than C<max>."
+    return (max * [_rand])
 }
 
 proc irand {max} {
-	"Return an integer between 0 and C<max> - 1."
-	return [int [rand max]]
+    "Return an integer between 0 and C<max> - 1."
+    return [int [rand max]]
 }
 
 
 proc shuffled {seq} {
-	"Return a copy of sequence C<seq> with the elements shuffled."
-	var shuffledSeq = [seq->shallowCopy]
+    "Return a copy of sequence C<seq> with the elements shuffled."
+    var shuffledSeq = [seq->shallowCopy]
 
-	for index in (shuffledSeq.last .. 1) {
-		var pick = [rand (index - 1)]
-		
-		var tmp = shuffledSeq@pick
-		shuffledSeq@pick = shuffledSeq@index
-		shuffledSeq@index = tmp
-	}
+    for index in (shuffledSeq.last .. 1) {
+        var pick = [rand (index - 1)]
+        
+        var tmp = shuffledSeq@pick
+        shuffledSeq@pick = shuffledSeq@index
+        shuffledSeq@index = tmp
+    }
 
-	return shuffledSeq
+    return shuffledSeq
 }
 
 
-perlproc _printstr {s} ''' print $s; '''
+perlproc _printstr {ps_s} ''' print $ps_s; '''
 
 proc say {args} {
-	"Write the printable form of each argument in turn on stdout."
-	for obj in args {
-		_printstr obj.printable
-	}
+    "Write the printable form of each argument in turn on stdout."
+    for obj in args {
+        var pr = obj.printable
+        if (pr.class == String) {
+            _printstr pr
+        } else {
+            _printstr "<unprintable object>"
+        }
+    }
 }
 
 proc puts {args} {
-	"Write the printable form of each argument in turn on stdout followed by
-	 a newline."
+    "Write the printable form of each argument in turn on stdout followed by
+     a newline."
 
-	apply say args
-	say "\n"
+    apply say args
+    say "\n"
 }
 
 
 
 macro object {object name superClass body} {
-	"Define a class and declare a single instance of it in the current
+    "Define a class and declare a single instance of it in the current
      context.  C<name> is the const which references the new object.
      C<superClass> is the class from which the new object's class is derived.
      C<body> is a LoL defining the class.  The format is identical to the body
      of C<class>."
 
-	(name.class == Symbol) || \
-		[die "Malformed object declaration: got '$name' instead of a symbol."]
+    (name.class == Symbol) || \
+        [die "Malformed object declaration: got '$name' instead of a symbol."]
 
-	var classDecl = [list :_::class superClass body "class of $name"]
-	var objDecl = [list :new classDecl]
-	var result = [list :const name := objDecl]
+    var classDecl = [list :_::class superClass body "class of $name"]
+    var objDecl = [list :new classDecl]
+    var result = [list :const name := objDecl]
 
-	return result
+    return result
 }
 
 
 
 class Exception {
-	"Instances of C<Exception> represent error conditions and are used to
+    "Instances of C<Exception> represent error conditions and are used to
      recover from them or bring the program to a graceful halt.  Instances
      are typically created by the C<try> mproc.
 
@@ -1350,22 +1358,22 @@ class Exception {
      The global C<const> C<Fatal> references an Exception which will cause
      the current program to exit with an error."
 
-	public id
-	public message
-	public info
+    public id
+    public message
+    public info
 
-	var throwable
+    var throwable
 
-	method _init {throwProc} {
-		id = nil
-		message = "Unknown exception."
-		info = :[]
+    method _init {throwProc} {
+        id = nil
+        message = "Unknown exception."
+        info = :[]
 
-		throwable = throwProc
-	}
+        throwable = throwProc
+    }
 
-	method throw {msg args} {
-		"Throw this Exception.  If C<msg> is given (i.e. not a false value),
+    method throw {msg args} {
+        "Throw this Exception.  If C<msg> is given (i.e. not a false value),
          store it in the C<message> field.  If it is followed by a symbol
          (in C<args>), that value is stored in the C<id> field.  The remaining
          arguments if present are stored in the C<info> field.  Thus
@@ -1388,51 +1396,51 @@ class Exception {
          =back
          "
 
-		# Set the message if given
-		if (msg) {
-			message = msg
-		}
+        # Set the message if given
+        if (msg) {
+            message = msg
+        }
 
-		# Set the tag if given
-		if (args && (args@0).class == Symbol) {
-			id = args@0
-			args = [slice args 1 args.last]
-		}
+        # Set the tag if given
+        if (args && (args@0).class == Symbol) {
+            id = args@0
+            args = [slice args 1 args.last]
+        }
 
-		# Set the info list if given
-		args && (info = args)
+        # Set the info list if given
+        args && (info = args)
 
-		# Disable the throwable
-		var currentThrowable = throwable
-		throwable = {s} => {}
+        # Disable the throwable
+        var currentThrowable = throwable
+        throwable = {s} => {}
 
-		# And throw.
-		currentThrowable self
-	}
+        # And throw.
+        currentThrowable self
+    }
 
-	method printable_get {} {
-		var desc = (id && " ($id)" || "")
-		return "Exception$desc: $message"
-	}
+    method printable_get {} {
+        var desc = (id && " ($id)" || "")
+        return "Exception$desc: $message"
+    }
 
-	method shallowCopy {} {
-		"Make a copy of this C<Exception>.  Note that all fields are shared
+    method shallowCopy {} {
+        "Make a copy of this C<Exception>.  Note that all fields are shared
          across both instances."
-		return [self->_structShallowCopy]
-	}
+        return [self->_structShallowCopy]
+    }
 
 }
 
 const Fatal = \
-	[Exception->new {exc} => {die "Fatal exception: " exc.message}]
+    [Exception->new {exc} => {die "Fatal exception: " exc.message}]
 
 
 mproc try {
-	strict sub [Error] tryBlock
-	word catch [default :catch]
-	strict sub [Error] catchBlock [default {}]
+    strict sub [Error] tryBlock
+    word catch [default :catch]
+    strict sub [Error] catchBlock [default {}]
 } {
-	"Evaluate a block, providing it with an C<Exception>.  If the exception is
+    "Evaluate a block, providing it with an C<Exception>.  If the exception is
      thrown, the rest of the block is not evaluated.  However, the optional
      second block (following the word 'catch') is evaluated.
 
@@ -1442,17 +1450,17 @@ mproc try {
      its C<throw> is called (for the first time) after the first block has
      finished executing."
 
-	var exc
-	var thrown = true
-	do {
-		exc = [Exception->new next]
-		tryBlock exc
-		thrown = false
-	}
+    var exc
+    var thrown = true
+    do {
+        exc = [Exception->new next]
+        tryBlock exc
+        thrown = false
+    }
 
-	if thrown {
-		catchBlock exc
-	}
+    if thrown {
+        catchBlock exc
+    }
 }
 
 
@@ -1496,7 +1504,7 @@ perlproc _ph_remove {hash key} '''
 
 
 class Hash {
-	"Instances of Hash are associative arrays (aka 'dictionaries' or 'hash
+    "Instances of Hash are associative arrays (aka 'dictionaries' or 'hash
      tables') which map keys to values.  The contents are accessed using the
      C<at> and C<atPut> methods so the C<@> operator can be used to access the
      contents.
@@ -1517,141 +1525,141 @@ class Hash {
      a specific underlying implementation, which is a no-no in OOP.  I did it
      anyway because the term 'hash' has become common shorthand for
      associative arrays and C<Hash> is probably clearer to most programmers
-     than C<Dictionary> or C<AssociativeArray>.  It's also easier to type."
+     than C<Dictionary> or C<AssociativeArray>.  It's also easier to type.)"
 
-	var perlHash
+    var perlHash
 
-	method _init {args} {
-		"Object initializer."
-		self->_initState
-		self->_setInitialValues args
-	}
+    method _init {args} {
+        "Object initializer."
+        self->_initState
+        self->_setInitialValues args
+    }
 
-	method _initState {} {
-		"Initialize C<perlHash>.  It holds a reference to a Perl hash, which
+    method _initState {} {
+        "Initialize C<perlHash>.  It holds a reference to a Perl hash, which
          does the actual work."
-		perlHash = [_ph_new]
-	}
+        perlHash = [_ph_new]
+    }
 
-	method _setInitialValues {values} {
-		"Given a list of key/value pairs, store each value in C<self> with the
+    method _setInitialValues {values} {
+        "Given a list of key/value pairs, store each value in C<self> with the
          associated key."
 
-		(values.size % 2 == 0) || \
-			[die "Odd number of arguments to 'Hash->new'."]
+        (values.size % 2 == 0) || \
+            [die "Odd number of arguments to 'Hash->new'."]
 
-		var index = 0
-		while (index < values.size) {
-			var key = values@index
-			var value = values@(index+1)
+        var index = 0
+        while (index < values.size) {
+            var key = values@index
+            var value = values@(index+1)
 
-			self@key = value
+            self@key = value
 
-			index = index + 2
-		}
-	}
+            index = index + 2
+        }
+    }
 
-	method at {key} {
-		"Retrieve the object in C<self> stored at C<key>.  C<key> must
+    method at {key} {
+        "Retrieve the object in C<self> stored at C<key>.  C<key> must
          be present or it is a fatal error.  C<key> must be one of the
          supported key types."
-		var hashKey = key.hashKey
+        var hashKey = key.hashKey
 
-		[_ph_exists perlHash hashKey] || [die "No key '$key' in hash."]
+        [_ph_exists perlHash hashKey] || [die "No key '$key' in hash."]
 
-		var elem = [_ph_get perlHash hashKey]
-		return (elem@1)
-	}
+        var elem = [_ph_get perlHash hashKey]
+        return (elem@1)
+    }
 
-	method atPut {key value} {
-		"Store C<value> in C<self> at C<key>.  C<key> must be one of the
+    method atPut {key value} {
+        "Store C<value> in C<self> at C<key>.  C<key> must be one of the
          supported key types."
-		_ph_add perlHash key.hashKey [perlobj [list key value]]
-	}
+        _ph_add perlHash key.hashKey [perlobj [list key value]]
+    }
 
-	method size_get {} {
-		"Return the number of items (i.e. key/value pairs) in C<self>."
-		return [_ph_size perlHash]
-	}
+    method size_get {} {
+        "Return the number of items (i.e. key/value pairs) in C<self>."
+        return [_ph_size perlHash]
+    }
 
-	method keys_get {} {
-		"Return a list containing all of the keys in C<self>."
-		return [_ph_keys perlHash]
-	}
+    method keys_get {} {
+        "Return a list containing all of the keys in C<self>."
+        return [_ph_keys perlHash]
+    }
 
-	method values_get {} {
-		"Return a list containing all of the values in C<self>."
-		return [_ph_values perlHash]
-	}
+    method values_get {} {
+        "Return a list containing all of the values in C<self>."
+        return [_ph_values perlHash]
+    }
 
-	method keysAndValuePairs_get {} {
-		"Return a list of 2-element lists, one for each item stored in C<self>
+    method keysAndValuePairs_get {} {
+        "Return a list of 2-element lists, one for each item stored in C<self>
          with the first element in each pair being the key and the second being
          the value."
-		var result = [listSized self.size]
-		
-		var index = 0
-		for key in self.keys {
-			result@index = [list key (self@key)]
-			index = index + 1
-		}
+        var result = [listSized self.size]
+        
+        var index = 0
+        for key in self.keys {
+            result@index = [list key (self@key)]
+            index = index + 1
+        }
 
-		return result
-	}
+        return result
+    }
 
-	method keysAndValues_get {} {
-		"Return a list containing each key in C<self> immediately followed by
+    method keysAndValues_get {} {
+        "Return a list containing each key in C<self> immediately followed by
          the associated value."
-		var result = [listSized (2 * self.size)]
-		
-		var index = 0
-		for key in self.keys {
-			result@index = key
-			result@(index + 1) = self@key
-			index = index + 2
-		}
+        var result = [listSized (2 * self.size)]
+        
+        var index = 0
+        for key in self.keys {
+            result@index = key
+            result@(index + 1) = self@key
+            index = index + 2
+        }
 
-		return result
-	}
+        return result
+    }
 
-	method exists {key} {
-		"Test if C<key> is present in C<self>.  Returns true if present, false
+    method exists {key} {
+        "Test if C<key> is present in C<self>.  Returns true if present, false
          if not."
-		return [_ph_exists perlHash key.hashKey]
-	}
+        return [_ph_exists perlHash key.hashKey]
+    }
 
-	method removeKey {key} {
-		"Remove the key/value pair associated with C<key> from C<self>."
-		_ph_remove perlHash key.hashKey
-	}
+    method removeKey {key} {
+        "Remove the key/value pair associated with C<key> from C<self>."
+        _ph_remove perlHash key.hashKey
+    }
 
-	method shallowCopy {} {
-		"Create a new hash with the same contents."
-		return [apply [getMethod self.class :new] self.keysAndValues]
-	}
+    method shallowCopy {} {
+        "Create a new hash with the same contents."
+        return [apply [getMethod self.class :new] self.keysAndValues]
+    }
 
-	method op_Equals {obj} {
-		"Implements the C<==> operator: tests for equality.  Hashes are equal
+    method op_Equals {obj} {
+        "Implements the C<==> operator: tests for equality.  Hashes are equal
          if their keys and associated values are all equal."
-		(obj.class == self.class) || [return false]
+        (obj.class == self.class) || [return false]
 
-		var sk = self.keys
-		var ok = obj.keys
+        var sk = self.keys
+        var ok = obj.keys
 
-		(sk.size == ok.size) || [return false]
-		for k in sk {
-			([obj->exists k] && (obj@k == self@k)) || [return false]
-		}
+        (sk.size == ok.size) || [return false]
+        for k in sk {
+            ([obj->exists k] && (obj@k == self@k)) || [return false]
+        }
 
-		return true
-	}
+        return true
+    }
 
-	method printable_get {} {
-		"Return a human-readable textual represention of this object."
-		var pbl = self.keysAndValues.printable
-		pbl@0 = " "
-		return "[Hash->new$pbl"
-	}
+    method printable_get {} {
+        "Return a human-readable textual represention of this object."
+        var pbl = self.keysAndValues.printable
+        pbl@0 = " "
+        return "[Hash->new$pbl"
+    }
 }
 
 

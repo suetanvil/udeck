@@ -1,13 +1,13 @@
 # Test shallowCopy
 
 proc testeq {obj} {
-	var c = [obj->shallowCopy]
+    var c = [obj->shallowCopy]
 
-	if (obj == c) {
-		puts "PASSED: " obj.printable
-	} else {
-		puts "FAILED: " obj.printable
-	}
+    if (obj == c) {
+        puts "PASSED: " obj.printable
+    } else {
+        puts "FAILED: " obj.printable
+    }
 }
 
 

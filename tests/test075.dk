@@ -1,8 +1,8 @@
 # Test boolean or and and.
 
 proc foo {n} {
-	say "foo " n " called.  "
-	return n
+    say "foo " n " called.  "
+    return n
 }
 
 puts ([foo 1] && [foo 2])

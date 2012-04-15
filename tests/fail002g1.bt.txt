@@ -1,0 +1,6 @@
+Code error: 'Main::mk2subs' expects 1 argument but got 2.
+Backtrace:
+  Main::mk2subs
+  Main::mk2subs
+  *top*
+  *top*

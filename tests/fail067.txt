@@ -1,1 +1,1 @@
-Attempted to modify a const: self.
+Code error: Attempted to assign to const 'self'.

@@ -1,17 +1,17 @@
 # Test basic subification in mprocs
 
 mproc mmap {
-	sub 1 block
-	ls
+    sub 1 block
+    ls
 } {
-	var pos = 0
-	var result = [listSized [size ls]]
-	foreach elem in ls {
-		result@pos = [block elem]
-		pos = pos + 1
-	}
+    var pos = 0
+    var result = [listSized [size ls]]
+    foreach elem in ls {
+        result@pos = [block elem]
+        pos = pos + 1
+    }
 
-	return result
+    return result
 }
 
 var l1 = [list 1 2 3 4 5]

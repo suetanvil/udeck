@@ -1,0 +1,9 @@
+# Basic tests for the new compiler.  This is all stuff to test the
+# incremental bring-up and is eclipsed by the rest of the test code.
+
+
+
+var {a = 11; b = 42}
+#_::enableNewCompiler
+var x = {} => {_::puts "a == $a; b == $b"; value 42}
+_::puts [x]

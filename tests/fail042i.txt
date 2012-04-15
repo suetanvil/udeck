@@ -1,1 +1,1 @@
-Expected list, got Number in mproc argument.
+Type error: Expected list, got Number in mproc argument.

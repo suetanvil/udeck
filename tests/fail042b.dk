@@ -1,13 +1,13 @@
 # Trailing non-default argument
 
 mproc foo {
-	sub [x y z] fn
-	sub [x y z] fn2 [default {}]
-	count		# needs default!
+    sub [x y z] fn
+    sub [x y z] fn2 [default {}]
+    count        # needs default!
 } {
-	fn 1 2 3
+    fn 1 2 3
 }
 
 
 # also to do: one for each type of modifier w/ invalid 
-	
+    

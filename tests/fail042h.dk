@@ -1,10 +1,10 @@
 # symbol arg with non-symbol default
 
 mproc mp4a {
-	symbol s [default 42]
+    symbol s [default 42]
 } {
-	puts "mp4a: $s"
+    puts "mp4a: $s"
 }
 
 mp4a notAStrictArg
-mp4a [value 42]		# see, not strict
+mp4a [value 42]        # see, not strict

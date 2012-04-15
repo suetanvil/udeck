@@ -1,0 +1,12 @@
+# Bug found in test015: printable_get doesn't return a string
+class Foo {
+    method printable_get {} {
+        var cl = self.class.name
+    }
+}
+
+var f = [Foo->new]
+puts f
+puts "Done!"
+
+

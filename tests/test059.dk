@@ -12,12 +12,12 @@ localFoo "local"
 puts num
 
 proc blort {} {
-	puts "local blort!"
+    puts "local blort!"
 }
 
 puts [defined :blort]
 blort
 localBlort 42
 
-		   
+           
 

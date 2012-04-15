@@ -4,13 +4,13 @@
 
 set -e
 
-../udeck.pl --dump argtest.dk 
+../udeck.pl --xxxxx argtest.dk 
 echo "----------"
 
-../udeck.pl argtest.dk --dump
+../udeck.pl argtest.dk --xxxxx
 echo "----------"
 
-../udeck.pl argtest.dk foo.dk asdf blort --dumpxxx --yyy -x
+../udeck.pl argtest.dk foo.dk asdf blort --xxxxxyyy --yyy -x
 echo "----------"
 
 

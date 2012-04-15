@@ -1,0 +1,5 @@
+# Test calling a non-function as a function
+
+var x = 42
+
+x

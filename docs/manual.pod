@@ -3,8 +3,7 @@
 
 =head1 Introduction
 
-Deck is a modern Lispish general-purpose programming language.  It
-features:
+Deck is a modern general-purpose programming language.  It features:
 
 =over
 
@@ -308,13 +307,8 @@ what you're actually doing is this:
 which is not only not a docstring but will attempt to call a string as
 a function.
 
-So remember: a double-quoted string is a true string if an only if it
+So remember: a double-quoted string is a true string if and only if it
 does not contain an unescaped C<@> or C<$>.
-
-(Bug: Deck currently has two printable forms, one from the C<printable>
-attribute and the other coming from within.  String interpolation
-currently uses the internal (wrong) one.)
-
 
 =head2 Delimiters
 
@@ -955,10 +949,6 @@ operators return.
 
 C<true> is defined to be 1 and C<false> is defined to be C<nil>.
     
-Note: 0 may be redefined as a true value at some later point.  Be
-warned.
-
-
 =head3 Stupid Boolean Tricks
 
 Deck provides two short-circuited boolean operators, C<&&> (logical
@@ -1070,11 +1060,6 @@ way, the variable will always exist, even if it's just C<nil>.
 (Actually, it's a bit more complicated than that.  C<var> and
 C<const> are macros that expand to some implementation-defined form
 and the result of that expansion contains the actual "magic word".)
-
-(Bug: In the current implementation, variables are created by the
-'var' statement.  This can result in undeclared variable errors at
-runtime.)
-
 
 =head4 Syntax
 
@@ -1327,8 +1312,7 @@ In the above example, the handle C<rh> is guaranteed to be closed when
 C<readInfo> returns.
 
 If a function returns before a local const or variable is initialized,
-it is visible to the final block but has a value of C<nil>.  (Bug: not
-yet--right now, it's an undefined variable error.)
+it is visible to the final block but has a value of C<nil>.
 
 This can lead to subtle errors.  For example, suppose that there is a
 continuation referenced by argument C<resource> in the above example
@@ -2076,12 +2060,6 @@ If the above isn't clear enough, the compiler will never replace a
 hand-written C<_get> or C<_set> method.
 
 Fields are only allowed in classes descended from C<Struct>.
-
-(Bug: in the current implementation, a new class may not a contain field
-with the same name as a field in one of its superclasses.  Doing so
-will cause a runtime error, even though methods are prevent from
-accessing a superclass's instance variable.)
-
 
 =head3 The C<object> macro
 
