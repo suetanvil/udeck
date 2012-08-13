@@ -1,0 +1,4 @@
+# Ensure Sys::PackageRun is false normally.
+
+puts "Sys::PackageRun: $Sys::PackageRun"
+

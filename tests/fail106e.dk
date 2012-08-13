@@ -1,0 +1,5 @@
+# Declaration that looks like an array assignment
+var a@5 = 42
+
+
+

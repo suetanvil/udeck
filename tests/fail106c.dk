@@ -1,0 +1,4 @@
+# No empty var list.
+
+var {}
+

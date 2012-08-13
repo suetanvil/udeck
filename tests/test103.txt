@@ -1,0 +1,9 @@
+5
+2
+hello, world
+something
+3
+[[+ a b]]
+[[+ a b]]
+[[+ a b]]
+[[Lang::value a]]

@@ -1,2 +1,2 @@
-Type error: Expected quoted Symbol, got List in a variable declaration.
+Type error: Expected quoted expr, got List in _::var destination.
 Backtrace:

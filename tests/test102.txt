@@ -1,0 +1,4 @@
+Package is run as module.
+42
+thingy called!
+thingy called!

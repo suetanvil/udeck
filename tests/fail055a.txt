@@ -1,1 +1,1 @@
-Expression '[puts ==]' contains unescaped operators.
+Code error: Expression '[puts ==]' contains unescaped operators.

@@ -2,8 +2,9 @@
 var {a = 42; b = 5; c = 11}
 puts a b c
 
-var {d = 5; e g h; f = 11}
-puts d e f g h
+#var {d = 5; e g h; f = 11}	 # This was once legal.  Really.
+var {d = 5; e = 42; f = 11}
+puts d e f
 
 var i = 42
 puts i

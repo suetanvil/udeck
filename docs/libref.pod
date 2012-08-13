@@ -94,6 +94,10 @@ Test if C<lhs> and C<rhs> are the same object.
 
 Return the absolute value of C<aNum>, a Number.
 
+=item B<proc Lang::append {destList args}>
+
+Return a new sequence of the same type as C<destList> containing all elements in C<destList> followed by each of the following arguments.
+
 =item B<proc Lang::apply {fun argList}> B<(Built-in)>
 
 Call procedure C<fun> with the arguments in list C<argList> and returns the result of the call. C<argList> B<must> be a standard Deck list and not merely an object that implements the sequence protocol.
@@ -268,7 +272,7 @@ Given symbol C<aSymbol>, return a string containing the same text.
 
 =item B<proc Lang::value {args}> B<(Built-in)>
 
-Return the last item in the argument list. If none is given, return nil.
+Return the last item in the argument list. If none is given, return nil. All arguments are evaluated.
 
 (Lang::value is an alias for _::value)
 
@@ -1133,6 +1137,10 @@ Sequence Protocol: Given an index into a sequence, return the normal index for t
 
 In particular, C<_sanitizeIndex> replaces a negative index with the matching positive index. (Negative indexes are relative to the end of the sequence.)
 
+=item B<method abstract {}>
+
+Called by abstract methods to signal that an error has occurred.
+
 =item B<method copy {}>
 
 Make a copy of this object.
@@ -1772,7 +1780,7 @@ Implements the C<use> statement.
 
 =item B<proc _::value {args}> B<(Built-in)>
 
-Return the last item in the argument list. If none is given, return nil.
+Return the last item in the argument list. If none is given, return nil. All arguments are evaluated.
 
 =item B<proc _::var {args}> B<(Built-in)>
 

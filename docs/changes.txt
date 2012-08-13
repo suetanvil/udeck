@@ -1,5 +1,71 @@
 
 
+Changes in 0.03
+
+    +  You can now assign a list to multiple values by making the LHS
+       of an assignment into a list of names.  For example, this:
+
+            [a b] = [list 1 2]
+
+       is equivalent to this:
+
+            t = [list 1 2]
+            a = t@0
+            b = t@1
+
+       This provides a simple way for functions to return multiple
+       values.
+
+    +  It is now possible to declare a closure with a single LoL that
+       begins with an arglist delimited by '|' characters.  For
+       example, these are equivalent:
+
+            a = {|x y| value (x+y)}
+            a = {x y} => {value (x+y)}
+            a = [sub {x y} {value (x+y)}]
+
+       A closure with no arguments must still have the '|' present to
+       distinguish it from a plain LoL:
+
+            c = {|| puts "Something happened"}
+
+       Ruby (and Smalltalk) programmers may find this familiar.
+
+    +  POD is no longer part of the Deck language.  It is still used
+       in docstrings, however.  This is because...
+
+    +  It is now possible to force a LoL line to be treated as infix
+       by beginning it with an '='.  This:
+
+            x = {x y} => {=x+y}
+
+       or this:
+
+            x = {|x y| =x+y}
+            
+       is equivalent to this:
+
+            x = {x y} => {value (x+y)}
+
+       Think of it as an assignment with no left-hand side.
+
+    +  Variable (and const) declarations that initialize the variables
+       now have identical semantics to their equivalent assignments.
+       In particular, you can now declare and initialize groups of
+       variables in square brackets just like the multi-variable
+       assignments.  For example:
+
+            var [a b c] = :[1 2 3]
+            var {[c d e] = :[4 5 6]; f = 7}
+
+       (Note that the first form has a few quirks when dealing with
+       non-alpha-numeric names.  This is documented in the manual.)
+
+    +  Option --show-perl now skips all loaded modules.  New option
+       --show-lib-perl implements the old behaviour.
+
+    +  Various bug fixes.
+
 Changes in 0.02
 
     +  Deck code is now executed by being compiled into Perl code and

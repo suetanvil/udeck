@@ -1,1 +1,1 @@
-Const 'a' declared without a value.
+Code error: Attempted to define const 'a' with no value.

@@ -31,7 +31,7 @@ use File::Temp qq{tempfile};
 	  print "Skipping $test\n";
 	  next;
 	}
-	
+
 	runtest($test);
   }
 }

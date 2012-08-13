@@ -1,0 +1,32 @@
+# Test compact sub definitions.
+
+proc cs {asub args} {
+    say "$asub: "
+    puts [apply asub args]
+}
+
+cs {||}
+cs {||="no args, no spc."}
+cs {||= "no args, 1 spc."}
+cs {|| = "no args, 2 spc."}
+cs {| | = "no args, 3 spc."}
+cs { | | = "no args, 4 spc."}
+cs { |
+ |
+ = "no args, 4 spc and newlines."}
+cs { 
+
+      |
+   |
+ 
+= "no args, more spc and more newlines."}
+
+cs { |a| = "args is $a"} "w000000"
+cs { |a b| = "args are $a and $b"} 1 2
+
+puts :{||=42}
+
+
+puts [sort {= a > b} "foobarquux"]
+puts [sort {|a b| = a > b} "foobarquux"]
+

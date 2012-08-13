@@ -1,1 +1,2 @@
-Needed module 'Test::Broken'; got 'Test::BrokenStuff' in file 'Broken.dk'
+Code error: Needed module 'Test::Broken'; got 'Test::BrokenStuff' in file 'Broken.dk'
+

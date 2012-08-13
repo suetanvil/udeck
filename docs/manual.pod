@@ -7,7 +7,7 @@ Deck is a modern general-purpose programming language.  It features:
 
 =over
 
-=item *First-class functions
+=item * First-class functions
 
 =item * Closures
 
@@ -134,20 +134,15 @@ not have an effect on comments:
 For parsing purposes, comments are considered whitespace.
 
 
-=head2 POD Regions
+=head2 POD Regions, lack thereof
 
-Deck also supports POD documentation.  Specifically, any line
-beginning with an equal sign (C<=>) followed by a series of "word"
-characters (alphanumeric plus C<_>) and optional other text after a
-space denotes the start of a POD region.  The Deck interpreter will
-ignore all subsequent input lines until it comes upon a line beginning
-with C<=cut>.  
+By convention, Deck documentation is written in POD format.  This
+includes the library docstrings, which are extracted via a utility and
+them passed to pod2html et. al. for processing.
 
-The C<=cut> may optionally be followed by a space and
-then other text but must end with an actual newline.
-
-POD documents inside multi-line strings are considered part of the
-string and are parsed as such.
+At one point, Deck also supported inline POD documents.  However, this
+has been removed because it was never used and because this freed up
+the leading C<=> for other uses.
 
 See the perlpod documention for a better explanation of POD.
 
@@ -333,12 +328,19 @@ C<[> and C<]>, the square brackets
 
 C<:>, the quote delimiter
 
+=item 5.
+
+C<=> at the start of a LoL line indicates the line should be parsed as infix.
+
 =back
 
 The first three items are the parentheses Deck supports.
 
 The colon (C<:>) is used to quote (i.e. delay evaluation) of the thing
 following it.  See C<Quoting> below.
+
+The equal symbol (C<=>) affects the parsing of LoL lines.  See <LoLs>
+below.
 
 =head2 Symbols
 
@@ -466,7 +468,8 @@ with the remaining items passed to it as arguments:
     [+ 1 3]                                 # Simple example
     [[getHook :panic] "Oh no!"]             # Less simple example
 
-This is more or less the basic Lisp-style S-Expression. 
+This is more or less the basic Lisp-style S-Expression.
+
 
 =head4 Syntactic Sugar
 
@@ -526,7 +529,7 @@ in decreasing order are as follows:
         | ^
         &&
         ||
-        (user operators)              
+        (user operators)
         =
 
 All operators are left-associative except for C<=>.
@@ -554,14 +557,13 @@ The odd-numbered items may also be operators:
 
     (addOp = +)
 
-(But be warned that this will not work in a LoL line.)
+As a special case, a one-item infix expression expands to a call to
+C<Lang::value> with the element as an argument:
 
-As a special case, a one-item infix expression is equivalent to just
-the item:
+    :(a) == :[Lang::value a]
 
-    (a) === a
-    :(a) === a
-    
+This guarantees that an infix expression always expands into a
+function call that, when evaluated, returns the expression's value.
 
 =head4 Negation
 
@@ -597,11 +599,11 @@ Examples:
 
     {
         line 1                  # First Entry
-     
+        
         line 2 {                # Second entry
             continuing...       # Second entry continued
         } and done!             # Second entry finished
-    
+        
         line 3 [1 2 3           # Third entry starts
             4 3]                # Third entry ends
     }
@@ -613,9 +615,9 @@ C<;> and C<\>.  In addition, comments are ignored as are empty lines
     {                           # Empty line.  Ignored
         line 1 \                # Item 1 starts
         continued               #  ...and continues
-    
+        
         line 2 ; line 3; line 4 # Next three items
-    }   
+    }
 
 Deck source files are implicitly LoLs, as is the interactive command
 prompt.  They differ from ordinary functions a little in that each
@@ -624,7 +626,7 @@ toplevel line is evaluated immediately before the next line is read.
 Because the list delimiter is implied in a LoL, it is not obvious
 whether a LoL line should be treated as an infix expression or as a
 prefix expression.  Which one is determined by the contents of the
-line.  
+line.
 
 The parser examines each LoL line and treats it as infix if it looks
 infix or as prefix if it looks prefix.  There is a pretty high
@@ -632,10 +634,15 @@ threshold for what is considered prefix or infix and if the parser
 can't decide, it is an error.  This is reduce the number of surprising
 interpretations of code.
 
-Informally, LoL line looks infix if it is an assignment to a simple
-variable, a sequence or an object attribute OR if it consists of a
-series of terms divided by boolean AND (C<&&>) and OR (C<||>)
-operators.
+Informally, LoL line looks infix if it is an assignment operation or
+if it consists of a series of terms divided by boolean AND (C<&&>) and
+OR (C<||>) operators.
+
+In addition, you can force a line to be parsed as infix by prefixing
+it with an equal symbol (C<=>).  This will be discarded and the rest
+of the expression will be parsed as infix.  The expression still needs
+to be structured like an infix expression and it is an error if it is
+not.  (Think of it as an assignment with no destination.)
 
 Otherwise, it is considered a prefix expression.  In the latter case,
 there should be no unescaped operators in the expression (with C<var>
@@ -644,17 +651,19 @@ and C<const> expressions being the exception).
 Here are some examples:
 
     {
-    
+        
         a = 42                              # infix
-    
+        
         load "hello"                        # prefix
-    
+        
         [load "hello"] || [die "error!"]    # infix
-    
+        
         obj.status = 42                     # infix
-    
+        
         array@n = x + 5                     # infix
-    
+        
+        =a + b                              # infix
+        
     }
 
 In addition, the 'var' and 'const' keywords are a wierd special case
@@ -662,13 +671,13 @@ in that they are infix expressions but allow the C<=> word unescaped
 and will reparse some of their arguments as infix expressions:
 
     {
-    
+        
         var a = 42                          # special case prefix
-    
+        
         const {x = 2+z; y = x + 1}          # prefix
-    
+        
         var a = x + y * 11;                 # prefix but reparsed later
-    
+        
     }
 
 Expressions that look like you made a mistake are usually considered
@@ -676,13 +685,14 @@ errors.  Specifically, prefix expressions (other than var/const) are
 not allowed to contain unescaped operators:
 
     {
-    
+        
         a = b + + c             # Error!
-    
+        
         a = n + 1 +             # Error!
-    
-        a \= b \+ \+ c          # Prefix (calls a with arguments)
-    
+        
+        a \= b \+ \+ c          # Prefix (calls C<a> with arguments)
+        
+        = c add b               # Error!
     }
 
 Escaping operators allows you to tell the parser that yes, you know
@@ -694,7 +704,7 @@ For a LoL line to be considered infix, it must:
 
 =over
 
-=item 1. Contain an odd number of elements and more than one element.
+=item 1. Contain an odd number of elements.
 
 =item 2. Have only unescaped operators as the even-numbered elements.
 
@@ -728,6 +738,10 @@ and the rest of the expression.
 An odd number of terms separated by one of the boolean operators C<||>
 or C<&&>.
 
+=item * C<=> ...
+
+Any LoL line beginning with a single C<=> will be parsed as infix.
+
 =back
 
 For a line to be considered a prefix expression, it must either:
@@ -760,6 +774,45 @@ assumes you've made a mistake and complains.
 
 As Deck evolves, it will probably relax some of these constraints.
 
+=head3 Compact Sub Declarations
+
+Deck provides special syntax for declaring subs that looks mostly like
+an ordinary LoL.  It is identical to a LoL except that it begins with
+a list of arguments delimited by C<|> before and after:
+
+    {|a b| = a + b}
+
+This is identical to
+
+    [sub {a b} {= a + b}]
+
+In fact, the parser converts the former into (more or less) the latter
+at compile time.  It is possible to view the expression using the
+quote operator.  For example, this:
+
+    puts :{|| = 42}
+
+will display the resulting expression.
+
+(See 'Closures' below for an explanation of C<sub>.)
+
+More precisely, a compact sub declaration takes the following form:
+
+    '{' '|' I<word>* '|' I<remaining code...> '}'
+
+In addition:
+
+=over
+
+=item 1.
+
+Parameter names (the words between the C<|> symbols) may not be operators.
+
+=item 2.
+
+Any number of spaces or newlines may be used between tokens up to the last C<|>.
+
+=back
 
 
 =head1 Data
@@ -897,17 +950,17 @@ returns true.  This lets you do a limited form of memoization easily:
     (foo.isCallable) && [foo = [foo]]
     return foo
 
-(The main problem is what to do if C<foo> also returns a callable.) 
+(The main problem is what to do if C<foo> also returns a callable.)
 
 
 
-=head3 MethodCall 
+=head3 MethodCall
 
 A C<MethodCall> represents a method lookup on a specific object.  It
 is callable.
 
 
-=head3 Stringlike   
+=head3 Stringlike
 
 C<Stringlike> is the abstract base class for some types that contain
 sequences of binary data.  It cannot be instantiated.
@@ -936,7 +989,7 @@ The following objects are false:
     [intern '']             (the empty Symbol)
     [bytesSized 0]          (any empty ByteArray)
     nil
-    
+
 In addition, any object whose C<isTrue> attribute yields C<nil> is
 false.  Implementations of C<isTrue> should never return a different
 value if the object has not changed.
@@ -948,7 +1001,7 @@ Deck defines two constants, C<true> and C<false> that refer to the
 operators return.
 
 C<true> is defined to be 1 and C<false> is defined to be C<nil>.
-    
+
 =head3 Stupid Boolean Tricks
 
 Deck provides two short-circuited boolean operators, C<&&> (logical
@@ -973,7 +1026,7 @@ to do all kinds of useful conditional assignments:
     x = x || ""                     # Ensure that x is initialized
 
     x = [cacheLookup] && [recalc]   # Recalculate if cache lookup fails
-    
+
     y = (x > 5) && x || 5           # y = maximum of x and 5
 
 
@@ -999,11 +1052,18 @@ procedure evaluates these expressions from start to finish:
 
     :[
         [fn1 1 2]       # First expression
+        42              # Literal.  Not really useful.
         [fn2 3 4]       # Second expression
     ]
 
-Each expression must be a list of at least one element.  (Unlike
-Scheme, you may not use a literal or variable as an expression.)
+
+Each expression must be a value of some kind.  If it is a list, it is
+recursively evaluated.  If it is a literal, it has no effect unless it
+is the last element of a C<sub>; all other cases may trigger a
+compiler warning.  (Previous versions of Deck required that all
+elements be list.  This has changed.  However, mproc's sub argument
+and some other macros not convert a list to a function if it contains
+non-list elements.)
 
 Expressions are evaluated as follows:
 
@@ -1018,7 +1078,7 @@ it isn't) and it is called.  The values of the remaining elements are
 passed to as actual arguments to the procedure call.
 
 (Note that this explanation assumes that all macros have already been
-expanded.) 
+expanded.)
 
 =head3 Variables and Constants
 
@@ -1029,7 +1089,7 @@ For example:
 
     proc {x} {
         puts x
-
+        
         var y = x + 1
         puts y
     }
@@ -1072,31 +1132,71 @@ The declaration part is either:
 
 =over
 
-=item 1) A single name:
+=item 1) One or more words, including escaped operators.
 
-    var x
+    var x y z
+	var a \= b
 
-(Only allowed for 'var'.)
+(Obviously, this doesn't work for 'const'.)
 
 =item 2) An infix assignment expression:
 
     var y = 42
     const PI = [compute_pi]
+	var [a b c] = :[1 2 3]
 
 =item 3) A LoL containing assignments.
 
     var { x = 42; b = "bob" }
+	var { [a b c] = :[1 2 3] }
 
 =back
 
+The assignments in case 3) and the single assignment in case 2)
+following the word C<var> or C<const> are treated identically to other
+value assignments.  That is,
+
+	var {x = 42; y = "bobo"}
+	var z = 1
+
+is equivalent to
+
+	var x y; x = 42; y = "bobo"
+	var z; z = 1
+
+The only difference is that you can't use 'set' instead of the '=' in
+case 2), as something like this:
+
+	var set a b
+
+will look like case 1).
+
+This is perfectly fine (if ugly and unnecessary) in case 3, however:
+
+	var {set x 42}
+
 Note that in case 2), the assignment looks like an infix expression.
-It is not, at least as far as the parser is concerned.  Instead, it is
-parsed as infix by C<var> or C<const>.
+It is not as far as the parser is concerned.  Instead, it is parsed as
+infix by the macro implementing C<var> or C<const>.  One consequence
+of this is that escaped operators will lose their escapedness by the
+time that expression is parsed.  For example, this:
 
-The parser is aware of this case, however.  Normally, it is an error
-to have operators in an infix expression.  C<var> and C<const> are
-special cases that the parser tolerates.
+	var \= = 42		# Assume this is inside a procedure
 
+will fail with a parse error because the escape will have been
+stripped out before the C<var> macro can parse the argument.  Oddly
+enough, this:
+
+	var \+ = 42
+
+will work (at least at the time of this writing--don't depend on it).
+Of course, you can always use C<var {\= = 42}> instead.
+
+There is a special parsing rule that lets C<var> and C<const> get away
+with the unescaped C<=> in what is technically a prefix expression.
+
+It is possible to take the result of a variable declaration.  However,
+the value is always nil.
 
 =head3 Assignment
 
@@ -1106,7 +1206,8 @@ C<set> macro:
     a = 42
     set a 42
 
-The two are currently different names for the same macro.  The
+The two are equivalent (and in fact are just different names for the
+same macro) but the former is generally parsed as infix.  The
 following are equivalent:
 
     a@42 = 1
@@ -1128,10 +1229,16 @@ scope and that variable has the RHS assigned to it.  In this case, the
 expression expands to a call to a function in the C<_> namespace
 (currently C<_::set>) which magically performs the assignment.
 
+    var foo
+    foo = 42
+
 If the LHS is an C<\@> expression, the entire expression is replaced with
 a call to C<atPut> where the LHS of the C<\@> is the object, the RHS of
 the C<@> is the first argument (the index) and the RHS of the C<=> is
 the second argument (the value).
+
+    var foo = [list 1 2 3 4 5]
+    foo@3 = 42
 
 If the LHS is a C<.> expression, the expression is replaced with
 method call.  The LHS of the C<.> is the receiver and the method is
@@ -1139,14 +1246,30 @@ the RHS of the C<.> (which must be a word) with C<_set> appended to
 the name.  The RHS of the assignment becomes the argument of the
 method.
 
+    var foo = [SomeClass->new]
+    foo.field = 42
+
+If the LHS is an unquoted list containing only non-operator variable
+names, the expression is treated as a multi-value assignment.  In this
+case, the RHS B<must> evaluate to a list-like object (i.e. one that
+implements the method C<at>).  Each variable in the LHS is assigned
+the next value in the RHS.  While the LHS looks like a function call,
+It's not; this is syntactic sugar.
+
+    var a b c d e
+    [a b c d e] = :[1 2 3 4 5]
+
+The RHS must have at least as many elements as the LHS but may have
+more.  This restriction is checked at run time.
+
 
 
 =head3 Docstrings
 
-Procedures, methods and classes may optionally begin with a single
-string literal (B<Beware:> interpolated strings don't count.)  If
-present, this string literal and other information about the
-object it annotates are stored in the interpreter.
+Packages, procedures, methods and classes may optionally begin with a
+single string literal (B<Beware:> interpolated strings don't count.)
+If present, this string literal and other information about the object
+it annotates are stored in the interpreter.
 
 They can be retrieved using the built-in functions C<_::docstring_keys>
 and C<_::docstring_get> to create documentation.  The utility
@@ -1254,19 +1377,19 @@ are also returned.  For example:
         r 42
         puts "Done!"            # Never reached
     }
-
+        
     proc f2 {r} {
         f1 r
         puts "Done!"            # Never reached
     }
-
+        
     proc f3 {} {
         f2 return
         puts "Done!"            # Never reached
     }
 
 C<f3> calls C<f2> which calls C<f1>.  C<f1> calls the continuation,
-which immediately returns the entire call stack.  
+which immediately returns the entire call stack.
 
 Continuations may take one argument.  If given, the argument is the
 return value of the function returned.  If not, the result is C<nil>.
@@ -1278,11 +1401,11 @@ call which has since returned:
     proc f1 {} {
         r = return
     }
-
+        
     f1
     r 42                # Fatal error: r is no longer valid
 
-The library class Exception wraps continuations as a way to implement 
+The library class Exception wraps continuations as a way to implement
 exception-based error handling.
 
 =head3 Final Blocks
@@ -1302,7 +1425,7 @@ For example:
         [readHdr rh]    || [return nil]
         [readBody rh]   || [return nil]
         [readEnd rh]    || [return nil]
-
+        
         return 1
     } {
         close rh        # rh is guaranteed to be closed
@@ -1334,7 +1457,7 @@ particular, invoking C<return> is not allowed.
 A C<proc> is the workhorse procedure in Deck.  It is declared with the
 C<proc> macro:
 
-    C< proc <name> <arg-list> <body> <final> >
+    proc <name> <arg-list> <body> <final>
 
 C<name> is a bare word.  It is the name of the procedure to define.
 It may be a qualified name.  C<body> is a procedure body and C<final>
@@ -1349,11 +1472,11 @@ that calls it however.  For example:
     var x = "global x"              # Global variable
     proc mkproc {} {
         var x = "local x"           # Local to mkproc
-        proc y {} {puts x}          # Proc 
+        proc y {} {puts x}          # Proc
     }
-
+        
     # Later ...
-
+        
     mkproc                          # Defines y
     y                               # Prints "global x"
 
@@ -1396,9 +1519,9 @@ the outside procedure's return:
         var x = 0
         return [sub {x = x + 1; x}
     }
-
+        
     # ...
-
+        
     var f = [foo]
     puts [f]                    # Output: 1
     puts [f]                    # Output: 2
@@ -1480,10 +1603,10 @@ described in more detail below.
 
 Macros are an extremely powerful feature of Deck.  They are, in
 effect, plugins to the compiler and so allow you to extend the
-language syntax in a (semi-) controlled way.  
+language syntax in a (semi-) controlled way.
 
 Deck has two kinds of macros: proper macros and mprocs.  In general,
-you should always try to use mprocs if you can. 
+you should always try to use mprocs if you can.
 
 =head2 Proper Macros
 
@@ -1522,7 +1645,7 @@ this is the name used in this instance:
 
 Unlike Scheme, there is no special syntax or semantics for proper
 macros.  You have the full power and full responsibility of
-programmatically transforming code.  
+programmatically transforming code.
 
 There are two things that Deck provides that may help you: firstly,
 Deck provides the functions C<subify> and C<subifyOrDelay> to convert
@@ -1563,7 +1686,11 @@ For example, consider this proc.  It applies a given procedure
 
 Calling it is pretty simple, too, if a bit clunky:
 
-    dofor {a} => { [isValid a] || [db->store a]} objects
+    dofor {a} => {[isValid a] || [db->store a]} objects
+
+or
+
+    dofor {|a| [isValid a] || [db->store a]} objects
 
 Here is the equivalent mproc:
 
@@ -1584,7 +1711,7 @@ which is simpler.
 
 MProcs are created by the C<mproc> macro.  The syntax is:
 
-    C< mproc <name> <mproc-arg-list> <body> <final> >
+    mproc <name> <mproc-arg-list> <body> <final>
 
 This is identical to C<proc> except for the argument list.
 
@@ -1620,7 +1747,7 @@ Where <type> takes the form of one of:
     symbol
     list
     word
-   
+
 And <default> takes the form:
 
     [default <literal>]
@@ -1644,15 +1771,18 @@ Types do the following:
 
 =item sub <number>
 
-If the argument is a list or LoL, it is converted into a sub and that
-is passed as the argument.  C<number> is the number of formal
-arguments.  Arguments are named C<a> through C<z>.  More than 26
-arguments is an error.
-
-If the argument is not a list or LoL, it is passed unmodified, unless
-the argument is prefixed with C<strict> in which case it is a fatal
+If the argument is a LoL, it is converted into a sub and that is
+passed as the argument.  C<number> is the number of formal arguments.
+Arguments are named C<a> through C<z>.  More than 26 arguments is an
 error.
 
+If the argument is not a LoL, it is passed unmodified, unless the
+argument is prefixed with C<strict> in which case it is a fatal error.
+
+(Note: earlier versions of Deck also allowed a list containing a
+single expression.  This is no longer allowed.  Finding a non-list
+entry in a sub argument will disqualify it from being converted to a
+sub.)
 
 =item sub [arg1 .. argn]
 
@@ -1716,7 +1846,7 @@ also have default clauses.
 
 
 
-    
+
 
 =head1 Objects
 
@@ -1866,11 +1996,11 @@ and a LoL containing the body:
     class <name> <superclass> { ... }
 
 C<name> can be any legal name.  A new const is created referencing the
-new class.  
+new class.
 
 C<superclass> can be any expression that evaluates to a class
 reference.  It is the class from which the new class will be derived.
-If omitted, C<class> defaults to using C<Struct>. 
+If omitted, C<class> defaults to using C<Struct>.
 
 (Bug: currently it is impossible to subclass any class not derived
 from Struct.)
@@ -1900,7 +2030,7 @@ Here is an example:
         method add {other} {
             return [Complex->new (real + other.real) (im + other.im)]
         }
-    }   
+    }
 
 
 =head3 Methods
@@ -1939,7 +2069,7 @@ so are not very bright.
 =head4 op_*
 
 Most operators are implemented as macros that expand into matching
-method calls.  For example, 
+method calls.  For example,
 
     a + b
 
@@ -2092,7 +2222,7 @@ The interface consists of the following methods:
 
 =over
 
-=item C<at {index}> 
+=item C<at {index}>
 
 Returns the item at index C<index>.  Index must be positive and valid
 for all values between zero the result of C<size_get> minus one.
@@ -2188,14 +2318,15 @@ and would expand to
 
     Smurf::smurfilicious = TrademarkInfringement::smurfy + 1
 
-Usually, this is unecessary however.
+Usually, this is unecessary.
 
 
 =head3 Private Names
 
 A name beginning with an underscore (C<_>) is considered private to
 the package that defines it.  The C<use> macro will not import any
-such names into the current namespace.  For example:
+such names into the current namespace.  For example, this will B<not
+work>:
 
     use Foo with {_priv}        # Error!
 
@@ -2247,7 +2378,44 @@ following way:
 =back
 
 These rules may be relaxed or other changes may be made in order to
-accomidate the limits of the filesystem.
+accomodate the limits of the filesystem.
+
+=head3 Package Docstrings
+
+If the following statement is a string literal, it is treated as a
+docstring for the package.  For example:
+
+   package IO::FileUtil
+
+   '''Utility functions for manipulating files.'''
+
+The usual requirements for docstrings apply.
+
+=head3 Running Packages as Scripts
+
+It is also possible to directly execute a package source file with the
+Deck interpreter in the same way you would execute a Deck program or
+script.  If the interpreter finds a C<package> declaration at the
+start of the program, it:
+
+=over
+
+=item 1) Sets the namespace to the package namespace.
+
+=item 2) Sets the global variable C<Sys::PackageRun> to true.
+
+=item 3) Reads the docstring if present.
+
+=item 4) Executes the rest of the source file as usual.
+
+=back
+
+No filename checks are done in this case.  The source file name does
+not need to be related to the package name.
+
+The global C<Sys::PackageRun> is useful for detecting when a package
+is being treated as a script and changing its behavior.  A package
+could, for example, run its own regression test in this case.
 
 
 =head2 Loading and Importing Packages
@@ -2447,7 +2615,7 @@ The return value is also converted back to a Deck type, specifically:
     undef           -- nil
     Perl numbers    -- Numbers
     Strings         -- Deck strings.
-    Unbless object reference
+    Unblessed object reference
                     -- The target of the reference recursively converted.
     All others      -- Wrapped in a PerlObj.
 

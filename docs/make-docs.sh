@@ -19,6 +19,6 @@ pod2html --css format.css --no-index \
 
 pod2html --css format.css --noindex intro.pod > intro.html
 
-pod2html --css format.css --noindex manual.pod > manual.html
+pod2html --css format.css manual.pod > manual.html
 
 

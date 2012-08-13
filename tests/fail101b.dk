@@ -1,0 +1,4 @@
+# Multi-assignments don't allow operators
+var a b c d e
+[a b c d e] = :[1 2 3]
+

@@ -1,0 +1,32 @@
+# Test multi-var assignment
+
+var a b c d e
+
+proc pa {} {puts "($a)($b)($c)($d)($e)"}
+
+[a b c d e] = :[a b c d e]
+pa
+
+[a b c d e] = (2..10)
+pa
+
+[a b c d e] = 'this is a thing.'
+pa
+
+object XXX Struct {
+	method at {n} {return (n+100)}
+	method isIndexable_get {} {return 1} 
+}
+
+[a b c d e] = XXX
+pa
+
+[a b c] = 'this is another thing.'
+pa
+
+[a] = :[a b c d e]
+pa
+
+proc rl {} {puts "rl called!"; return :[1 2 3 4 5 6]}
+[a b c d e] = [rl]
+pa

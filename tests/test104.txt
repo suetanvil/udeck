@@ -1,0 +1,36 @@
+WARNING: Useless expression in *dynamic sub*: '1'
+WARNING: Useless expression in *dynamic sub*: '2'
+WARNING: Useless expression in *dynamic sub*: 'sv'
+WARNING: Useless expression in *dynamic sub*: '3'
+4
+WARNING: Useless expression in *dynamic sub*: '1'
+WARNING: Useless expression in *dynamic sub*: 'sv'
+WARNING: Useless expression in *dynamic sub*: '2'
+called final block of w
+w
+WARNING: Useless expression in Main::y: '1'
+WARNING: Useless expression in Main::y: '2'
+WARNING: Useless expression in Main::y: 'sv'
+WARNING: Useless expression in Main::y: '3'
+y
+WARNING: Useless expression in Main::y1: '1'
+WARNING: Useless expression in Main::y1: '2'
+WARNING: Useless expression in Main::y1: 'sv'
+WARNING: Useless expression in Main::y1: '3'
+WARNING: Useless expression in Main::y1: '1'
+WARNING: Useless expression in Main::y1: 'sv'
+WARNING: Useless expression in Main::y1: '2'
+WARNING: Useless expression in Main::y1: '3'
+called final block of y1
+y1
+WARNING: Useless expression in p: '1'
+WARNING: Useless expression in p: '2'
+WARNING: Useless expression in p: 'sv'
+WARNING: Useless expression in p: '3'
+WARNING: Useless expression in q: '1'
+WARNING: Useless expression in q: '2'
+WARNING: Useless expression in q: 'sv'
+WARNING: Useless expression in q: '3'
+Foo->p
+Called final block of q
+Foo->q

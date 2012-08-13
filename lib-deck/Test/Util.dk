@@ -1,10 +1,8 @@
-=pod
-
-Basic Deck module used for testing.
-
-=cut
-
 package Test::Util
+
+'''
+Basic Deck module used for testing.
+'''
 
 proc foo {n} {
 	puts "Test::Util::foo " n

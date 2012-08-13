@@ -386,6 +386,7 @@ sub new {
   my $self =
     {names      => {},
      args       => [],
+     tempCount  => 0,
      parent     => $parent,
      isGlobal   => $isGlobal,
      isVararg   => $isVararg,
@@ -630,6 +631,34 @@ sub forcedRefExpression {
 }
 
 
+# Return a temp. name.  This will be declared by the compiler in the
+# preamble.  $num is the number of the temp and declaring a temp will
+# also create all previous temps.  $num defaults to 0 if omitted.
+sub temp {
+  my ($self, $num) = @_;
+  $num ||= "0";
+
+  $num++;
+  $self->{tempCount} = $num
+    if ($num > $self->{tempCount});
+
+  return "\$deckTemp$num";
+}
+
+# Test if any temp names were requested.
+sub hasTemps {
+  my ($self) = @_;
+  return $self->{tempCount} > 0;
+}
+
+# Return the list of temp names in an array.
+sub tempNames {
+  my ($self) = @_;
+
+  return map {$self->temp($_)} (0 .. $self->{tempCount} - 1);
+}
+
+
 # ---------------------------------------------------------------------------
 
 package LL::Object;
@@ -657,7 +686,8 @@ sub new {
 sub _nm {
   my ($self) = @_;
 
-  my $nm = $self->class()->{name};
+  my $cl = $self->class();
+  my $nm = $cl && $cl->{name};
   if (!$nm) {
     $nm = ref($self);
     $nm =~ s/^LL:://;
@@ -697,6 +727,7 @@ sub checkClass  {tbt "Expected class, got @{[(shift)->_nm()]}@_"}
 sub checkStruct {tbt "Expected struct, got @{[(shift)->_nm()]}@_"}
 sub checkLocalName {tbt "Expected unqualified name, got @{[(shift)->_nm()]}@_"}
 sub checkValidName {tbt "Expected valid name, got @{[(shift)->_nm()]}@_"}
+sub checkNonOperatorSymbol {tbt "Expected non-symbol name, got @{[(shift)->_nm()]}@_"}
 sub isAtom {return 0}
 sub isSymbol {return 0}
 sub isLocalName {return 0}
@@ -1016,6 +1047,12 @@ sub asUnescapedOperator {
   return LL::Symbol->new($op);
 }
 
+sub checkNonOperatorSymbol {
+  my ($self, $msg) = @_;
+  die "Expected non-operator symbol, got '${$self}'$msg.\n"
+    if $self->isOperator();
+}
+
 # Return the list of patterns to detect an operator that is
 # auto-infixed.  Order is in decreasing precedence.
 sub autoInfixPatterns {
@@ -1159,6 +1196,16 @@ sub unescapeAllOperators {
 }
 
 
+# Test if this entry begins with the unescaped symbol '='.  This is
+# used to indicate that the line should be parsed as infix.
+sub beginsWithEqual {
+  my ($self) = @_;
+  return scalar @{$self} > 0          &&
+    $self->[0]->isUnescapedOperator() &&
+      ${$self->[0]} eq '=';
+}
+
+
 # Test if $self is a well-formed infix expression with only boolean
 # (&& and ||) operators.
 sub isBooleanInfix {
@@ -1212,9 +1259,9 @@ sub looksLikeMalformedInfix {
 
   return 0 unless scalar @{$self} > 1;
 
-  # 'var' and 'const' are special cases
+  # 'var' and 'const' are special cases, as is the leading '='.
   return 0 if
-    $self->[0]->isSymbol() && ${ $self->[0] } =~ /^(var|const)$/;
+    $self->[0]->isSymbol() && ${ $self->[0] } =~ /^(var|const|\=)$/;
 
   # See if any element other than the first is an unescaped operator.
   for my $elem (@{$self}[1 .. $#{$self}]) {
@@ -1225,11 +1272,52 @@ sub looksLikeMalformedInfix {
 }
 
 
+sub parseAsLolLine {
+  my ($self) = @_;
+
+  # If it begins with '=', that means explicit parsing as infix.
+  my $forceInfix = 0;
+  if ($self->beginsWithEqual()) {
+    shift @{$self};
+    $forceInfix = 1;
+  }
+
+  # See if this line could be treated as infix
+  my $result;
+  if ($forceInfix || $self->couldBeImpliedInfix()) {
+    $result = $self->parsedAsInfix();
+  } else {
+    # And do auto-infix conversion.
+    $result = $self->withAutoInfixDone();
+  }
+
+  # Catch malformed expressions.
+  LL::Main::fail("Expression '@{[$result->printStr()]}' contains unescaped" .
+                 " operators.")
+      if $result->isList() && $result->looksLikeMalformedInfix();
+
+  return $result;
+}
+
+
 sub parsedAsInfix {
   my ($self) = @_;
 
   return LL::InfixList->new($self)->asPrefixList();
 }
+
+# Test if this list contains only one or more non-operator symbols
+sub couldBeMultiAssignLhs {
+  my ($self) = @_;
+
+  return 0 if ($self->size() <= 0);
+  for my $elem (@{$self}) {
+    return 0 if (!$elem->isSymbol() || $elem->isOperator());
+  }
+
+  return 1;
+}
+
 
 =pod xxx
 
@@ -1421,6 +1509,18 @@ sub withAutoInfixDone {my ($self) = @_; return $self}   # asPrefixList does it.
 
   sub asPrefixList {
     my ($self) = @_;
+    my $result = $self->_parsePrefix();
+
+    # Single-value results are returned by themselves instead of as a
+    # list, so we wrap it with a '_::value' expression.
+    return LL::List->new([LL::Symbol->new('Lang::value'), $result])
+      unless $result->isList();
+
+    return $result;
+  }
+
+  sub _parsePrefix {
+    my ($self) = @_;
 
     return LL::List->new([]) if scalar @{$self} == 0;
 
@@ -1440,8 +1540,8 @@ sub withAutoInfixDone {my ($self) = @_; return $self}   # asPrefixList does it.
     my $right = LL::InfixList->new([ @{$self}[($middle + 1) .. $#{$self}] ]);
 
     my $result = LL::List->new([$self->[$middle],
-                                $left->asPrefixList(),
-                                $right->asPrefixList()]);
+                                $left->_parsePrefix(),
+                                $right->_parsePrefix()]);
 
     return $result;
   }
@@ -1534,13 +1634,19 @@ sub isQtSym {
 
 sub checkQtLoL {
   my ($self, @args) = @_;
-  die "Expecting a quoted LoL, got @{[$self->storeStr()]}@_\n"
+  die "Expecting a quoted LoL, got @{[$self->storeStr()]}@args\n"
     unless $self->isQtLoL();
+}
+
+sub checkQtList {
+  my ($self, @args) = @_;
+  die "Expecting a quoted List, got @{[$self->storeStr()]}@args\n"
+    unless $self->isQtList();
 }
 
 sub checkQtSym {
   my ($self, @args) = @_;
-  die "Expecting a quoted Symbol, got @{[$self->storeStr()]}@_\n"
+  die "Expecting a quoted Symbol, got @{[$self->storeStr()]}@args\n"
     unless $self->isQtSym();
 }
 
@@ -1766,7 +1872,7 @@ use File::Basename;
 
 sub NIL {return LL::Nil::NIL;}
 
-use constant VERSION => "0.02";
+use constant VERSION => "0.03";
 use constant TRUE => LL::Number->new(1);
 
 # Compilable source types
@@ -1781,7 +1887,6 @@ use constant TOPLEVEL   => 'toplevel';
 our $Input = undef;     # Input filehandle or undef for stdin.
 my $NeedPrompt = 0;     # If true, reader is inside a LoL Line
 our $Globals = LL::GlobalContext->new();
-my %fnNeedsContext;     # Hash of functions that get the parent's context
 my %DocStringHash;      # Hash of docstring information
 our $BT;                # Backtrace list.  DO NOT SET; LOCALIZE INSTEAD.
 
@@ -1789,10 +1894,11 @@ our $CanCallMacro = 0;  # Do not change this!  Use local to override instead.
 # ---------------------------------------------------------------------------
 
 # Flags:
-my $dumpExpr = 0;
-my $dumpPerlSrc = 0;
-my $noLib = 0;
-my $enableBacktrace = 0;
+our $dumpExpr = 0;
+our $dumpPerlSrc = 0;
+our $dumpPerlLibSrc = 0;
+our $noLib = 0;
+our $enableBacktrace = 0;
 
 use Getopt::Long;
 
@@ -1801,18 +1907,35 @@ use Getopt::Long;
   my $args = pullOutArgs();
   my $dummy;
   my $flush = 0;
-
+  my $help = 0;
   GetOptions ('dump-expr'           => \$dumpExpr,
               'show-perl'           => \$dumpPerlSrc,
+              'show-lib-perl'       => \$dumpPerlLibSrc,
               'no-lib'              => \$noLib,
               'backtrace'           => \$enableBacktrace,
               'flush'               => \$flush,
-              'xxxxx'               => \$dummy)
+              'xxxxx'               => \$dummy,
+              'help'                => \$help)
     or die "Invalid argument.\n";
+
+  if ($help) {
+    print "Command:
+udeck [--dump-expr] [--show-perl] [--show-lib-perl] [--no-lib] [--backtrace]
+      [--flush] [--xxxxx] [--help]
+";
+    exit(0);
+  }
 
   $| = 1 if $flush;
 
-  initGlobals($args);
+  # --show-lib-perl implies --show-perl
+  $dumpPerlSrc = 1 if $dumpPerlLibSrc;
+
+  { # Localize to disable --show-perl for system libraries.
+    local $dumpPerlSrc = $dumpPerlLibSrc;
+    initGlobals($args);
+  }
+
   run();
   exit(0);
 }
@@ -1860,12 +1983,15 @@ sub run {
 
     last unless $@;
     print "Error: $@\n";
+    clearInputBuffer();
   }
 
   print "\n";
 }
 
 
+# Read toplevel input and evaluate it line by line from either a file
+# or standard input.
 sub readfile {
   my ($file, $module, $checkName, $print, $isInternalImport) = @_;
 
@@ -1881,11 +2007,13 @@ sub readfile {
   my $emptyList = LL::List->new([]);
 
   my $checkForDocstring = 0;
+  my $lineCount = 0;
   while (1) {
     $NeedPrompt = 1;        # We are at the start of a logical LoL line
 
     my $expr = readLoLLine(0);
     next if ($expr->isEmptyList());
+    ++$lineCount;
 
     # If $file was loaded via a 'use' directive (setting $checkName to
     # 1), the first line MUST be a 'package' declaration and the
@@ -1894,7 +2022,7 @@ sub readfile {
       $checkName = 0;
       $checkForDocstring = 1;
 
-      checkPkgDecl($file, $module, $expr);
+      makePkgNamespace($file, $module, $expr);
 
       # Special case: if this import was launched during environment
       # setup, we don't need to import 'Lang' into it.  (This is
@@ -1905,6 +2033,14 @@ sub readfile {
 
       $Globals->importPublic('Lang', $module);
       next;
+    }
+
+    # If there's a package declaration at the start and this isn't a
+    # package, we run it anyway but we set Sys::PackageRun to true.
+    if ($file && $lineCount == 1 && isPkgDecl($expr)) {
+      $Globals->set('Sys::PackageRun', LL::Number->new(1));
+      readfile($file, pkgName($expr), 1, 0);
+      return;
     }
 
     # This should get called on the second non-blank input line of a module.
@@ -1964,31 +2100,51 @@ sub clearForwardFns {
 }
 
 
-
-sub checkPkgDecl {
+# Create the namespace given in $expr after ensuring that it is the
+# expected package name (given in $module).  If not, dies.
+sub makePkgNamespace {
   my ($file, $module, $expr) = @_;
 
+  # Check for malformed package declaration.
+  fail("Malformed package declaration.\n")
+    if ($expr->[0]->isSymbol() &&
+        ${$expr->[0]} eq 'package' &&
+        ($expr->size() != 2 || !$expr->[1]->isSymbol()));
+
   # Die unless the 'package' statement is here.
-  die "First line of module file '$file' does not begin with a matching " .
-    "package declaration.\n"
-      unless ($expr->isList() &&
-              $expr->[0]->isSymbol() &&
-              ${$expr->[0]} eq 'package');
+  fail("First line of module file '$file' does not begin with a matching " .
+       "package declaration.\n")
+      unless isPkgDecl($expr);
 
-  # Die unless the package declaration has one argument, a symbol.
-  die "Malformed package declaration.\n"
-    unless ($expr->size() == 2 && $expr->[1]->isSymbol());
-
-  my $pkgName = ${$expr->[1]};
+  my $pkgName = pkgName($expr);
 
   # Die unless the package argument matches $module.
-  die "Needed module '$module'; got '$pkgName' in file '@{[basename $file]}'\n"
+  fail("Needed module '$module'; got '$pkgName' in file '@{[basename $file]}'\n")
     unless $module eq $pkgName;
 
-  # Actually create the namespace and import 'Lang' into it.
   $Globals->defNamespace($pkgName);
 }
 
+
+# If $expr is a 'package' statement, return the package name.
+# Otherwise, return undef.
+sub pkgName {
+  my ($expr) = @_;
+
+  return unless ($expr->isList()            &&
+                 $expr->[0]->isSymbol()     &&
+                 ${$expr->[0]} eq 'package' &&
+                 $expr->size() == 2         &&
+                 $expr->[1]->isSymbol());
+
+  return ${$expr->[1]};
+}
+
+# Test if $expr is a package declaration.
+sub isPkgDecl {
+  my ($expr) = @_;
+  return !!pkgName($expr);
+}
 
 
 # ---------------------------------------------------------------------------
@@ -2016,22 +2172,9 @@ sub readLoLLine {
     last if $item->isEof();
   }
 
-  # Create the result object
-  my $rlist = LL::List->new(\@result);
-
-  # See if this line could be treated as infix
-  if ($rlist->couldBeImpliedInfix()) {
-    $rlist = LL::InfixList->new(\@result)->asPrefixList();
-  } else {
-    # And do auto-infix conversion.
-    $rlist = $rlist->withAutoInfixDone();
-  }
-
-  # Catch malformed expressions.
-  die "Expression '@{[$rlist->printStr()]}' contains unescaped operators.\n"
-    if $rlist->looksLikeMalformedInfix();
-
-  return $rlist
+  # Convert to a list, then do the infix parsing/conversion and return
+  # the result.
+  return LL::List->new(\@result)->parseAsLolLine;
 }
 
 
@@ -2065,7 +2208,7 @@ sub readExpr {
     };
 
     ($tok->isBrace() && $tok->isOpen()) and do {
-      return readLoL();
+      return readLoLOrLolSub();
     };
   };
 
@@ -2097,6 +2240,83 @@ sub readSexp {
   return $openChar eq '('           ?
     LL::InfixList->new(\@result)    :
     LL::List->new(\@result);
+}
+
+
+# Read the next LoL, then expand it to a sub expression if it's got
+# the '|' characters.
+sub readLoLOrLolSub {
+  my $args = readCompactSubArgs();
+  my $lol = readLoL();
+  return $lol unless $args;
+
+  return
+    LL::List->new([LL::Symbol->new('_::sub'),
+                   LL::Quote->new($args),
+                   $lol,
+                   LL::Symbol->new('nil')]);
+}
+
+
+# Read the start of a LoL and see if it's the start of a compact sub.
+# If so, extract the args and return them as a list.  Otherwise, push
+# everything back as it was.
+sub readCompactSubArgs {
+  my $tok;
+
+  # For the purpose of compact subs, we allow newlines before the
+  # first pipe.
+  while (1) {
+    $tok = readNext();
+    last unless $tok->isEol();
+  }
+
+  # Case 1: empty arg list, no whitespace.  '||' treated as '| |'.  We
+  # also allow other operators that have gotten attached, e.g. '||='.
+  # In this case, everthing after the pipes gets thrown back.
+  ($tok->isUnescapedOperator() && ${ $tok } =~ /^\|\|(.*)/) and do {
+    unread(LL::Symbol->new($1)) if $1 ne "";
+    return LL::List->new([]);
+  };
+
+  # Case 2: Not a compact sub.
+  (!$tok->isUnescapedOperator() || ${ $tok } !~ /^\|/)
+    and do {
+      unread($tok);
+      return undef;
+    };
+
+  # Otherwise, it's looking like a compact sub
+
+  # First, handle the case where the following token is also an
+  # operator and the two are treated as one token.  (This is invalid
+  # but fixing it gives us a better error message.)
+  unread(LL::Symbol->new($1))
+    if (${ $tok } =~ /^\|(.+)$/);
+
+  my @args;
+  while (1) {
+    my $arg = readNext();
+
+    # We tolerate end-of-lines between the pipes
+    next if $arg->isEol();
+
+    ($arg->isOperator() && ${$arg} =~ /^\|(.*)/) and do {
+      # Tolerate '|=' as '| =' for example
+      unread(LL::Symbol->new($1)) if $1 ne "";
+      last;
+    };
+
+    # checkNonOperatorSymbol() handles this but it makes for a better
+    # error message.
+    $arg->isParen() and
+      fail("Found bracket in compact sub arg list.  Are you misssing a '|'?");
+
+    $arg->checkNonOperatorSymbol(" in compact sub argument list.");
+    push @args, $arg;
+  }
+
+  return LL::List->new(\@args);
 }
 
 
@@ -2136,8 +2356,12 @@ sub readLoL {
   }
 
   sub unread {
-    my ($tok) = @_;
-    unshift @tokens, $tok;
+    my (@toks) = @_;
+    unshift @tokens, @toks;
+  }
+
+  sub clearInputBuffer {
+    @tokens = ();
   }
 
   sub fillTokList {
@@ -2149,19 +2373,6 @@ sub readLoL {
         last;
       }
       chomp $line;
-
-      # If this is the start of a POD section, skip ahead to the end
-      if ($line =~ /^=\w+/) {
-        my $podLine;
-        do {
-          $podLine = getLine();
-          die "End-of-file inside a POD section.\n"
-            unless defined($podLine);
-
-        } while ($podLine !~ /^=cut\s/);
-
-        next;
-      }
 
       while (1) {
         my $tok;
@@ -2749,7 +2960,7 @@ sub launderProcBody {
     if ($first) {
       $first = 0;
 
-      if ($expr->size() == 1 && $expr->[0]->isString()) {
+      if ($expr->isList() && $expr->size() == 1 && $expr->[0]->isString()) {
         fail ("Unexpected docstring.\n") unless $allowDocstring;
 
         $docstring = ${ $expr->[0] };
@@ -2758,7 +2969,7 @@ sub launderProcBody {
     }
 
     my $newExpr = applyMacrosRecursively ($expr, $Globals);
-    $newExpr->unescapeAllOperators();
+    $newExpr->unescapeAllOperators() if $newExpr->isList();
 
     push @fixedBody, $newExpr;
   }
@@ -2797,8 +3008,8 @@ sub compile {
     if ($outerContext && $outerContext->isa('LL::GlobalContext'));
 
   $args->checkList(" in argument to procedure '$desc'");
-  $body->checkLoL(" in a procedure body ('$desc').");
-  $final->checkLoL(" in a procedure final block ('$desc').");
+  $body->checkList(" in a procedure body ('$desc').");
+  $final->checkList(" in a procedure final block ('$desc').");
 
   my $perlSrc = CompileToPerl($outerContext, $args, $body, $final,
                               $mode, $desc, $namespace);
@@ -2831,8 +3042,8 @@ sub DynamicSubSrc {
   die "Null outerContext!\n" unless $outerContext;
 
   $args->checkList(" in argument to sub.");
-  $body->checkLoL(" in a sub body.");
-  $final->checkLoL(" in a sub final block.");
+  $body->checkList(" in a sub body.");
+  $final->checkList(" in a sub final block.");
 
   my $src = CompileToPerl($outerContext, $args, $body, $final, SUB,
                           '*dynamic sub*');
@@ -2899,8 +3110,10 @@ sub expandFuncCall {
   $fname = ${ $expr->[0] } if $expr->[0]->isSymbol();
   given($fname) {
 
-    # _::value and Lang::value are optimized away
-    when(/^(_|Lang)::value$/) {
+    # _::value and Lang::value are optimized away if they take exactly
+    # one argument.  (If they take more than one, we'll need to
+    # evaluate those too in order to trigger their side-effects).
+    when(/^(_|Lang)::value$/ && $expr->size() <= 2) {
       fail("Call to '$fname' without any arguments.") if scalar @{$expr} <= 1;
       return expandExpr($state, $expr->[-1]);
     }
@@ -2942,53 +3155,73 @@ sub expandFuncCall {
       return $result;
     }
 
-    when ('_::set') {
-      my ($set, $name, $value) = @{$expr};
+    when (/^_::(var|const|set)$/) {
+      my ($set, $dest, $value) = @{$expr};
+      my $isConst = $fname eq '_::const';
+      my $isDef = $fname ne '_::set';
 
-      fail "'set' expects 3 arguments, got @{[scalar @{$expr}]}\n"
+      fail "'$fname' expects 3 arguments, got @{[scalar @{$expr}]}\n"
         unless scalar @{$expr} == 3;
 
-      $name->checkQtSym(" in variable assignment ('_::set') operation.");
-      $name = $name->value();
+      my $srcPerl = expandExpr($state, $value);
 
-      fail "Use of an undefined or private name '${$name}'."
-        if $state->isUndefined(${$name});
+      $dest->checkQuote(" in $fname destination.");
+      $dest = $dest->value();
 
-      fail "Attempted to assign to const '${$name}'."
-        if $state->isConst(${$name});
+      my @ops = ();
+      my $tmp = "";  # Name of temp var.
+      if ($dest->isSymbol()) {
+        push @ops, [$dest, $srcPerl];
+      } elsif ($dest->isList()) {
 
-      my $dest = $state->lookupExpr(${$name});
-      my $src = expandExpr($state, $value);
-      return "$dest = $src";
-    }
+        $tmp = $state->temp();
+        my $count = 0;
+        for my $destElem ( @{ $dest } ) {
+          $destElem->checkSymbol(" as an element in a multi-var assignment.");
+          push @ops, [$destElem, "$tmp->at(LL::Number->new($count))"];
+          ++$count;
+        }
 
-    when (/^_::(var|const)$/) {
-      my ($var, @argPairs) = @{$expr};
-      my $isConst = ${$var} eq '_::const';
-      my $result = "";
-
-      while (@argPairs) {
-        my $qtName = shift @argPairs;
-        my $value = shift @argPairs;
-
-        $qtName->checkQtSym(" in a variable declaration.");
-        my $name = ${ $qtName->value() };
-
-        fail ("Redefinition of '$name'\n")
-          if $state->hasRef($name);
-
-        $state->addRef($name, $ndx, $isConst);
-
-        next if $value->isNil();
-
-        my $perlName = $state->lookupExpr($name);
-        my $perlVal = expandExpr($state, $value, $ndx);
-
-        $result .= "$perlName = $perlVal;";
+      } else {
+        fail "Called '$fname' with an invalid destination.";
+        return "";  # Not reached.
       }
 
-      return "NIL" if $result eq "";
-      return 'do{'.$result.'NIL}';
+      my @resultOps = ();
+      for my $op (@ops) {
+        my ($opDest, $opSrc) = @{$op};
+        my $name = ${$opDest};
+
+        if ($isDef) {
+          fail ("Redefinition of '$name'\n")
+            if $state->hasRef($name);
+
+          $state->addRef($name, $ndx, $isConst);
+        } else {
+          fail "Use of an undefined or private name '$name'."
+            if $state->isUndefined($name);
+
+          fail "Attempted to assign to const '$name'."
+            if $state->isConst($name);
+        }
+
+        my $opDestPerl = $state->lookupExpr($ {$opDest});
+        push @resultOps, "$opDestPerl = $opSrc";
+      }
+
+      my $result = join(";", @resultOps);
+
+      # If this is a multi-assign, we need to wrap it with a 'do'.  If
+      # it's a var or const definition, need to ensure that it returns
+      # NIL.
+      if ($tmp || $isDef) {
+        my $mktmp = $tmp ? "$tmp = $srcPerl;" : "";
+        my $chk = $tmp ? "$tmp->checkIndexable();" : "";
+        my $value = $isDef ? "NIL;" : "";
+        $result = "do{$mktmp$chk$result;$value}";
+      }
+
+      return $result;
     }
   }
 
@@ -3051,19 +3284,28 @@ sub CompileChunk {
 
   my $count = 0;
   for my $elem (@{$body}) {
+    my $isLast = $count == $#{$body};
+    ++$count;
+
     my $comment = $elem->printStr();
     $comment =~ s/^/"$pad#"/egmx;  # $comment can be multiple lines
     $result .= $comment . "\n";
 
-    $result .= $pad;
-    my $expr = expandExpr ($state, $elem, $count + $offset);
+    # Skip any useless expressions
+    if (!$elem->isList() && !($saveLast && $isLast)) {
+      $result .= "$pad# no effect, skipped.\n";
+      dkwarn("Useless expression in @{[$state->desc()]}: " .
+             "'@{[$elem->printStr()]}'");
+      next;
+    }
 
-    if ($saveLast && $count == $#{$body}) {
+    $result .= $pad;
+    my $expr = expandExpr ($state, $elem, $count + $offset - 1);
+
+    if ($saveLast && $isLast) {
       $expr = '$lastExpr = ' . $expr;
     }
     $result .= $expr . ";\n";
-
-    $count++;
   }
 
   $state->indentBy(-1);
@@ -3237,6 +3479,10 @@ sub CreatePreamble {
   # Add argument count check.
   $result .= $pad . CreateArgCountCheck($state, $mode) . "\n"
     unless $mode eq TOPLEVEL;
+
+  # Declare the temps if required
+  $result .= $pad . "my (" . join(",", $state->tempNames()) . ");\n"
+    if $state->hasTemps();
 
   # Add args (except for 'args', which is special).
   for my $name (@{ $state->args() }) {
@@ -3514,13 +3760,12 @@ sub subify {
     $arglist = LL::Quote->new( LL::List->new(\@args) );
   }
 
-  return  LL::List->new([   LL::Symbol->new('_::sub'),
-                            $arglist,
-                            $body,
-                            NIL
+  return  LL::List->new([LL::Symbol->new('_::sub'),
+                         $arglist,
+                         $body,
+                         NIL
                         ]);
 }
-
 
 # Attempt to subify the arguments, dying if this is impossible.
 sub subifyStrict {
@@ -3637,12 +3882,12 @@ sub macro_proc {
 
   if (defined($body)) {
     $args = fixFormalArgs($args);
-    $body->checkQtLoL(" in procedure body of '${$proc}'.");
+    $body->checkQtList(" in procedure body of '${$proc}'.");
 
     $finalizer = LL::Quote->new(LL::List->new([]))
       unless defined($finalizer);
 
-    $finalizer->checkQtLoL(" in procedure final block of '${$proc}'.");
+    $finalizer->checkQtList(" in procedure final block of '${$proc}'.");
   } else {
     $args = NIL;
     $body = NIL;
@@ -3679,8 +3924,8 @@ sub macro_macro {
 
   $name->checkSymbol(" as name of macro definition.");
   $args = fixFormalArgs($args);
-  $body->checkQtLoL(" in body of macro definition.");
-  $final->checkQtLoL(" in final block of macro definition.")
+  $body->checkQtList(" in body of macro definition.");
+  $final->checkQtList(" in final block of macro definition.")
     if defined($final);
   $final ||= NIL;
 
@@ -3690,44 +3935,82 @@ sub macro_macro {
 }
 
 
-sub launder_varconst {
-  my ($isConst, @macroArgs) = @_;
+sub checkAssignmentForm {
+  my ($desc, $expr) = @_;
 
-  my @args;
-  if (scalar @macroArgs == 1 && $macroArgs[0]->isQtLoL()) {
-    my $argList = shift @macroArgs;
-    @args = @{ $argList->value() };
-  } else {
-    my $argList = LL::List->new(\@macroArgs);
+  fail "Malformed $desc declaration part: '@{[$expr->printStr()]}'"
+    unless (scalar @{$expr} == 3 &&
+            $expr->[0]->isSymbol() && ${$expr->[0]} =~ /^(\=|set)$/);
+}
 
-    if ($argList->couldBeImpliedInfix()) {
-      $argList = $argList->parsedAsInfix();
-    }
 
-    push @args, $argList;
+sub launderLoLVarDecl {
+  my ($isConst, $args) = @_;
+
+  my $op = $isConst ? '_::const' : '_::var';
+  my $desc = $isConst ? "constant" : "variable";
+
+  fail "Empty item list in $desc declaration."
+    unless scalar @{$args->value()} > 0;
+
+  my @result;
+  for my $expr (@{ $args->value() }) {
+    checkAssignmentForm($desc, $expr);
+
+    my ($set, $dest, $value) = @{$expr};
+    push @result, expandAssignment($op, $dest, $value);
   }
+
+  unshift @result, LL::Symbol->new('_::value');
+  return LL::List->new(\@result);
+}
+
+
+sub launderInfixVarDecl {
+  my ($isConst, $decl) = @_;
+
+  my $op = $isConst ? "_::const" : "_::var";
+
+  $decl = $decl->parsedAsInfix();
+  checkAssignmentForm($isConst ? "constant" : "variable", $decl);
+
+  my ($set, $dest, $src) = @{$decl};
+  return expandAssignment($op, $dest, $src);
+}
+
+
+sub launderVarList {
+  my ($isConst, $vars) = @_;
 
   my @result = ();
-  for my $decl (@args) {
-    $decl->checkList();
-    next unless scalar @{$decl};
+  for my $var (@{$vars}) {
+    $var->checkSymbol(" in variable declaration");
+    fail "Attempted to define const '${$var}' with no value."
+      if $isConst;
 
-    $decl->[0]->checkSymbol(" instead of '=' in var or const declaration.");
-
-    if (${ $decl->[0] } eq '=') {
-      push @result, LL::Quote->new($decl->[1]), $decl->[2];
-      next;
-    }
-
-    for my $word (@{ $decl }) {
-      $word->checkSymbol(" (@{[$word->printStr()]}) in var/const declaration.");
-      die "Const '${$word}' declared without a value.\n" if $isConst;
-
-      push @result, LL::Quote->new($word), NIL;
-    }
+    push @result, expandAssignment('_::var', $var, NIL);
   }
 
-  return \@result;
+  unshift @result, LL::Symbol->new('_::value');
+  return LL::List->new(\@result);
+}
+
+
+sub launderVarconst {
+  my ($isConst, @macroArgs) = @_;
+  my $var = $isConst ? "const" : "var";
+
+  # Case 1: the argument is a LoL
+  return launderLoLVarDecl($isConst, $macroArgs[0])
+    if (scalar @macroArgs == 1 && $macroArgs[0]->isQtLoL());
+
+  # Case 2: the argument is an infix expression (e.g. "var x = 42")
+  my $argList = LL::List->new(\@macroArgs);
+  return launderInfixVarDecl($isConst, $argList)
+    if ($argList->couldBeImpliedInfix());
+
+  # Case 3: we assume it's a list of uninitialized variables (e.g. "var a b c")
+  return launderVarList($isConst, \@macroArgs);
 }
 
 
@@ -3738,10 +4021,7 @@ sub macro_varconst {
 
   my $isConst = (${$name} eq 'const');
 
-  my $result = launder_varconst($isConst, @args);
-  unshift @{ $result }, LL::Symbol->new($isConst ? '_::const' : '_::var');
-
-  return LL::List->new($result);
+  return launderVarconst($isConst, @args);
 }
 
 
@@ -3750,26 +4030,50 @@ sub macro_assign {
   my ($set, $dest, $value) = @_;
   chkMacro();
 
-  my $err = "Malformed assignment: " . LL::List->new(\@_)->printStr() . "\n";
+  return expandAssignment('_::set', $dest, $value);
+}
 
-  my @result;
+
+sub expandAssignment {
+  my ($set, $dest, $value) = @_;
+
+  # For error messages.
+  my $sname = $set;
+  $sname =~ s/^_:://;
+
+  my $isAssignment = $set eq '_::set';
+  my $assignment = $isAssignment ? "assignment" : "declaration";
+  my $err = "Malformed $assignment: [$sname " . $dest->printStr() .
+    " " . $value->printStr() . "]\n";
+
+  my @expansion;
   if ($dest->isSymbol()) {
     # Case 1: simple assignment to variable
-    @result = (LL::Symbol->new('_::set'),
-               LL::Quote->new($dest),
-               $value);
+    @expansion = (LL::Symbol->new($set),
+                  LL::Quote->new($dest),
+                 $value);
+  } elsif ($dest->isList() && $dest->couldBeMultiAssignLhs()) {
+    # Case 2: Multi-var assignment
+    @expansion = (LL::Symbol->new($set),
+                  LL::Quote->new($dest),
+                  $value);
+
+    for my $var (@{$dest}) {
+      $var->checkSymbol(" in LHS of multi-value assignment.");  # Sanity check.
+    }
 
   } elsif ($dest->isList() && scalar @{$dest} == 3 &&
            $dest->[0]->isUnescapedOperator()) {
+    fail $err unless $isAssignment;
 
     if (${$dest->[0]} eq '@') {
-      # Case 2: List element assignment (eg: 'l@5 = 42')
-      @result = (LL::Symbol->new('_::atput'),
+      # Case 3: List element assignment (eg: 'l@5 = 42')
+      @expansion = (LL::Symbol->new('_::atput'),
                  $dest->[1],    # list
                  $dest->[2],    # index
                  $value);
     } elsif (${$dest->[0]} eq '.') {
-      # Case 3: Struct field assignment (eg: 'foo.a = 42')
+      # Case 4: Struct field assignment (eg: 'foo.a = 42')
       my $object = $dest->[1];
       my $field = $dest->[2];
       $field->checkSymbol(" in object field name.");
@@ -3777,17 +4081,16 @@ sub macro_assign {
       my $setter = LL::Symbol->new("${$field}_set");
       my $lookup = macro_methodLookupOp('', $object, $setter);
 
-      @result = ($lookup, $value);
+      @expansion = ($lookup, $value);
 
     } else {
       die $err;
     }
-
   } else {
     die $err;
   }
 
-  return LL::List->new(\@result);
+  return LL::List->new(\@expansion);
 }
 
 
@@ -4029,7 +4332,7 @@ sub macro_suboper {
         $left->[0]->isAutoInfixOperator());
 
   $left = fixFormalArgs($left);
-  $right->checkQtLoL(" in RHS of ${$arrow} operator.");
+  $right->checkQtList(" in RHS of ${$arrow} operator.");
 
   return LL::List->new([LL::Symbol->new('_::sub'),
                         $left,
@@ -4147,6 +4450,9 @@ anything in it.");
     $Globals->defset('Sys::Argv0', shift @deckArgs);
     $Globals->defset('Sys::Argv', LL::List->new(\@deckArgs));
   }
+
+  # Set the module-as-script flag
+  $Globals->defset('Sys::PackageRun', NIL);
 
   $Globals->defsetconst ('nil', NIL);
 
@@ -4543,7 +4849,7 @@ anything in it.");
   prim ('_::value',
         "args",
         "Return the last item in the argument list.  If none is given,".
-        " return nil.",
+        " return nil.  All arguments are evaluated.",
         sub { return NIL unless scalar @_; return $_[-1]} );
   alias ('_::value', 'value');
 
@@ -4556,12 +4862,6 @@ anything in it.");
              $num->checkNumber(" in 'chr'.");
              my $str = $ {$num} <= 0xFF ? chr(${$num}) : "";
              return LL::String->new($str)});
-
-  # Create the hash of procedures that take the context as arg. 0.
-  for my $name (qw{_::set _::var _::sub _::const}) {
-    my $fn = $Globals->lookup($name);
-    $fnNeedsContext{$fn} = 1;
-  }
 
   # Macros
   macro 'var',          \&macro_varconst,       'args',
@@ -4662,7 +4962,7 @@ anything in it.");
 
      Note that syntactic sugar in the compiler will automatically wrap any
      C<=E<gt>> expression in an infix expression with round brackets.  Hence,
-     C<[map {a} => {value (a*a)} l]> becomes C<[map ({a} => {value (a*a)}) l]>.";
+     C<[map {a} =E<gt> {value (a*a)} l]> becomes C<[map ({a} =E<gt> {value (a*a)}) l]>.";
   macro '-',            \&macro_minus,          'left maybeRight',
     "If given two arguments, expands to C<[left->op_Sub maybeRight]>
      (i.e. ordinary subtraction).  If C<maybeRight> is ommitted, expands to
@@ -5018,8 +5318,8 @@ sub builtin_proc {
   }
 
   $args->checkList();
-  $body->checkLoL(" in proc body.");
-  $finalizer->checkLoL(" in proc final block.");
+  $body->checkList(" in proc body.");
+  $finalizer->checkList(" in proc final block.");
 
   die "proc: name '${$name}' is already defined.\n"
     unless $Globals->lookup(${$name})->isUndefinedProcedure();
@@ -5041,6 +5341,7 @@ sub mk_mproc_macro_argfilter {
   my $needDefault = 0;  # Indicates need/presence of default value
   my $numDefaults = 0;
   my $argNum = 0;
+
   for my $arg (@{$argList}) {
     my @argFilter = ();
 
@@ -5133,11 +5434,21 @@ sub mk_mproc_macro_argfilter {
           "mproc '$name' despite 'sub' modifier.\n"
             if ($needDefault && !$default->isList() && !$default->isQtLoL());
 
-        if ($strict) {
-          push @argFilter, sub {subifyStrict(shift() || $default, @sfyArgs)};
-        } else {
-          push @argFilter, sub {subify(shift() || $default, @sfyArgs)};
-        }
+        my $subifyQt = sub {
+          my ($expr) = @_;
+
+          $expr ||= $default;
+
+          if (!$expr->isQtLoL()) {
+            fail ("Argument $argNum of mproc '$name' must be a quoted list of lists.")
+              if ($strict);
+            return $expr;
+          }
+
+          return subify($expr, @sfyArgs);
+        };
+
+        push @argFilter, $subifyQt;
       }
 
       when ("symbol") {
@@ -5293,9 +5604,9 @@ sub builtin_mproc {
 
   $name->checkSymbol();
   $args->checkList (" for mproc argument list.");
-  $body->checkLoL (" as mproc body.") unless $body->isNil();
+  $body->checkList (" as mproc body.") unless $body->isNil();
   $final = LL::List->new([]) if $final->isNil();
-  $final->checkLoL (" for mproc final block.");;
+  $final->checkList (" for mproc final block.");;
 
   $Globals->ensureMacroNamespace(${$name});
   my $fullName = LL::Name::Normalize(${$name});
@@ -5367,8 +5678,8 @@ sub builtin_macro {
 
   $name->checkSymbol(" in macro name.");
   $args->checkList(" in macro '${$name}' argument list.");
-  $body->checkLoL(" in macro '${$name}' body.");
-  $final->checkLoL(" in macro '${$name}' final block.");
+  $body->checkList(" in macro '${$name}' body.");
+  $final->checkList(" in macro '${$name}' final block.");
 
   my $docstring = $body->stripDocString();
   if ($docstring) {
@@ -5542,6 +5853,7 @@ sub builtin_usefn {
     unless $path;
 
   if (!$Globals->hasNamespace($mn)) {
+    local $dumpPerlSrc = $dumpPerlLibSrc; # Disable --show-perl for the lib
     readfile($path, $mn, 1, 0);
   }
 
@@ -5606,6 +5918,7 @@ sub builtin_perlproc {
   }
 
   my $fn = 'sub{' . $perlArgs . ${$bodyStr} . '}';
+  print "# perlsub ${$name}\n$fn\n" if ($dumpPerlSrc);
 
   my $sub = strEval($fn);
   die "Error: $@\nCompiling perlsub:\n'''\n$fn\n'''\n"
@@ -5812,11 +6125,11 @@ sub class_methods {
     $name->checkSymbol(" in method name.");
     $args = fixFormalArgs($args)->value();
 
-    $body->checkQtLoL(" in method definition.");
+    $body->checkQtList(" in method definition.");
 
     $finalizer = LL::Quote->new(LL::List->new([]))
       unless $finalizer;
-    $finalizer->checkQtLoL(" in method final block definition.");
+    $finalizer->checkQtList(" in method final block definition.");
 
     # There's no more eval so drop the quotes
     $body = $body->value();

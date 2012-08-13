@@ -1,0 +1,13 @@
+# Test scoping rules
+
+# REMOVED: This is no longer a falure.  Deck now handles this correctly.
+
+class Ninja {
+    var shuriken katana
+}
+
+class SuperNinja Ninja {
+    var crossbow
+    var katana        # Error!
+}
+

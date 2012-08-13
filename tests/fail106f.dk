@@ -1,0 +1,5 @@
+# Declaration that looks like an object field assignment
+var a.x = 42
+
+
+

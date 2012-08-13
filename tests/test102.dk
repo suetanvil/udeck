@@ -1,0 +1,22 @@
+# Test running a package as a Deck program.  It's exactly like running
+# a normal script or program except that it runs in the declared
+# package namespace and the global Sys::PackageRun is true.
+
+package Foo::Bar
+
+"docstring goes here"
+
+var a = 42
+
+proc thingy {} {
+    puts "thingy called!"
+}
+
+if (Sys::PackageRun) {
+    puts "Package is run as module."
+    puts Foo::Bar::a
+    Foo::Bar::thingy
+    thingy
+}
+
+

@@ -1,0 +1,19 @@
+# Test the '=' prefix for automatic infix expressions.
+
+puts [{} => {=2+3}]
+puts [{} => {=2}]
+puts [{} => {="hello, world"}]
+puts [{} => {="nothing"; ="something"}]
+
+var foo = {a b} => {=a+b}
+puts [foo 1 2]
+
+puts {   =    a   +    b}
+puts {=a+b}
+puts {=\
+a\
++\
+b\
+}
+
+puts {= a}

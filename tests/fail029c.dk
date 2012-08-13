@@ -1,4 +1,4 @@
-# consts without values
+# Malformed const.  WAS consts without values
 
 const {a = 5; b = 6; c; d = 11}
 puts a b c d 

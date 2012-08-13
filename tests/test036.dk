@@ -7,7 +7,7 @@ foreach y in x {
 }
 puts
 
-var z = [map (a+1) x]
+var z = [map {= a+1} x]
 puts z
 puts
 

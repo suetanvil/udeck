@@ -1,1 +1,1 @@
-Const 'a' declared without a value.
+Code error: Malformed constant declaration part: '[a]'

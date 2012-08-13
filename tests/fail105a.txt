@@ -1,0 +1,1 @@
+Code error: Found bracket in compact sub arg list.  Are you misssing a '|'?

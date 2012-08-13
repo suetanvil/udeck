@@ -1,0 +1,3 @@
+Code error: Empty item list in variable declaration.
+Backtrace:
+  Lang::var

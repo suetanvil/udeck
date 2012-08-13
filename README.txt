@@ -1,5 +1,5 @@
 
-                              Deck 0.02
+                              Deck 0.03
                               =========
 
 Deck is a simple programming language.  It is dynamically typed,
@@ -62,8 +62,11 @@ the program being run (if any).  They are:
     --dump-expr     -- Print the expansion(s) of all expressions being
                        evaluated.
 
-    --show-perl     -- Print out the Perl code each expression is
+    --show-lib-perl -- Print out the Perl code each expression is
                        compiled to.
+
+    --show-perl     -- Print out the Perl code each expression is
+                       compiled to EXCLUDING library modules.
 
 In addition, the following arguments are available, at least for now.
 They are mostly intended to aid the development of udeck.pl and are

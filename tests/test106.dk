@@ -1,0 +1,40 @@
+# Testing multi-variable declarations
+
+proc pp {args} {
+	for i in args {
+		say "$i "
+	}
+	puts
+}
+
+var [a b c] = :[1 2 3]
+pp a b c
+
+const [d e f] = :[4 5 6]
+pp d e f
+
+var {
+	s1 = 7
+	[h i j] = :[8 9 10]
+	[k] = :[11]
+}
+pp s1 h i j k
+
+const [l] = :[12]
+pp l
+
+
+proc foo {} {
+	var [x1 x2 x3] = :[a b c]
+	pp x1 x2 x3
+}
+foo
+
+
+do {
+	var \+ = 42
+	pp \+
+}	
+	
+
+

@@ -1,0 +1,2 @@
+Code error: Attempted to assign to const 'd'.
+Backtrace:

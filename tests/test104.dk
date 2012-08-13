@@ -1,0 +1,27 @@
+# Test function bodies containing literals as expressions
+
+var sv = 123
+
+var x
+x = {} => :[1 2 sv 3 [+ 2 2]]
+puts [x]
+
+var w = [ sub {} :["w"] :[1 sv 2 [puts "called final block of w"] ] ]
+puts [w]
+
+proc y {} :[ 1 2 sv 3 [return "y"]]
+puts [y]
+
+proc y1 {} :[ 1 2 sv 3 [return "y1"]] :[1 sv 2 3 [puts "called final block of y1"]]
+puts [y1]
+
+
+class Foo {
+    method p {} :[1 2 sv 3 [return "Foo->p"]]
+    method q {} {return "Foo->q"} :[1 2 sv 3 [puts "Called final block of q"]]
+}
+var f = [Foo->new]
+puts [f->p]
+puts [f->q]
+
+

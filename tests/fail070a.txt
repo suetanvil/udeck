@@ -1,1 +1,1 @@
-Code error: Use of an undefined or private name 'shuriken'.
+Code error: Unknown variable 'shuriken' in 'attack'.

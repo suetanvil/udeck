@@ -1,1 +1,1 @@
-Expecting a single expression or quoted list of list. Got 's1'
+Code error: Argument 2 of mproc 'Main::mmap' must be a quoted list of lists.

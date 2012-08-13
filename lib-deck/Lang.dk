@@ -6,7 +6,6 @@ automatically imported into each module and should be considered part
 of the language implementation.
 "
 
-
 const {
     true = 1
     false = nil
@@ -155,6 +154,12 @@ _::class_ext Object {
         "Tell if instances of this class are callable."
         return false
     }
+
+    method abstract {} {
+        "Called by abstract methods to signal that an error has occurred."
+        die "Abstract method called."
+    }
+
 }
 
 _::class_ext Number {
@@ -960,7 +965,7 @@ proc asList {seq} {
 
 perlproc _perlsort {pr ls} '''
   $pr->checkFun(" in _sort perlfunc.");
-  my $result = [sort {$pr->($a, $b)->perlForm()} @{$ls}];
+  my $result = [sort {$pr->($a, $b)->perlForm() || 0} @{$ls}];
   return $result;
 '''
 
@@ -1259,6 +1264,12 @@ proc lolcat {args} {
     return result
 }
 
+proc append {destList args} {
+    "Return a new sequence of the same type as C<destList> containing
+     all elements in C<destList> followed by each of the following
+     arguments."
+    return [concat destList args]
+}
 
 perlproc _rand {} ''' return rand(1); '''
 

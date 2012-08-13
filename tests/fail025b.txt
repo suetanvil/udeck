@@ -1,1 +1,1 @@
-Expression '[a + b + c]' contains unescaped operators.
+Code error: Expression '[a + b + c]' contains unescaped operators.

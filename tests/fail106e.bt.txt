@@ -1,0 +1,4 @@
+Code error: Malformed declaration: [var [@ a 5] 42]
+
+Backtrace:
+  Lang::var

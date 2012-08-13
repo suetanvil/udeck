@@ -1,0 +1,4 @@
+# No empty multi-var var list
+
+var [] = :[]
+

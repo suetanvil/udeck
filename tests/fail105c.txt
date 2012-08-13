@@ -1,0 +1,1 @@
+Expected non-operator symbol, got '+|' in compact sub argument list..

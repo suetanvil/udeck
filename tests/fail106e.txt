@@ -1,0 +1,2 @@
+Code error: Malformed declaration: [var [@ a 5] 42]
+
