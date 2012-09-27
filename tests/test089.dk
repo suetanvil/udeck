@@ -1,4 +1,4 @@
-# Test the 'sort' and 'reduce' functions.
+# Test the 'sort', 'filter' and 'fold' functions.
 
 # Test 'sort'
 var u = [list 5 3 4 1 2]
@@ -21,30 +21,56 @@ s = [sort {neg [cmp a b]} u]
 puts u
 puts s
 
-# Test 'reduce'
+# Test 'filter'
 say "Odd numbers: "
-map {say "$a "} [reduce {value (a % 2)} (1..20)]
+map {say "$a "} [filter {value (a % 2)} (1..20)]
 puts
 
-var even = [reduce {value (a % 2 == 0)} (1..20)]
+var even = [filter {value (a % 2 == 0)} (1..20)]
 puts even
 puts even.size
 
-var vowels = [reduce {value a.isVowel} "This is a sentence."]
+var vowels = [filter {value a.isVowel} "This is a sentence."]
 puts vowels
 
-vowels = [reduce {value a.isVowel} :foobarquux]
+vowels = [filter {value a.isVowel} :foobarquux]
 puts vowels
 
-even = [reduce {value (a % 2 == 0)} [byteArray 1 2 3 4 5 6 7 8 9 10] ]
+even = [filter {value (a % 2 == 0)} [byteArray 1 2 3 4 5 6 7 8 9 10] ]
 puts even
 puts even.size
 
-var empty = [reduce {value 0} (1..20)]
+var empty = [filter {value 0} (1..20)]
 puts empty " " empty.size
 
-empty = [reduce {value 1} :[]]
+empty = [filter {value 1} :[]]
 puts empty " " empty.size
+
+
+# Test 'foldWith'
+puts "foldWith:"
+
+puts [foldWith {=a+b} 0 :[1 2 3 4 5]]
+puts [foldWith {|sum n| =sum+n} 0 :[1 2 3 4 5]]
+puts [foldWith {=a+b} 5 :[5]]
+puts [foldWith {=a+b} 5 :[]]
+puts [foldWith {=a+b} 0 (1..50)]
+
+# Test 'fold'
+puts "fold:"
+puts [fold {=a+b} :[1 2 3 4 5]]
+puts [fold {|sum n| =sum+n} :[1 2 3 4 5]]
+puts [fold {=a+b} :[5]]
+
+# test 'join'
+puts "join:"
+puts [join ":" :['a' 'b' 'c' 'd' 'e']]
+puts [join "" :['a' 'b' 'c' 'd' 'e']]
+puts [join ":" :[]]
+puts [join :xxx :['a' 'b' 'c' 'd' 'e']]
+puts [join :[] :['a' 'b' 'c' 'd' 'e']]
+puts [join "," [concat (0..5) :[s1 s2 54 'x']]]
+
 
 
 

@@ -1319,24 +1319,6 @@ sub couldBeMultiAssignLhs {
 }
 
 
-=pod xxx
-
-# If $self takes the form [ <term> -> <term> ...], turn the first
-# three into a call to the '->' operator.
-sub withArrowResolved {
-  my ($self) = @_;
-
-  return $self if scalar @{$self} < 3;
-  return $self
-    unless ($self->[1]->isUnescapedOperator() && ${$self->[1]} eq '->');
-
-  my $arrowExpr = LL::List->new([$self->[1], $self->[0], $self->[2]]);
-  return LL::List->new([ $arrowExpr, @{$self}[3..$#{$self}] ]);
-}
-
-=cut
-
-
 # Search for auto-infixed operations (e.g '.' and '=>') and turn them
 # into infix subexpressions (more precisely: infix subexpressions that
 # have been parsed to prefix).  $oper is a regex that matches the
@@ -1872,7 +1854,7 @@ use File::Basename;
 
 sub NIL {return LL::Nil::NIL;}
 
-use constant VERSION => "0.03";
+use constant VERSION => "0.04";
 use constant TRUE => LL::Number->new(1);
 
 # Compilable source types
@@ -2742,7 +2724,7 @@ sub decktype {
 
   my ($arg) = @_;
 
-  # Handle non-reference scalars.
+  # Handle special cases.
   return $arg if (blessed($arg) && $arg->can('checkType'));
   return LL::List->new([]) if (ref($arg) eq 'ARRAY' && scalar @{$arg} == 0);
   return NIL unless defined($arg);
@@ -3875,10 +3857,17 @@ sub fixFormalArgs {
 
 sub macro_proc {
   my ($proc, $name, $args, $body, $finalizer) = @_;
-  checkNargs('proc', \@_, '-', 1, 3, 4);
+  checkNargs('proc', \@_, '-', 1, 2, 3, 4);
   chkMacro();
 
-  $name->checkSymbol(" in '${$proc}' arg 1");
+  # If $name is not a symbol, we assume that this is anonymous proc
+  # and just shuffle everthing right.
+  if (!$name->isSymbol) {
+    $finalizer = $body;
+    $body = $args;
+    $args = $name;
+    $name = NIL;
+  }
 
   if (defined($body)) {
     $args = fixFormalArgs($args);
@@ -4703,7 +4692,9 @@ anything in it.");
                      return a sub that evaluates C<expr>.  If C<expr> is a
                      list, C<subifyOrDelay> will behave exactly like C<subify>.
                      Otherwise, the sub will evaluate and return C<expr>,
-                     whatever it is.",
+                     whatever it is.
+
+                     This allows stuff like C<while a {a = a - 1}> to work.",
                     \&builtin_subifyOrDelay],
                   ) {
     # Sanity assertion:
@@ -4868,10 +4859,17 @@ anything in it.");
     "Declares one or more variables in the local scope.";
   macro 'const',        \&macro_varconst,       'args',
     "Declares one or more constants in the local scope.";
-  macro 'proc',         \&macro_proc,           'name args body final',
+  macro 'proc',         \&macro_proc,           '[name] args body final',
     "Declares a procedure in the current module scope.  C<final> is
-     optional.  If C<body> and C<args> are also omitted, the statement instead
-     creates a forward declaration of the procedure.";
+     optional.  The resulting procedure is also returned.
+
+     If C<name> is omitted, the resulting proc is unnamed but is still
+     returned.  (Note that this is different from an anonymous sub in
+     several ways.)
+
+     If called with only a name, the statement instead creates a
+     forward declaration of the procedure.  In this case, it returns
+     nil.";
   macro 'mproc',        \&macro_mproc,          'name args body',
     "Declares an mproc in the current module scope.";
   macro 'set',          \&macro_assign,         'dest value',
@@ -4896,10 +4894,14 @@ anything in it.");
      'else'; it is always optional and should be omitted if C<falseBlock> is
      also absent.";
   macro 'while',        \&macro_whilefn,        'cond block',
-    "Repeatedly evaluate C<cond> followed by C<block> until the first time
-     C<cond> evaluates false.  This is the standard C<while> loop.
 
-     C<cond> can be C<subified> or C<delayed>; C<block> is always subified.";
+    "Repeatedly evaluate C<cond> followed by C<block> until the first
+     time C<cond> evaluates false.  Returns the result of the last
+     call to C<block> or C<nil> if that never happens. This is the
+     standard C<while> loop.
+
+     C<cond> is processed by C<subifyOrDelay>; C<block> is processed
+     by C<subify>.";
   macro 'foreach',      \&macro_foreachfn,      'item in list body',
     "Evaluates C<body> over each element in C<list> from start to end with
      a local variable C<item> set to reference the element.  The second
@@ -4938,8 +4940,8 @@ anything in it.");
 
      Note that syntactic sugar in the compiler will implicitly wrap any
      bare C<-E<gt>> expression at the start of an infix expression with round
-     brackets, making it infix.  Hence, C<[foo->bar 1]> becomes
-     C<[(foo->bar) 1]>.";
+     brackets, making it infix.  Hence, C<[foo-E<gt>bar 1]> becomes
+     C<[(foo-E<gt>bar) 1]>.";
   macro '.',            \&macro_fieldget,       'object attribute',
     "Performs an attribute lookup.  C<object.attribute> expands to
      C<[object->attribute_get].  However, the assignment macros C<=> and
@@ -4962,7 +4964,16 @@ anything in it.");
 
      Note that syntactic sugar in the compiler will automatically wrap any
      C<=E<gt>> expression in an infix expression with round brackets.  Hence,
-     C<[map {a} =E<gt> {value (a*a)} l]> becomes C<[map ({a} =E<gt> {value (a*a)}) l]>.";
+
+         [map {a} => {value (a*a)} l]
+
+     becomes
+
+         [map ({a} => {value (a*a)}) l]
+
+     (This form may be deprecated in the future in favour of the 'C<{||...}>' 
+     form.)
+     ";
   macro '-',            \&macro_minus,          'left maybeRight',
     "If given two arguments, expands to C<[left->op_Sub maybeRight]>
      (i.e. ordinary subtraction).  If C<maybeRight> is ommitted, expands to
@@ -5307,10 +5318,11 @@ sub builtin_proc {
   my ($name, $args, $body, $finalizer) = @_;
   checkNargs('_::proc', \@_, 4);
 
-  $name->checkSymbol();
+  ($name->isNil && !$body->isNil)
+    or $name->checkSymbol("in 'name' argument of call to _::proc.");
 
   $Globals->defsetconst(${$name}, LL::UndefinedProcedure->new(${$name}))
-    unless $Globals->present(${$name});
+    unless $name->isNil || $Globals->present(${$name});
 
   if ($body->isNil()) {
     $Globals->addForward(${$name});
@@ -5322,11 +5334,12 @@ sub builtin_proc {
   $finalizer->checkList(" in proc final block.");
 
   die "proc: name '${$name}' is already defined.\n"
-    unless $Globals->lookup(${$name})->isUndefinedProcedure();
+    unless $name->isNil || $Globals->lookup(${$name})->isUndefinedProcedure();
 
-  my $longName = LL::Name::Normalize(${$name});
+  my $longName = $name->isNil ? '<anonymous proc>' :
+      LL::Name::Normalize(${$name});
   my $func = compile (undef, $args, $body, $finalizer, 'proc', $longName);
-  $Globals->setGlobalConst(${$name}, $func);
+  $Globals->setGlobalConst(${$name}, $func) unless $name->isNil;
 
   return $func;
 }
@@ -5731,7 +5744,7 @@ sub builtin_whilefn {
     $result = $body->();
   }
 
-  return $body;
+  return $result;
 }
 
 

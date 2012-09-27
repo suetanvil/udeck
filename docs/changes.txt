@@ -1,4 +1,17 @@
 
+Changes in 0.04:
+
+    + Now allows anonymous procs in addition to anonymous subs.
+
+    + Added module Perl::Regex
+
+    + Bug fix: 'while' now returns the value of the last iteration of
+      the body block or nil if the body was never executed.
+
+    + Renamed 'reduce' to 'filter', since that's a clearer name.
+
+    + Updated print_docstrings.dk to handle Verbatim Paragraphs
+      (i.e. indented text) in docstrings.
 
 Changes in 0.03
 

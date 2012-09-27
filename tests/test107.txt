@@ -1,0 +1,17 @@
+set m: <procedure>
+1
+nil
+Invalid regexp: nil
+empty matchsub: nil
+set r: <procedure>
+Thsi si smo etxet.
+Thi s i s so me  te xt.
+Thi s i s so me  te xt.
+T9sxt.
+a=foo b=bar c=quux
+Empty replacesub: nil
+This:is:a:sentence:with:spaces:in:it.
+This: :is: :a: :sentence: :with: :spaces:   :in: :it.
+This: :is: :a: :sentence: :with: :spaces:   :in: :it.
+Empty string: ''
+H:i: :t:h:e:r:e:!

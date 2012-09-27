@@ -1,0 +1,1 @@
+Called 'fold' on an empty sequence.

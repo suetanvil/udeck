@@ -1,0 +1,11 @@
+# Test calling replacesub with fixed args and a different number of
+# captures.
+
+use Perl::Regex
+
+var r = [replacesub '(foo)(bar)(quux)?' {|a b c| ="a=$a b=$b c=$c"}]
+puts [r "foobar"]
+
+
+
+

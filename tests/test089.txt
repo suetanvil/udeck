@@ -15,3 +15,20 @@ ooauu
 5
 [] 0
 [] 0
+foldWith:
+15
+15
+10
+5
+1275
+fold:
+15
+15
+5
+join:
+a:b:c:d:e
+abcde
+
+a:xxxb:xxxc:xxxd:xxxe
+a[]b[]c[]d[]e
+0,1,2,3,4,5,:s1,:s2,54,x

@@ -1,0 +1,8 @@
+# Test calling replacesub on a non-string
+
+use Perl::Regex
+
+var r = [replacesub :not_a_string {|a b| ="$b$a"}]
+
+
+

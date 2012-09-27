@@ -1,0 +1,6 @@
+# Test calling matchsub on a non-string
+
+use Perl::Regex
+
+var r = [matchsub :not_a_string]
+

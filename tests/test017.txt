@@ -40,3 +40,8 @@ prefix body: n = 6
 prefix body: n = 7
 prefix body: n = 8
 prefix body: n = 9
+While body return value:
+Simple iteration.
+n = 5; f = 25
+No iteration.
+n = 5; f = nil

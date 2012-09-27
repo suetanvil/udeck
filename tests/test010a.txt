@@ -1,2 +1,6 @@
 bar called
 bar called
+baz called
+baz called with arg 42
+baz called with arg 69
+...and returning!

@@ -37,37 +37,84 @@ of the language implementation.
 
 =item B<mproc Lang::do {strict sub body; strict sub final [default {}]}>
 
-Evaluate C<body> once and return its result. If C<final> is given, evaluate it after C<body> finishes.
+Evaluate C<body> once and return its result.  If C<final> is given,
+evaluate it after C<body> finishes.
 
 =item B<mproc Lang::dofor {sub 1 pr; seq}>
 
-Call procedure C<pr> on each element in C<seq>, discarding the result. This is a slightly more compact, less flexible form of the C<for> loop.
+Call procedure C<pr> on each element in C<seq>, discarding the result.
+This is a slightly more compact, less flexible form of the C<for> loop.
+
+=item B<mproc Lang::filter {sub 1 testProc; seq}>
+
+Apply procedure C<testProc> to every element of sequence C<seq>
+and return another sequence containing only the elements on which
+C<testProc> returned a true value.  The return value's type is
+compatible with C<seq>'s.
+
+=item B<mproc Lang::fold {sub 2 pr; seq}>
+
+Performs a 'fold' (aka 'reduce') operation on C<seq> using the
+first element as the initial value and applying C<pr> to the remaining elements.
+
+C<seq> must contain at least one element.
+
+See C<foldWith> for a more detailed explanation.
+
+=item B<mproc Lang::foldWith {sub 2 pr; initial; seq}>
+
+Performs a 'fold' (aka 'reduce') operation on C<seq>, using
+procedure C<pr> to reduce the entire sequence to a single
+element.
+
+More precisely, it calls procedure C<pr> once on each element in
+C<seq>, passing it the element as its second argument.  The first
+argument is C<initial> on the first call and the result of the
+previous call on each subsequent call.  The result is the result
+of the final call to C<pr>.
+
+For example, we can sum a series of numbers like this:
+
+    sum = [foldWith {=a+b} 0 :[1 2 3 4 5] ]
+
+If C<seq> is empty, the result is C<initial>.
 
 =item B<mproc Lang::map {sub 1 transPr; seq}>
 
-Call procedure C<transPr> on each element in C<seq> and return another sequence containing the results of the calls on the corresponding input elements. The return value's type is compatible with C<seq>'s.
-
-=item B<mproc Lang::reduce {sub 1 filter; seq}>
-
-Apply procedure C<filter> to every element of sequence C<seq> and return another sequence containing only the elements on which C<filter> returned a true value. The return value's type is compatible with C<seq>'s.
+Call procedure C<transPr> on each element in C<seq> and return another
+sequence containing the results of the calls on the corresponding input
+elements.  The return value's type is compatible with C<seq>'s.
 
 =item B<mproc Lang::repeat {count; sub 1 pr}>
 
-Evaluate procedure C<pr> C<count> times. C<pr> takes one argument, the itteration number starting from zero. Does nothing if C<count> is not greater than zero. Returns the result of the last evaluation of pr or nil if there is none.
+Evaluate procedure C<pr> C<count> times.  C<pr> takes one argument, the
+itteration number starting from zero.  Does nothing if C<count> is not
+greater than zero.  Returns the result of the last evaluation of pr or 
+nil if there is none.
 
 =item B<mproc Lang::sort {sub 2 ucmp; seq}>
 
 Return a copy of C<seq> with the elements sorted according to C<ucmp>.
 
-C<ucmp> should take two arguments and return -1, 0 or 1 depending on whether the first argument is less than, equal to or greater than the second argument. (This is the same interface as C<cmp>).
+C<ucmp> should take two arguments and return -1, 0 or 1 depending on
+whether the first argument is less than, equal to or greater than the
+second argument.  (This is the same interface as C<cmp>).
 
-C<seq> is an object that implements the sequence protocol and the return value is constructed by the procedure returned by C<seq>'s C<maker> attribute.
+C<seq> is an object that implements the sequence protocol and the return
+value is constructed by the procedure returned by C<seq>'s C<maker>
+attribute.
 
 =item B<mproc Lang::try {strict sub [Error] tryBlock; word catch; strict sub [Error] catchBlock [default {}]}>
 
-Evaluate a block, providing it with an C<Exception>. If the exception is thrown, the rest of the block is not evaluated. However, the optional second block (following the word 'catch') is evaluated.
+Evaluate a block, providing it with an C<Exception>.  If the exception is
+thrown, the rest of the block is not evaluated.  However, the optional
+second block (following the word 'catch') is evaluated.
 
-Both blocks are given an argument named C<Error>. This is the C<Exception>. It may be treated as any other object--passed to procedures, stored in global variables, etc.--but it is a fatal runtime error if its C<throw> is called (for the first time) after the first block has finished executing.
+Both blocks are given an argument named C<Error>.  This is the
+C<Exception>.  It may be treated as any other object--passed to procedures,
+stored in global variables, etc.--but it is a fatal runtime error if
+its C<throw> is called (for the first time) after the first block has
+finished executing.
 
 
 
@@ -84,11 +131,18 @@ Return C<true> if C<left> and C<right> are not equal according to C<==>.
 
 =item B<proc Lang::.. {start end}>
 
-Create an C<Interval> for the range from C<start> to C<end> with an increment of 1. C<range> is an alias for this procedure.
+Create an C<Interval> for the range from C<start> to C<end> with an 
+increment of 1.  C<range> is an alias for this procedure.
 
 =item B<proc Lang::=== {lhs rhs}> B<(Built-in)>
 
 Test if C<lhs> and C<rhs> are the same object.
+
+=item B<proc Lang::_do_fold {pr initial seq startIndex}>
+
+Does the heavy lifting for C<fold> and C<foldWith>.
+C<startIndex> is the index of the first element in C<seq> to be
+used.  Everything before it is ignored.
 
 =item B<proc Lang::abs {aNum}>
 
@@ -96,7 +150,9 @@ Return the absolute value of C<aNum>, a Number.
 
 =item B<proc Lang::append {destList args}>
 
-Return a new sequence of the same type as C<destList> containing all elements in C<destList> followed by each of the following arguments.
+Return a new sequence of the same type as C<destList> containing
+all elements in C<destList> followed by each of the following
+arguments.
 
 =item B<proc Lang::apply {fun argList}> B<(Built-in)>
 
@@ -104,7 +160,8 @@ Call procedure C<fun> with the arguments in list C<argList> and returns the resu
 
 =item B<proc Lang::asList {seq}>
 
-Return a list containing the contents of C<seq>, an object that implements the list protocol.
+Return a list containing the contents of C<seq>, an object that
+implements the list protocol.
 
 =item B<proc Lang::atput {seq index value}> B<(Built-in)>
 
@@ -112,7 +169,7 @@ Store a value in a sequence.
 
 =item B<proc Lang::byteArray {args}> B<(Built-in)>
 
-Return a ByteArray containing the arguments. Arguments must be integers with values between 0 and 255.
+Return a ByteArray containing the arguments.  Arguments must be integers with values between 0 and 255.
 
 =item B<proc Lang::bytesSized {size}> B<(Built-in)>
 
@@ -120,19 +177,27 @@ Create an empty (zero-initialized) ByteArray that is C<size> bytes long.
 
 =item B<proc Lang::chr {number}> B<(Built-in)>
 
-Return the character represented by C<number> in the character set. If C<number> is not valid character in the current encoding, returns an empty string instead.
+Return the character represented by C<number> in the character set.
+If C<number> is not valid character in the current encoding, returns
+an empty string instead.
 
 =item B<proc Lang::cmp {left right}>
 
-Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less than, equal to or greater than C<right> respectively. Operator C<E<lt>=E<gt>> (i.e. the spaceship operator) is an alias to C<cmp>.
+Compare C<left> and C<right> and return -1, 0 or 1 if C<left> is less
+than, equal to or greater than C<right> respectively.  Operator
+C<E<lt>=E<gt>> (i.e. the spaceship operator) is an alias to C<cmp>.
 
 =item B<proc Lang::concat {args}>
 
-Return a sequence containing the contents of all arguments (which must be sequences) concatenated together. The return type is determined by the first argument's C<maker>. Under some circumstances, this may be faster than C<+>.
+Return a sequence containing the contents of all arguments (which must
+be sequences) concatenated together.  The return type is determined by
+the first argument's C<maker>.  Under some circumstances, this may be
+faster than C<+>.
 
 =item B<proc Lang::defined {name}> B<(Built-in)>
 
-Test if there is a global variable named C<name> (a symbol) visible in the current namespace.
+Test if there is a global variable named C<name>
+(a symbol) visible in the current namespace.
 
 =item B<proc Lang::die {args}> B<(Built-in)>
 
@@ -140,17 +205,23 @@ Print the arguments (using the internal printer) concatenated together, then exi
 
 =item B<proc Lang::exit {status}> B<(Built-in)>
 
-Exit immediately with exit status C<status>. C<status> must be a number. If it is not an integer, it is truncated down to the nearest integer value.
+Exit immediately with exit status C<status>.  C<status> must be a number.  If it is not an integer, it is truncated down to the nearest integer value.
 
 =item B<proc Lang::fail {args}> B<(Built-in)>
 
-Exit with an error message and backtrace. The error message consists of all of the arguments stringified and concatented together.
+Exit with an error message and backtrace.  The error message
+consists of all of the arguments stringified and concatented
+together.
 
 =item B<proc Lang::getMethod {object methodName}> B<(Built-in)>
 
-Return the C<MethodCall> object that invokes the method named by symbol C<methodName> in object C<object>. If there is no matching method, the C<MethodCall> invokes C<doesNotUnderstand>.
+Return the C<MethodCall> object that invokes the
+method named by symbol C<methodName> in object
+C<object>.  If there is no matching method, the
+C<MethodCall> invokes C<doesNotUnderstand>.
 
-This is almost never called explicitly. Usually, calls are generated by the macro C<-E<gt>>.
+This is almost never called explicitly.  Usually, calls
+are generated by the macro C<-E<gt>>.
 
 =item B<proc Lang::getSuperMethod {object methodName}> B<(Built-in)>
 
@@ -160,7 +231,7 @@ It is usually invoked by the macro C<-E<gt>> and is not guaranteed to work unles
 
 =item B<proc Lang::int {aNumber}> B<(Built-in)>
 
-Return number C<aNumber> as an integer. C<aNumber> is truncated toward zero.
+Return number C<aNumber> as an integer.  C<aNumber> is truncated toward zero.
 
 =item B<proc Lang::intern {aString}> B<(Built-in)>
 
@@ -169,6 +240,24 @@ Given string C<aString>, return the symbol containing the same text.
 =item B<proc Lang::irand {max}>
 
 Return an integer between 0 and C<max> - 1.
+
+=item B<proc Lang::join {tween seq}>
+
+Performs a Perl-style join on C<seq>.  Given string C<tween> and
+sequence C<seq>, returns a string containing all of the
+printables of C<seq> concatenated together with C<tween> between
+each pair of items.
+
+For example:
+
+   join ':' :['1' '2' '3' '4' '5']
+
+yields:
+
+   '1:2:3:4:5'
+
+C<tween> and elements of C<seq> are stringified with the
+C<printable> attribute so non-strings will work fine.
 
 =item B<proc Lang::last {aSeq}>
 
@@ -184,15 +273,28 @@ Return an empty (nil-filled) list of size C<size>.
 
 =item B<proc Lang::lolcat {args}>
 
-CREATE LoL CONTAININ TEH LISTS IN ALL ELEMENTS. EACH ARGUMENT MUST ALSO BE LoL.
+CREATE LoL CONTAININ TEH LISTS IN ALL ELEMENTS.  EACH ARGUMENT
+MUST ALSO BE LoL.
 
 =item B<proc Lang::lookup {name}> B<(Built-in)>
 
-Get the value of the variable named by symbol C<name> in the current context. If C<name> is undefined, it is a fatal error. C<name> must be a global variable.
+Get the value of the variable named by symbol C<name>
+in the current context.  If C<name> is undefined, it
+is a fatal error.  C<name> must be a global variable.
+
+=item B<proc Lang::max {args}>
+
+Return the largest element in C<args> as determined by the
+standard comparison operators.
+
+=item B<proc Lang::min {args}>
+
+Return the smallest element in C<args> as determined by the
+standard comparison operators.
 
 =item B<proc Lang::mkstr {args}> B<(Built-in)>
 
-Return a string containing all of the arguments' B<internal> string representation (i.e. from the interpreter, B<not> the C<printable> attribute). This is used to expand double-quoted strings.
+Return a string containing all of the arguments' B<internal> string representation (i.e. from the interpreter, B<not> the C<printable> attribute).  This is used to expand double-quoted strings.
 
 =item B<proc Lang::neg {aNumber}> B<(Built-in)>
 
@@ -200,7 +302,7 @@ Return number C<aNumber> negated (i.e. with its sign flipped, so negative if it 
 
 =item B<proc Lang::new {class args}> B<(Built-in)>
 
-Create and return a new instance of the class given by C<class>. The remaining arguments are passed to the new object's C<init> method. This is identical to invoking the class's C<new> method.
+Create and return a new instance of the class given by C<class>.  The remaining arguments are passed to the  new object's C<init> method.  This is identical to invoking the class's C<new> method.
 
 =item B<proc Lang::not {obj}> B<(Built-in)>
 
@@ -212,13 +314,17 @@ Return a PerlObj wrapping C<obj>.
 
 =item B<proc Lang::puts {args}>
 
-Write the printable form of each argument in turn on stdout followed by a newline.
+Write the printable form of each argument in turn on stdout followed by
+a newline.
 
 =item B<proc Lang::quote {obj}> B<(Built-in)>
 
 Return a Quote object wrapping C<obj>.
 
-Note: this does B<not> in any way affect the evaluation of of its argument. C<quote> is B<not> a special form. If you want to delay normal evaluation of an expression, use the quote operator (C<:>).
+Note: this does B<not> in any way affect the evaluation of
+of its argument.  C<quote> is B<not> a special form.  If you
+want to delay normal evaluation of an expression, use the quote
+operator (C<:>).
 
 =item B<proc Lang::rand {max}>
 
@@ -238,11 +344,14 @@ Return the number of items in sequence C<aSeq>.
 
 =item B<proc Lang::slice {seq start end}>
 
-Return a sequence containing the elements of C<seq> in the index range between C<start> and C<end>. If C<end> is nil, the last index in C<seq> is used instead. The return type is determined by the C<maker> attribute of C<seq>.
+Return a sequence containing the elements of C<seq> in the index
+range between C<start> and C<end>.  If C<end> is nil, the last index
+in C<seq> is used instead.  The return type is determined by the
+C<maker> attribute of C<seq>.
 
 =item B<proc Lang::str2num {aString}> B<(Built-in)>
 
-Parse C<aString> as the printable form of a numeric constant. All of the forms accepted by the Deck parser are also accepted by C<str2num>. If C<aString> does not contain a valid number, C<str2num> returns nil.
+Parse C<aString> as the printable form of a numeric constant.  All of the forms accepted by the Deck parser are also accepted by C<str2num>.  If C<aString> does not contain a valid number, C<str2num> returns nil.
 
 =item B<proc Lang::stringSized {size}> B<(Built-in)>
 
@@ -250,17 +359,34 @@ Create an empty string C<size> characters long.
 
 =item B<proc Lang::subify {exprList args}> B<(Built-in)>
 
-From the given arguments, create a list which will, when evaluated as an expression, return a sub. It is intended to aid in writing macros and provides standard argument handling for many system macros already.
+From the given arguments, create a list which will, when
+evaluated as an expression, return a sub.  It is intended
+to aid in writing macros and provides standard argument
+handling for many system macros already.
 
-C<exprList> is the body of the sub and must be a list or LoL. If it is not a LoL, it is automatically wrapped with another list, making it into a LoL.
+C<exprList> is the body of the sub and must be a
+list or LoL.  If it is not a LoL, it is
+automatically wrapped with another list, making
+it into a LoL.
 
-C<args> can be a list of symbols or a number. If it is a list of symbols, those symbols form the sub's formal argument list. If it is a number, the argument list is generated with that many arguments named C<a> through C<z>. Naturally, C<args> must be between 0 and 26.
+C<args> can be a list of symbols or a number.  If it is
+a list of symbols, those symbols form the sub's formal
+argument list.  If it is a number, the argument list is
+generated with that many arguments named C<a> through
+C<z>.  Naturally, C<args> must be between 0 and 26.
 
-Note that C<subify> does no syntax checking at all. If you provide garbage input, you'll get garbage output.
+Note that C<subify> does no syntax checking at all.  If
+you provide garbage input, you'll get garbage output.
 
 =item B<proc Lang::subifyOrDelay {expr}> B<(Built-in)>
 
-Create a list which, when evaluated as an expression, will return a sub that evaluates C<expr>. If C<expr> is a list, C<subifyOrDelay> will behave exactly like C<subify>. Otherwise, the sub will evaluate and return C<expr>, whatever it is.
+Create a list which, when evaluated as an expression, will
+return a sub that evaluates C<expr>.  If C<expr> is a
+list, C<subifyOrDelay> will behave exactly like C<subify>.
+Otherwise, the sub will evaluate and return C<expr>,
+whatever it is.
+
+This allows stuff like C<while a {a = a - 1}> to work.
 
 =item B<proc Lang::typeof {obj}>
 
@@ -272,7 +398,7 @@ Given symbol C<aSymbol>, return a string containing the same text.
 
 =item B<proc Lang::value {args}> B<(Built-in)>
 
-Return the last item in the argument list. If none is given, return nil. All arguments are evaluated.
+Return the last item in the argument list.  If none is given, return nil.  All arguments are evaluated.
 
 (Lang::value is an alias for _::value)
 
@@ -295,7 +421,8 @@ Expands to C<[left-E<gt>op_BitAnd right]>.
 
 =item B<macro Lang::&& {left right}> B<(Built-in)>
 
-Perform a short-circuited logical AND. C<right> will only be evaluated if C<left> has evaluated to true.
+Perform a short-circuited logical AND.  C<right> will only be evaluated
+if C<left> has evaluated to true.
 
 =item B<macro Lang::* {left right}> B<(Built-in)>
 
@@ -311,19 +438,33 @@ Expands to C<[left-E<gt>op_Add right]>.
 
 =item B<macro Lang::- {left maybeRight}> B<(Built-in)>
 
-If given two arguments, expands to C<[left->op_Sub maybeRight]> (i.e. ordinary subtraction). If C<maybeRight> is ommitted, expands to C<[neg left]> (i.e. negation).
+If given two arguments, expands to C<[left->op_Sub maybeRight]>
+(i.e. ordinary subtraction).  If C<maybeRight> is ommitted, expands to
+C<[neg left]> (i.e. negation).
 
 =item B<macro Lang::-E<gt> {object message}> B<(Built-in)>
 
-Performs a method lookup of RHS C<message> on LHS C<object> and returns the matching C<MethodLookup> object. If C<object> is the word C<super>, C<self> is used instead but the method search starts at the object's superclass.
+Performs a method lookup of RHS C<message> on LHS C<object> and returns
+the matching C<MethodLookup> object.  If C<object> is the word C<super>,
+C<self> is used instead but the method search starts at the object's
+superclass.
 
-Note that syntactic sugar in the compiler will implicitly wrap any bare C<-E<gt>> expression at the start of an infix expression with round brackets, making it infix. Hence, C<[foo->bar 1]> becomes C<[(foo->bar) 1]>.
+Note that syntactic sugar in the compiler will implicitly wrap any
+bare C<-E<gt>> expression at the start of an infix expression with round
+brackets, making it infix.  Hence, C<[foo-E<gt>bar 1]> becomes
+C<[(foo-E<gt>bar) 1]>.
 
 =item B<macro Lang::. {object attribute}> B<(Built-in)>
 
-Performs an attribute lookup. C<object.attribute> expands to C<[object->attribute_get]. However, the assignment macros C<=> and C<set> will expand to an C<attribute_set> call if the destination of the assignment is a C<.> expression.
+Performs an attribute lookup.  C<object.attribute> expands to
+C<[object->attribute_get].  However, the assignment macros C<=> and
+C<set> will expand to an C<attribute_set> call if the destination of the
+assignment is a C<.> expression.
 
-In addition, the synactic sugar in the compiler will automatically wrap any C<expression . word> sequence in an infix expression with round brackets, making them infix. Hence, C<[add a.val b.val]> becomes C<[add (a.val) (b.val)]>.
+In addition, the synactic sugar in the compiler will automatically wrap
+any C<expression . word> sequence in an infix expression with round
+brackets, making them infix.  Hence, C<[add a.val b.val]> becomes
+C<[add (a.val) (b.val)]>.
 
 =item B<macro Lang::/ {left right}> B<(Built-in)>
 
@@ -347,7 +488,8 @@ Expands to C<[left-E<gt>op_Lte right]>.
 
 =item B<macro Lang::= {dest = value}> B<(Built-in)>
 
-Assigns RHS C<value> to LHS C<value>. C<dest> is either a bare name, a list access (C<@>) expression or an attribute (C<.>) expression.
+Assigns RHS C<value> to LHS C<value>.  C<dest> is either a bare name, a
+list access (C<@>) expression or an attribute (C<.>) expression.
 
 =item B<macro Lang::== {left right}> B<(Built-in)>
 
@@ -355,9 +497,20 @@ Expands to C<[left-E<gt>op_Equals right]>.
 
 =item B<macro Lang::=E<gt> {args body}> B<(Built-in)>
 
-Creates a C<sub>. C<args> and C<body> must be list constants of the sorts allowed by C<sub>.
+Creates a C<sub>.  C<args> and C<body> must be list constants of the
+sorts allowed by C<sub>.
 
-Note that syntactic sugar in the compiler will automatically wrap any C<=E<gt>> expression in an infix expression with round brackets. Hence, C<[map {a} => {value (a*a)} l]> becomes C<[map ({a} => {value (a*a)}) l]>.
+Note that syntactic sugar in the compiler will automatically wrap any
+C<=E<gt>> expression in an infix expression with round brackets.  Hence,
+
+    [map {a} => {value (a*a)} l]
+
+becomes
+
+    [map ({a} => {value (a*a)}) l]
+
+(This form may be deprecated in the future in favour of the 'C<{||...}>' 
+form.)
 
 =item B<macro Lang::E<gt> {left right}> B<(Built-in)>
 
@@ -381,7 +534,9 @@ Expands to C<[left-E<gt>op_BitXor right]>.
 
 =item B<macro Lang::class {name superclass body}> B<(Built-in)>
 
-Define a class named by word C<name>. Word C<superclass> is the name of the superclass and may be ommitted, in which case C<Struct> is assumed. C<body> is the class body and is expected to be a LoL.
+Define a class named by word C<name>.  Word C<superclass> is the name
+of the superclass and may be ommitted, in which case C<Struct> is assumed.
+C<body> is the class body and is expected to be a LoL.
 
 =item B<macro Lang::const {args}> B<(Built-in)>
 
@@ -393,13 +548,22 @@ Alias for C<foreach>.
 
 =item B<macro Lang::foreach {item in list body}> B<(Built-in)>
 
-Evaluates C<body> over each element in C<list> from start to end with a local variable C<item> set to reference the element. The second argument must be the word C<in>. This implements the standard C<foreach> loop. Argument C<body> is subified.
+Evaluates C<body> over each element in C<list> from start to end with
+a local variable C<item> set to reference the element.  The second
+argument must be the word C<in>.  This implements the standard C<foreach>
+loop.  Argument C<body> is subified.
 
 =item B<macro Lang::if {cond trueBlock else falseBlock}> B<(Built-in)>
 
-Evaluate a sequence of instructions conditionally. Evaluates C<cond> and if the result is true, then evaluates C<trueBlock>. Otherwise, it evaluates C<falseBlock> if present (it is optional). This is the standard C<if> statement.
+Evaluate a sequence of instructions conditionally.  Evaluates C<cond> and
+if the result is true, then evaluates C<trueBlock>.  Otherwise, it
+evaluates C<falseBlock> if present (it is optional).  This is the standard
+C<if> statement.
 
-C<cond> can be C<subified> or C<delayed>; C<trueBlock> and C<falseBlock> are always subified. C<falseBlock> is optional. C<else> is the word 'else'; it is always optional and should be omitted if C<falseBlock> is also absent.
+C<cond> can be C<subified> or C<delayed>; C<trueBlock> and C<falseBlock>
+are always subified.  C<falseBlock> is optional. C<else> is the word
+'else'; it is always optional and should be omitted if C<falseBlock> is
+also absent.
 
 =item B<macro Lang::macro {name args body}> B<(Built-in)>
 
@@ -411,31 +575,53 @@ Declares an mproc in the current module scope.
 
 =item B<macro Lang::package {moduleName}> B<(Built-in)>
 
-Declare this file to be the package named by word C<moduleName>. This is really a compiler directive and it is an error to use anywhere other than the first (non-trivial) line of a module.
+Declare this file to be the package named by word C<moduleName>.
+This is really a compiler directive and it is an error to use anywhere
+other than the first (non-trivial) line of a module.
 
 =item B<macro Lang::perlproc {name args body}> B<(Built-in)>
 
-Define a Perl function plus bindings to Deck. C<name> and C<args> are identical to C<proc> and friends but C<body> is a string constant containing Perl code.
+Define a Perl function plus bindings to Deck.  C<name> and C<args> are
+identical to C<proc> and friends but C<body> is a string constant
+containing Perl code.
 
 =item B<macro Lang::perluse {name}> B<(Built-in)>
 
-Force the Perl interpreter running udeck to load the Perl module named by C<name> via the C<require> statement. This module must be accessed via C<perlproc> functions.
+Force the Perl interpreter running udeck to load the Perl module named
+by C<name> via the C<require> statement.  This module must be accessed
+via C<perlproc> functions.
 
 =item B<macro Lang::proc {name args body final}> B<(Built-in)>
 
-Declares a procedure in the current module scope. C<final> is optional. If C<body> and C<args> are also omitted, the statement instead creates a forward declaration of the procedure.
+Declares a procedure in the current module scope.  C<final> is
+optional.  The resulting procedure is also returned.
+
+If C<name> is omitted, the resulting proc is unnamed but is still
+returned.  (Note that this is different from an anonymous sub in
+several ways.)
+
+If called with only a name, the statement instead creates a
+forward declaration of the procedure.  In this case, it returns
+nil.
 
 =item B<macro Lang::set {dest value}> B<(Built-in)>
 
-Performs assignments. Prefix alias for C<=>.
+Performs assignments.  Prefix alias for C<=>.
 
 =item B<macro Lang::sub {args body final}> B<(Built-in)>
 
-Create a C<sub> (i.e. a closure) in the local scope and return it. C<args> is the list of arguments (in any of the acceptable formal argument formats) and C<body> is a LoL containing the sub's source code. C<args> and C<final> are both optional but if C<final> is present, C<args> B<must> also be present.
+Create a C<sub> (i.e. a closure) in the local scope and return it.
+C<args> is the list of arguments (in any of the acceptable formal
+argument formats) and C<body> is a LoL containing the sub's source code.
+C<args> and C<final> are both optional but if C<final> is
+present, C<args> B<must> also be present.
 
 =item B<macro Lang::use {moduleName mode items}> B<(Built-in)>
 
-Import the module named by word C<moduleName> into the current namespace. C<items> is the optional list of items to import, ignore or rename and C<mode> must be one of C<with>, C<without> or C<rename>. The last two arguments are optional.
+Import the module named by word C<moduleName> into the current namespace.
+C<items> is the optional list of items to import, ignore or rename and
+C<mode> must be one of C<with>, C<without> or C<rename>.  The last two
+arguments are optional.
 
 =item B<macro Lang::var {args}> B<(Built-in)>
 
@@ -443,9 +629,13 @@ Declares one or more variables in the local scope.
 
 =item B<macro Lang::while {cond block}> B<(Built-in)>
 
-Repeatedly evaluate C<cond> followed by C<block> until the first time C<cond> evaluates false. This is the standard C<while> loop.
+Repeatedly evaluate C<cond> followed by C<block> until the first
+time C<cond> evaluates false.  Returns the result of the last
+call to C<block> or C<nil> if that never happens. This is the
+standard C<while> loop.
 
-C<cond> can be C<subified> or C<delayed>; C<block> is always subified.
+C<cond> is processed by C<subifyOrDelay>; C<block> is processed
+by C<subify>.
 
 =item B<macro Lang::| {left right}> B<(Built-in)>
 
@@ -453,7 +643,8 @@ Expands to C<[left-E<gt>op_BitOr right]>.
 
 =item B<macro Lang::|| {left right}> B<(Built-in)>
 
-Perform a short-circuited logical Or operation. C<right> is evaluated only if C<left> has evaluated to false.
+Perform a short-circuited logical Or operation.  C<right> is evaluated
+only if C<left> has evaluated to false.
 
 
 
@@ -467,9 +658,11 @@ Perform a short-circuited logical Or operation. C<right> is evaluated only if C<
 
 =item B<Lang::ByteArray (Stringlike)>  B<-- Built-in>
 
-A C<ByteArray> is a sequence of 8-bit bytes. Any sequence of bytes is allowed.
+A C<ByteArray> is a sequence of 8-bit bytes.  Any sequence of bytes
+is allowed.
 
-C<ByteArray> implements the sequence protocol but will fail if you attempt to store a value in it that is not an integer between 0 and 255.
+C<ByteArray> implements the sequence protocol but will fail if you
+attempt to store a value in it that is not an integer between 0 and 255.
 
 I<Attributes>
 
@@ -477,7 +670,10 @@ I<Attributes>
 
 =item B<readable maker>
 
-Sequence protocol: return a procedure which will create a collection suitable for holding the contents of self and which takes one argument, a number specifying the size. In this case, it's C<bytesSized>.
+Sequence protocol: return a procedure which will create a collection
+suitable for holding the contents of self and which takes one
+argument, a number specifying the size.  In this case, it's
+C<bytesSized>.
 
 =item B<readable printable>
 
@@ -491,11 +687,16 @@ I<Methods>
 
 =item B<method op_Add {otherBArray}>
 
-C<+> operator, overloaded: Returns C<self> and C<obj> concatenated together. The result is the type returned by C<maker> (C<ByteArray> in this case). Note that C<obj> does B<not> have to be a C<ByteArray> but B<must> contain only bytes (i.e. integers between 0 and 255.
+C<+> operator, overloaded: Returns C<self> and C<obj>
+concatenated together.  The result is the type returned by C<maker>
+(C<ByteArray> in this case).  Note that C<obj> does B<not> have
+to be a C<ByteArray> but B<must> contain only bytes (i.e. integers
+between 0 and 255.
 
 =item B<method op_Equals {obj}>
 
-C<==> operator: True if C<obj> is also a ByteArray and all elements equal the corresponding element in C<obj>.
+C<==> operator: True if C<obj> is also a ByteArray and all elements
+equal the corresponding element in C<obj>.
 
 =item B<method shallowCopy {}>
 
@@ -505,9 +706,11 @@ Return a copy of C<self>.
 
 =item B<Lang::Class (Object)>  B<-- Built-in>
 
-All classes (i.e. types) in Deck are themselves objects and those objects are instances of type C<Class>. This includes C<Class> itself.
+All classes (i.e. types) in Deck are themselves objects and those objects
+are instances of type C<Class>.  This includes C<Class> itself.
 
-C<Class> serves two purposes: to provide information about the class and to create new instances via its C<new> method.
+C<Class> serves two purposes: to provide information about the class and
+to create new instances via its C<new> method.
 
 I<Attributes>
 
@@ -515,11 +718,15 @@ I<Attributes>
 
 =item B<readable methods>
 
-Return a C<List> of C<Symbols>, each one the name of a method implemented by B<this class> and B<not> one of its superclasses.
+Return a C<List> of C<Symbols>, each one the name of a method
+implemented by B<this class> and B<not> one of its superclasses.
 
 =item B<public name>
 
-The class's name. Note that unnamed classes may exist and that the C<name> attribute is not necessarily the same as the global symbol (if present) that references the class. This is the common case but it is not guaranteed.
+The class's name.  Note that unnamed classes may exist and
+that the C<name> attribute is not necessarily the same as the global
+symbol (if present) that references the class.  This is the common
+case but it is not guaranteed.
 
 =item B<readable printable>
 
@@ -527,11 +734,14 @@ Return a human-readable textual represention of this object.
 
 =item B<readable selectors>
 
-Return a C<List> of C<Symbols>, each one the name of a method implemented by this method or one of its superclasses.
+Return a C<List> of C<Symbols>, each one the name of a method
+implemented by this method or one of its superclasses.
 
 =item B<readable superclass>
 
-Return a reference to this class's superclass. This can be C<nil> if the class does not have a superclass. Currently, only C<Object> is like that.
+Return a reference to this class's superclass.  This can be C<nil>
+if the class does not have a superclass.  Currently, only C<Object>
+is like that.
 
 =back
 
@@ -541,17 +751,22 @@ I<Methods>
 
 =item B<method can {message}>
 
-Test if this class implements a method named by C<message>. C<message> must be a symbol.
+Test if this class implements a method named by C<message>.
+C<message> must be  a symbol.
 
 =item B<method new {args}>
 
-Create a new instance of this class and return it. The argument list is passed to the new object's C<_init> method, which C<new> calls first.
+Create a new instance of this class and return it.  The argument list
+is passed to the new object's C<_init> method, which C<new> calls 
+first.
 
 =back
 
 =item B<Lang::Exception (Struct)> 
 
-Instances of C<Exception> represent error conditions and are used to recover from them or bring the program to a graceful halt. Instances are typically created by the C<try> mproc.
+Instances of C<Exception> represent error conditions and are used to
+recover from them or bring the program to a graceful halt.  Instances
+are typically created by the C<try> mproc.
 
 C<Exception> has three public fields:
 
@@ -565,9 +780,14 @@ C<Exception> has three public fields:
 
 =back
 
-Typical C<Exceptions> wrap a continuation which will return control flow to some earlier context. Calling C<throw> invokes this continuation and exits the current procedure and all other callers up to the C<try> block that created it. C<throw> also deletes the continuation, turning subsequent calls to C<throw> into no-ops.
+Typical C<Exceptions> wrap a continuation which will return control flow
+to some earlier context.  Calling C<throw> invokes this continuation and
+exits the current procedure and all other callers up to the C<try> block
+that created it.  C<throw> also deletes the continuation, turning
+subsequent calls to C<throw> into no-ops.
 
-The global C<const> C<Fatal> references an Exception which will cause the current program to exit with an error.
+The global C<const> C<Fatal> references an Exception which will cause
+the current program to exit with an error.
 
 I<Attributes>
 
@@ -581,11 +801,15 @@ I<Methods>
 
 =item B<method shallowCopy {}>
 
-Make a copy of this C<Exception>. Note that all fields are shared across both instances.
+Make a copy of this C<Exception>.  Note that all fields are shared
+across both instances.
 
 =item B<method throw {msg args}>
 
-Throw this Exception. If C<msg> is given (i.e. not a false value), store it in the C<message> field. If it is followed by a symbol (in C<args>), that value is stored in the C<id> field. The remaining arguments if present are stored in the C<info> field. Thus
+Throw this Exception.  If C<msg> is given (i.e. not a false value),
+store it in the C<message> field.  If it is followed by a symbol
+(in C<args>), that value is stored in the C<id> field.  The remaining
+arguments if present are stored in the C<info> field.  Thus
 
 =over 4
 
@@ -597,7 +821,10 @@ is equivalent to
 
 =over
 
-exc.message = 'Oh no!' exc.id = :error exc.info = [list 1 2 3 4 5] exc->throw ''
+exc.message = 'Oh no!'
+exc.id = :error
+exc.info = [list 1 2 3 4 5]
+exc->throw ''
 
 =back
 
@@ -605,13 +832,28 @@ exc.message = 'Oh no!' exc.id = :error exc.info = [list 1 2 3 4 5] exc->throw ''
 
 =item B<Lang::Hash (Struct)> 
 
-Instances of Hash are associative arrays (aka 'dictionaries' or 'hash tables') which map keys to values. The contents are accessed using the C<at> and C<atPut> methods so the C<@> operator can be used to access the contents.
+Instances of Hash are associative arrays (aka 'dictionaries' or 'hash
+tables') which map keys to values.  The contents are accessed using the
+C<at> and C<atPut> methods so the C<@> operator can be used to access the
+contents.
 
-Someday, any object will be a valid key but for now, the key must be a String, Symbol or Number.
+Someday, any object will be a valid key but for now, the key must be
+a String, Symbol or Number.
 
-(Actually, any object which implements the readable attribute C<hashKey> will work if the implementation returns a string and guarantees that the the strings are equal if and only if the objects are equal. This is deprecated, however as it will break the planned future implementation of Hash. Instead, you should compute the string and explicitly use it as the key. The current implementation is like this so I can use Perl hashes to do the heavy lifting. This let me slap together a useful Hash class in a few hours.)
+(Actually, any object which implements the readable attribute C<hashKey>
+will work if the implementation returns a string and guarantees that the
+the strings are equal if and only if the objects are equal.  This is
+deprecated, however as it will break the planned future implementation of
+Hash.  Instead, you should compute the string and explicitly use it as the
+key.  The current implementation is like this so I can use Perl hashes to
+do the heavy lifting.  This let me slap together a useful Hash class in
+a few hours.)
 
-(Also, I know that C<Hash> is a bad name for this class because it implies a specific underlying implementation, which is a no-no in OOP. I did it anyway because the term 'hash' has become common shorthand for associative arrays and C<Hash> is probably clearer to most programmers than C<Dictionary> or C<AssociativeArray>. It's also easier to type.)
+(Also, I know that C<Hash> is a bad name for this class because it implies
+a specific underlying implementation, which is a no-no in OOP.  I did it
+anyway because the term 'hash' has become common shorthand for
+associative arrays and C<Hash> is probably clearer to most programmers
+than C<Dictionary> or C<AssociativeArray>.  It's also easier to type.)
 
 I<Attributes>
 
@@ -623,11 +865,14 @@ Return a list containing all of the keys in C<self>.
 
 =item B<readable keysAndValuePairs>
 
-Return a list of 2-element lists, one for each item stored in C<self> with the first element in each pair being the key and the second being the value.
+Return a list of 2-element lists, one for each item stored in C<self>
+with the first element in each pair being the key and the second being
+the value.
 
 =item B<readable keysAndValues>
 
-Return a list containing each key in C<self> immediately followed by the associated value.
+Return a list containing each key in C<self> immediately followed by
+the associated value.
 
 =item B<readable printable>
 
@@ -653,27 +898,34 @@ Object initializer.
 
 =item B<method _initState {}>
 
-Initialize C<perlHash>. It holds a reference to a Perl hash, which does the actual work.
+Initialize C<perlHash>.  It holds a reference to a Perl hash, which
+does the actual work.
 
 =item B<method _setInitialValues {values}>
 
-Given a list of key/value pairs, store each value in C<self> with the associated key.
+Given a list of key/value pairs, store each value in C<self> with the
+associated key.
 
 =item B<method at {key}>
 
-Retrieve the object in C<self> stored at C<key>. C<key> must be present or it is a fatal error. C<key> must be one of the supported key types.
+Retrieve the object in C<self> stored at C<key>.  C<key> must
+be present or it is a fatal error.  C<key> must be one of the
+supported key types.
 
 =item B<method atPut {key value}>
 
-Store C<value> in C<self> at C<key>. C<key> must be one of the supported key types.
+Store C<value> in C<self> at C<key>.  C<key> must be one of the
+supported key types.
 
 =item B<method exists {key}>
 
-Test if C<key> is present in C<self>. Returns true if present, false if not.
+Test if C<key> is present in C<self>.  Returns true if present, false
+if not.
 
 =item B<method op_Equals {obj}>
 
-Implements the C<==> operator: tests for equality. Hashes are equal if their keys and associated values are all equal.
+Implements the C<==> operator: tests for equality.  Hashes are equal
+if their keys and associated values are all equal.
 
 =item B<method removeKey {key}>
 
@@ -687,19 +939,26 @@ Create a new hash with the same contents.
 
 =item B<Lang::Interval (Struct)> 
 
-Instances of C<Interval> mimic a list containing a consecutive series of numbers as defined by the C<new> arguments C<startVal>, C<endVal> and C<incrVal>, all Numbers truncated to the nearest integer. C<startVal> is the first number, C<endVal> is the last (possibly approximated) and C<incrVal> is the increment from one value to the next.
+Instances of C<Interval> mimic a list containing a consecutive series of
+numbers as defined by the C<new> arguments C<startVal>, C<endVal> and
+C<incrVal>, all Numbers truncated to the nearest integer. C<startVal> is
+the first number, C<endVal> is the last (possibly approximated) and 
+C<incrVal> is the increment from one value to the next.
 
-The main purpose of C<Interval> is to provide a way to do a for/foreach loop over a series of integers without having to create an actual array of integers. This allows you to do stuff like this:
+The main purpose of C<Interval> is to provide a way to do a for/foreach
+loop over a series of integers without having to create an actual array
+of integers.  This allows you to do stuff like this:
 
-C<for i in (1 .. 10000000) { ... }>
+   for i in (1 .. 10000000) { ... }
 
 instead of
 
-C<var x = 0; while (x < 10000000) { ... ; x = x + 1 }>
+   var x = 0; while (x < 10000000) { ... ; x = x + 1 }
 
 (The C<..> operator creates an C<Interval>.)
 
-C<Intervals> implement the sequence protocol but C<atPut> fails with an error since they are naturally not writable.
+C<Intervals> implement the sequence protocol but C<atPut> fails with
+an error since they are naturally not writable.
 
 I<Attributes>
 
@@ -711,11 +970,11 @@ The last value in C<self>.
 
 =item B<readable isIndexable>
 
-True. C<Intervals> are indexable.
+True.  C<Intervals> are indexable.
 
 =item B<readable isTrue>
 
-This object's truth value. Like other sequences, true unless empty.
+This object's truth value.  Like other sequences, true unless empty.
 
 =item B<readable printable>
 
@@ -733,7 +992,9 @@ I<Methods>
 
 =item B<method at {index}>
 
-Sequence Protocol: Return the item at position C<index>. Indexes must be contiguous and start at zero. Negative indexes are subtracted from the list's size.
+Sequence Protocol: Return the item at position C<index>.  Indexes
+must be contiguous and start at zero.   Negative indexes are
+subtracted from the list's size.
 
 =item B<method atPut {index value}>
 
@@ -741,7 +1002,8 @@ Dies with an error if called.
 
 =item B<method op_Equals {other}>
 
-C<==> operator: True if C<other> is also an C<Interval> containing the same sequence of numbers.
+C<==> operator: True if C<other> is also an C<Interval> containing
+the same sequence of numbers.
 
 =item B<method shallowCopy {}>
 
@@ -751,11 +1013,18 @@ Make a copy of this C<Interval>.
 
 =item B<Lang::List (Object)>  B<-- Built-in>
 
-C<List> is the fundamental Deck list type. Unlike most Lispish languages, Deck does not present its lists as linked lists of cells. Instead, a Deck C<List> is an array (i.e. a 'vector') of object references whose individual items can be accessed with the C<at> and C<atPut> methods (usually hidden by the C<@> operator). The indexes start at zero and increase to the number of items minus one.
+C<List> is the fundamental Deck list type.  Unlike most Lispish languages,
+Deck does not present its lists as linked lists of cells.  Instead, a
+Deck C<List> is an array (i.e. a 'vector') of object references whose
+individual items can be accessed with the C<at> and C<atPut> methods
+(usually hidden by the C<@> operator).  The indexes start at zero and
+increase to the number of items minus one.
 
-This is different from most Lispish languages, where a list is implemented as a linked list of pairs of references (CONS cells).
+This is different from most Lispish languages, where a list is implemented
+as a linked list of pairs of references (CONS cells).
 
-C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>, C<maker> C<isIndexable> returns true.
+C<List> implements the sequence protocol: C<at>, C<atPut>, C<size>,
+C<maker> C<isIndexable> returns true.
 
 I<Attributes>
 
@@ -781,19 +1050,26 @@ I<Methods>
 
 =item B<method at {index}>
 
-Sequence Protocol: Return the item at position C<index>. Indexes must be contiguous and start at zero. Negative indexes are subtracted from the list's size.
+Sequence Protocol: Return the item at position C<index>.  Indexes
+must be contiguous and start at zero.  Negative indexes are
+subtracted from the list's size.
 
 =item B<method atPut {index value}>
 
-Sequence Protocol: Store C<value> at position C<index> and return C<value>. Indexes start at zero and must be contiguous. Negative indexes are subtracted from the list's size.
+Sequence Protocol: Store C<value> at position C<index> and
+return C<value>.  Indexes start at zero and must be
+contiguous.  Negative indexes are subtracted from the list's size.
 
 =item B<method op_Add {otherSeq}>
 
-C<+> operator, overloaded: Returns C<self> and C<other> concatenated together. The result is the type returned by C<maker> (C<list> in this case).
+C<+> operator, overloaded: Returns C<self> and C<other> concatenated
+together.  The result is the type returned by C<maker> (C<list> in
+this case).
 
 =item B<method op_Equals {obj}>
 
-C<==> operator: True if C<obj> is also a List and all elements equal (via C<op_Equals>) the corresponding element in C<obj>.
+C<==> operator: True if C<obj> is also a List and all elements
+equal (via C<op_Equals>) the corresponding element in C<obj>.
 
 =item B<method shallowCopy {}>
 
@@ -811,7 +1087,7 @@ I<Attributes>
 
 =item B<readable isCallable>
 
-Tell if instances of this class are callable. Yes, in this case.
+Tell if instances of this class are callable.  Yes, in this case.
 
 =item B<readable printable>
 
@@ -855,9 +1131,12 @@ C<Methods> are immutable so we just return the same instance.
 
 =item B<Lang::MethodCall (Object)>  B<-- Built-in>
 
-C<MethodCall> is the class of all method call objects. Method calls are callable objects that will call a specific method on a specific object, both of which are captured inside the C<MethodCall>.
+C<MethodCall> is the class of all method call objects.  Method calls are
+callable objects that will call a specific method on a specific object,
+both of which are captured inside the C<MethodCall>.
 
-Instances of C<MethodCall> are the result of a call to C<getMethod> or C<getSuperMethod> (which are usually called by the macro C<-E<gt>>).
+Instances of C<MethodCall> are the result of a call to C<getMethod> or
+C<getSuperMethod> (which are usually called by the macro C<-E<gt>>).
 
 I<Attributes>
 
@@ -865,7 +1144,7 @@ I<Attributes>
 
 =item B<readable isCallable>
 
-Tell if instances of this class are callable. Yes, in this case.
+Tell if instances of this class are callable.  Yes, in this case.
 
 =item B<readable printable>
 
@@ -885,7 +1164,9 @@ C<MethodCalls> are immutable so we just return the same instance.
 
 =item B<Lang::Nil (Object)>  B<-- Built-in>
 
-C<Nil> is the type of the object representing uninitialized variables. There is only one instance, the global constant C<nil>. Unset variables are initialized to nil, as are empty lists.
+C<Nil> is the type of the object representing uninitialized variables.
+There is only one instance, the global constant C<nil>.  Unset variables
+are initialized to nil, as are empty lists.
 
 I<Attributes>
 
@@ -913,7 +1194,8 @@ Return C<self> since nil is immutable.
 
 =item B<Lang::Number (Object)>  B<-- Built-in>
 
-C<Number> is the class of all (built-in) number types in Deck. Instances are floating-point values.
+C<Number> is the class of all (built-in) number types in Deck.
+Instances are floating-point values.
 
 I<Attributes>
 
@@ -921,7 +1203,8 @@ I<Attributes>
 
 =item B<readable hashKey>
 
-Deprecated. Return a string suitable for representing this object as the key in a Perl hash. Used in class C<Hash>.
+Deprecated.  Return a string suitable for representing this object
+as the key in a Perl hash.  Used in class C<Hash>.
 
 =item B<readable printable>
 
@@ -939,15 +1222,18 @@ Add self to number C<num>
 
 =item B<method bitAndNumber {num}>
 
-Return C<num> bitwise ANDed with C<self>. Both are first truncated to the nearest integer.
+Return C<num> bitwise ANDed with C<self>.
+Both are first truncated to the nearest integer.
 
 =item B<method bitOrNumber {num}>
 
-Return C<num> bitwise ORed with C<self>. Both are first truncated to the nearest integer.
+Return C<num> bitwise ORed with C<self>.
+Both are first truncated to the nearest integer.
 
 =item B<method bitXorNumber {num}>
 
-Return C<num> bitwise XORed with C<self>. Both are first truncated to the nearest integer.
+Return C<num> bitwise XORed with C<self>.
+Both are first truncated to the nearest integer.
 
 =item B<method divNumber {num}>
 
@@ -955,7 +1241,8 @@ Return C<num> divided by C<self>.
 
 =item B<method divTruncNumber {num}>
 
-Return C<num> divided by C<self> and rounded toward zero.
+Return C<num> divided by C<self> and rounded
+toward zero.
 
 =item B<method gtNumber {num}>
 
@@ -971,7 +1258,8 @@ Test if C<num> is less than C<self>.
 
 =item B<method lteNumber {num}>
 
-Return true if C<num> is less than or equal to C<self>.
+Return true if C<num> is less than or equal to 
+C<self>.
 
 =item B<method modNumber {num}>
 
@@ -983,71 +1271,78 @@ Return C<num> multiplied by C<self>.
 
 =item B<method op_Add {obj}>
 
-C<+> operator. Performs addition.
+C<+> operator.  Performs addition.
 
 =item B<method op_BitAnd {obj}>
 
-C<&> operator. Perform bitwise AND operation. Fractional arguments are first truncated toward zero.
+C<&> operator.  Perform bitwise AND operation.  Fractional arguments
+are first truncated toward zero.
 
 =item B<method op_BitOr {obj}>
 
-C<|> operator. Perform bitwise OR operation. Fractional arguments are first truncated toward zero.
+C<|> operator.  Perform bitwise OR operation.  Fractional arguments
+are first truncated toward zero.
 
 =item B<method op_BitXor {obj}>
 
-C<^> operator. Perform bitwise exclusive-OR operation. Fractional arguments are first truncated toward zero.
+C<^> operator.  Perform bitwise exclusive-OR operation.  Fractional
+arguments are first truncated toward zero.
 
 =item B<method op_Div {obj}>
 
-C</> operator. Performs division.
+C</> operator.  Performs division.
 
 =item B<method op_DivTrunc {obj}>
 
-C<//> operator. Performs division, truncating to the nearest int.
+C<//> operator.  Performs division, truncating to the nearest int.
 
 =item B<method op_Equals {obj}>
 
-Test if C<self> and C<obj> have the same numeric value. (Non-numbers clearly do not.)
+Test if C<self> and C<obj> have the same numeric value.
+(Non-numbers clearly do not.)
 
 =item B<method op_Gt {obj}>
 
-C<E<gt>> operator. Test if C<self> is greater than C<obj>. This overrides the version in C<Object> for no good reason.
+C<E<gt>> operator. Test if C<self> is greater than C<obj>.
+This overrides the version in C<Object> for no good reason.
 
 =item B<method op_Gte {obj}>
 
-C<E<gt>=> operator. Test if C<self> is greater than or equal to C<self>. This overrides the version in C<Object> for no good reason.
+C<E<gt>=> operator.  Test if C<self> is greater than or equal to
+C<self>.  This overrides the version in C<Object> for no good reason.
 
 =item B<method op_LShift {obj}>
 
-C<E<lt>E<lt>> operator. Shift self left by C<obj>.
+C<E<lt>E<lt>> operator.  Shift self left by C<obj>.
 
 =item B<method op_Lt {obj}>
 
-C<E<lt>> operator. Test if C<self> is less than C<obj>. This overrides the version in C<Object> for no good reason.
+C<E<lt>> operator. Test if C<self> is less than C<obj>.  
+This overrides the version in C<Object> for no good reason.
 
 =item B<method op_Lte {obj}>
 
-C<E<lt>=> operator. Performs greater-than-or-equal-to test.
+C<E<lt>=> operator.  Performs greater-than-or-equal-to test.
 
 =item B<method op_Mod {obj}>
 
-C<%> operator. Performs the modulo operation.
+C<%> operator.  Performs the modulo operation.
 
 =item B<method op_Mult {obj}>
 
-C<*> operator. Performs multiplication.
+C<*> operator.  Performs multiplication.
 
 =item B<method op_Pow {obj}>
 
-C<**> operator. Return C<self> raised to the power of C<other>.
+C<**> operator.  Return C<self> raised to the power of C<other>.
 
 =item B<method op_RShift {obj}>
 
-C<E<gt>E<gt>> operator. Shift self right by C<obj>.
+C<E<gt>E<gt>> operator.  Shift self right by C<obj>.
 
 =item B<method op_Sub {obj}>
 
-C<-> operator. Performs subtraction.
+C<-> operator.  Performs subtraction.
 
 =item B<method powNumber {num}>
 
@@ -1073,9 +1368,10 @@ Subtract self from C<num>
 
 =item B<Lang::Object (none)>  B<-- Built-in>
 
-C<Object> is the root class. All other classes in Deck are derived from Object.
+C<Object> is the root class.  All other classes in Deck are derived
+from Object.
 
-C<Object> is a pure abstract base class. It cannot be instantiated.
+C<Object> is a pure abstract base class.  It cannot be instantiated.
 
 I<Attributes>
 
@@ -1087,7 +1383,8 @@ Return the class of this object.
 
 =item B<readable hashKey>
 
-Deprecated. Return a string suitable for representing this object as the key in a Perl hash. By default, calling this is an error.
+Deprecated.  Return a string suitable for representing this object
+as the key in a Perl hash.  By default, calling this is an error.
 
 =item B<readable isCallable>
 
@@ -1095,7 +1392,10 @@ Tell if instances of this class are callable.
 
 =item B<readable isIndexable>
 
-Tests if this object can be treated as a sequence (i.e. implements the sequence protocol). If true, the object must implement at least C<at>, C<size> and C<maker> as expected and C<atPut> should either behave as expected as well or fail with an error.
+Tests if this object can be treated as a sequence (i.e. implements
+the sequence protocol).  If true, the object must implement at least
+C<at>, C<size> and C<maker> as expected and C<atPut> should either
+behave as expected as well or fail with an error.
 
 =item B<readable isNil>
 
@@ -1103,15 +1403,18 @@ Returns a true value if this object is nil, false otherwise.
 
 =item B<readable isTrue>
 
-Return this object's truth value. Somewhat magical.
+Return this object's truth value.  Somewhat magical.
 
 =item B<readable last>
 
-Sequence Protocol: Return the index of the last item in this object.
+Sequence Protocol: Return the index of the last item in this
+object.
 
 =item B<readable maker>
 
-Sequence protocol: return a procedure which will create a collection suitable for holding the contents of self and which takes one argument,a number specifying the size. It defaults to C<listSized>.
+Sequence protocol: return a procedure which will create a collection
+suitable for holding the contents of self and which takes one
+argument,a number specifying the size.  It defaults to C<listSized>.
 
 =item B<readable printable>
 
@@ -1129,13 +1432,18 @@ I<Methods>
 
 =item B<method _init {args}>
 
-This is the message that each object receives when it is first created. Its implementation is expected to initialize the new object.
+This is the message that each object receives when it is first
+created. Its implementation is expected to initialize the new object.
 
 =item B<method _sanitizeIndex {index}>
 
-Sequence Protocol: Given an index into a sequence, return the normal index for the object (i.e. an integer between 0 and the last index or die with an error if it cannot be mapped to a valid index.
+Sequence Protocol: Given an index into a sequence, return the normal
+index for the object (i.e. an integer between 0 and the last index or
+die with an error if it cannot be mapped to a valid index.
 
-In particular, C<_sanitizeIndex> replaces a negative index with the matching positive index. (Negative indexes are relative to the end of the sequence.)
+In particular, C<_sanitizeIndex> replaces a negative index with the
+matching positive index.  (Negative indexes are relative to the end
+of the sequence.)
 
 =item B<method abstract {}>
 
@@ -1147,13 +1455,16 @@ Make a copy of this object.
 
 =item B<method doesNotUnderstand {name args}>
 
-This method is called when the object receives a message it does not understand (i.e. there is no corresponding method implemented.)
+This method is called when the object receives a message it does not
+understand (i.e. there is no corresponding method implemented.)
 
 Default behaviour is to exit with an error message.
 
 =item B<method op_Equals {other}>
 
-C<==> operator: Test if C<self> and C<other> are equal with respect to their types. Should be overridden by subclass; defaults to using C<===>.
+C<==> operator: Test if C<self> and C<other> are equal with respect
+to their types.  Should be overridden by subclass; defaults to using
+C<===>.
 
 =item B<method op_Gt {obj}>
 
@@ -1179,9 +1490,13 @@ Make a copy of this object without copying the objects it references.
 
 =item B<Lang::PerlObj (Object)>  B<-- Built-in>
 
-C<PerlObj> is a wrapper around some Perl data. Perl functions created using C<perlproc> can return Perl data that has no meaningful representation inside Deck and these can then be passed to other Perl procedures.
+C<PerlObj> is a wrapper around some Perl data.  Perl functions created
+using C<perlproc> can return Perl data that has no meaningful
+representation inside Deck and these can then be passed to other Perl
+procedures.
 
-For example, a Deck wrapper around a Perl library may use a C<PerlObj> to hold a reference to an instance of a class defined in the library.
+For example, a Deck wrapper around a Perl library may use a C<PerlObj> to
+hold a reference to an instance of a class defined in the library.
 
 There is no way to modify a PerlObj in Deck.
 
@@ -1201,7 +1516,7 @@ I<Methods>
 
 =item B<method shallowCopy {}>
 
-C<MethodCalls> are immutable so we just return the same instance.
+C<PerlObjs> are immutable so we just return the same instance.
 
 =back
 
@@ -1215,7 +1530,7 @@ I<Attributes>
 
 =item B<readable isCallable>
 
-Tell if instances of this class are callable. Yes, in this case.
+Tell if instances of this class are callable.  Yes, in this case.
 
 =item B<readable printable>
 
@@ -1235,13 +1550,19 @@ C<Procedures> are immutable so we just return the same instance.
 
 =item B<Lang::Quote (Object)>  B<-- Built-in>
 
-C<Quote> instances are used to represent quotation in Deck expressions. They are typically represented in Deck source code via the colon operator (C<:>).
+C<Quote> instances are used to represent quotation in Deck expressions.
+They are typically represented in Deck source code via the colon operator
+(C<:>).
 
-Each C<Quote> contains a single data value which may be retrieved using the C<value> attribute. A C<Quote> in an expression evaluates to its wrapped value. For example, the compiler will evaluate this
+Each C<Quote> contains a single data value which may be retrieved using
+the C<value> attribute.  A C<Quote> in an expression evaluates to its
+wrapped value.  For example, the compiler will evaluate this
 
 C<[a b c]>
 
-as an expression where C<a>, C<b> and C<c> are expected to be variables and C<a> is expected to reference something callable and so will attempt to call the callable at C<a> with arguments C<b> and C<c>.
+as an expression where C<a>, C<b> and C<c> are expected to be variables
+and C<a> is expected to reference something callable and so will attempt
+to call the callable at C<a> with arguments C<b> and C<c>.
 
 On the other hand, this
 
@@ -1249,9 +1570,14 @@ C<:[a b c]>
 
 will evaluate to C<[a b c]>, a C<List> of C<Symbols>.
 
-Instances are created with the procedure C<quote> (but note that C<quote> is B<not> a special form; its argument is evaluated normally.)
+Instances are created with the procedure C<quote> (but note that C<quote>
+is B<not> a special form; its argument is evaluated normally.)
 
-In practice, you will rarely find references to C<Quote> in everyday code. Their purpose is to affect compilation and that's generally over with by the time it reaches your code. You will (probably) only ever need to use a C<Quote> when creating Deck expressions to be compiled later by the Deck compiler.
+In practice, you will rarely find references to C<Quote> in everyday code.
+Their purpose is to affect compilation and that's generally over with
+by the time it reaches your code.  You will (probably) only ever need
+to use a C<Quote> when creating Deck expressions to be compiled later
+by the Deck compiler.
 
 I<Attributes>
 
@@ -1273,7 +1599,8 @@ I<Methods>
 
 =item B<method op_Equals {obj}>
 
-C<==> operator: True if C<obj> is also a C<Quote> and both objects' values are also equal according to C<op_Equals>.
+C<==> operator: True if C<obj> is also a C<Quote> and both objects'
+values are also equal according to C<op_Equals>.
 
 =item B<method shallowCopy {}>
 
@@ -1283,11 +1610,20 @@ Create a new C<Quote> wrapping the same object.
 
 =item B<Lang::String (Stringlike)>  B<-- Built-in>
 
-C<String> instances contain human-readable text which can be printed to the console or stored in a file. The class implements the sequence protocol but the objects stored or retrieved from a C<String> must themselves be strings of length 1.
+C<String> instances contain human-readable text which can be
+printed to the console or stored in a file.  The class implements
+the sequence protocol but the objects stored or retrieved from a
+C<String> must themselves be strings of length 1.
 
-Unlike many other languages, Deck does not have a character type. Instead, strings are encoded in some manner and it is best not to make assumptions about the details. In particular, you should B<never> use a C<String> to hold arbitrary binary data as this will break when Deck switches to using UTF8. Use C<ByteArray> for that.
+Unlike many other languages, Deck does not have a character type.
+Instead, strings are encoded in some manner and it is best not to
+make assumptions about the details.  In particular, you should
+B<never> use a C<String> to hold arbitrary binary data as this
+will break when Deck switches to using UTF8.  Use C<ByteArray> for
+that.
 
-That being said, C<Strings> are currently 7-bit ASCII and all operations are performed within the C<C> locality.
+That being said, C<Strings> are currently 7-bit ASCII and all operations
+are performed within the C<C> locality.
 
 I<Attributes>
 
@@ -1295,7 +1631,8 @@ I<Attributes>
 
 =item B<readable hashKey>
 
-Deprecated. Return a string suitable for representing this object as the key in a Perl hash. Used in class C<Hash>.
+Deprecated.  Return a string suitable for representing this object
+as the key in a Perl hash.  Used in class C<Hash>.
 
 =item B<readable isSpace>
 
@@ -1303,19 +1640,27 @@ Test if C<self> is all ASCII whitespace.
 
 =item B<readable isVowel>
 
-Return true if C<self> contains one character and that character is an ASCII vowel.
+Return true if C<self> contains one character and that character
+is an ASCII vowel.
 
 =item B<readable maker>
 
-Sequence protocol: return a procedure which will create a collection suitable for holding the contents of self and which takes one argument, a number specifying the size. In this case, it's C<stringSized>.
+Sequence protocol: return a procedure which will create a collection
+suitable for holding the contents of self and which takes one
+argument, a number specifying the size.  In this case, it's
+C<stringSized>.
 
 =item B<readable ord>
 
-Return the numeric code of the first character of self. If self is empty, returns 0. Note that while Deck currently encodes strings in ASCII or some variant, it is not safe to assume that this will continue in later versions.
+Return the numeric code of the first character of self.  If self is
+empty, returns 0.  Note that while Deck currently encodes strings
+in ASCII or some variant, it is not safe to assume that this will
+continue in later versions.
 
 =item B<readable printable>
 
-Return a human-readable textual represention of this object; in this case just C<self>; a string is its own printable.
+Return a human-readable textual represention of this object; in this
+case just C<self>; a string is its own printable.
 
 =back
 
@@ -1325,19 +1670,28 @@ I<Methods>
 
 =item B<method lowercase {}>
 
-Return a copy of C<self> with all uppercase characters replaced with their lowercase equivalents.
+Return a copy of C<self> with all uppercase characters replaced
+with their lowercase equivalents.
 
 =item B<method op_Add {otherString}>
 
-C<+> operator, overloaded: Returns C<self> and C<otherString> concatenated together. The result is the type returned by C<maker> (C<String> in this case). Note that C<otherString> does B<not> have to be a string but B<must> contain only strings of length 1 (i.e. characters).
+C<+> operator, overloaded: Returns C<self> and C<otherString>
+concatenated together.  The result is the type returned by C<maker>
+(C<String> in this case).  Note that C<otherString> does B<not> have
+to be a string but B<must> contain only strings of length 1
+(i.e. characters).
 
 =item B<method op_Equals {obj}>
 
-C<==> operator: True if C<obj> is also a C<String> or C<Symbol> and all characters match the the corresponding characters in C<obj>.
+C<==> operator: True if C<obj> is also a C<String> or C<Symbol>
+and all characters match the the corresponding characters in C<obj>.
 
 =item B<method op_Lte {other}>
 
-C<E<lt>=> operator: lexically compares C<self> with C<other> (which B<must> be a C<String> or C<Symbol>) and returns true if self comes before C<other> or if they are equal. The other comparisons are implemented in C<Object>.
+C<E<lt>=> operator: lexically compares C<self> with C<other> (which
+B<must> be a C<String> or C<Symbol>) and returns true if self comes
+before C<other> or if they are equal.  The other comparisons are
+implemented in C<Object>.
 
 =item B<method shallowCopy {}>
 
@@ -1347,7 +1701,9 @@ Create and return a copy of C<self>.
 
 =item B<Lang::Stringlike (Object)>  B<-- Built-in>
 
-This is the abstract base class for several classes representing various sequences of binary or specially-encoded data. It should not be used directly.
+This is the abstract base class for several classes representing
+various sequences of binary or specially-encoded data.  It should
+not be used directly.
 
 I<Attributes>
 
@@ -1355,7 +1711,8 @@ I<Attributes>
 
 =item B<readable isIndexable>
 
-Returns true, since all C<Stringlike> subclasses implement the sequence protocol.
+Returns true, since all C<Stringlike> subclasses implement the
+sequence protocol.
 
 =item B<readable size>
 
@@ -1369,21 +1726,30 @@ I<Methods>
 
 =item B<method at {index}>
 
-Sequence Protocol: Return the item at position C<index>. Indexes must be contiguous and start at zero. Negative indexes are subtracted from the list's size.
+Sequence Protocol: Return the item at position C<index>.  Indexes
+must be contiguous and start at zero.  Negative indexes are
+ subtracted from the list's size.
 
 =item B<method atPut {index value}>
 
-Sequence Protocol: Store C<value> at position C<index> and return C<value>. Indexes start at zero and must be contiguous. Negative indexes are subtracted from the list's size. C<value> must be of a type that can be stored in this object.
+Sequence Protocol: Store C<value> at position C<index> and
+return C<value>.  Indexes start at zero and must be
+contiguous. Negative indexes are subtracted from the list's size.
+C<value> must be of a type that can be stored in this object.
 
 =back
 
 =item B<Lang::Struct (Object)>  B<-- Built-in>
 
-C<Struct> is the base class for all traditional classes. A traditional class is a class whose data is stored in named fields.
+C<Struct> is the base class for all traditional classes.  A traditional
+class is a class whose data is stored in named fields.
 
-This is an abstract base class and cannot be instantiated. All subclasses should implement the method C<init> to initialize the fields when an instance is created.
+This is an abstract base class and cannot be instantiated.  All subclasses
+should implement the method C<init> to initialize the fields when an
+instance is created.
 
-C<Struct> subclasses are typically instantiated using the C<new> method or procedure.
+C<Struct> subclasses are typically instantiated using the C<new> method or
+procedure.
 
 I<Methods>
 
@@ -1391,33 +1757,48 @@ I<Methods>
 
 =item B<method _structShallowCopy {}>
 
-Return a copy of C<self> with all instance variables referencing the same objects the original references. A subclass should use this to implement C<shallowCopy> only if the new copy does not interfere with the internal state of the original.
+Return a copy of C<self> with all instance variables referencing
+the same objects the original references.  A subclass should use this
+to implement C<shallowCopy> only if the new copy does not interfere
+with the internal state of the original.
 
 =item B<method shallowCopy {}>
 
-Create a suitably shallow copy of self such that the copy cannot interfere with the operation of the original. (For example, if the original contains a private list that it modifies, that list should be copied. Otherwise, both instances will modify the same (formerly) private list.)
+Create a suitably shallow copy of self such that the copy cannot
+interfere with the operation of the original.  (For example, if the
+original contains a private list that it modifies, that list should
+be copied.  Otherwise, both instances will modify the same (formerly)
+private list.)
 
 =back
 
 =item B<Lang::Symbol (Stringlike)>  B<-- Built-in>
 
-Symbols are mostly used to represent names in expressions. They are similar to strings in that they contain human-readable text. However, there are some notable differences:
+Symbols are mostly used to represent names in expressions.  They
+are similar to strings in that they contain human-readable text.  However,
+there are some notable differences:
 
 =over
 
 =item 1.
 
-Symbols are immutable. C<atPut> will fail on one.
+Symbols are immutable.  C<atPut> will fail on one.
 
 =item 2.
 
-Symbols are unique. There is only ever one symbol with a particular value.
+Symbols are unique.  There is only ever one symbol with a particular
+value.
 
 =back
 
-C<Symbol> implements the sequence protocol but as mentioned above, the C<atPut> method will fail.
+C<Symbol> implements the sequence protocol but as mentioned above, the
+C<atPut> method will fail.
 
-C<Symbols> can be converted to and from strings via the C<intern> and C<unintern> procedures. Symbol literals are created by prefixing the symbol with the C<:> character, e.g. C<:foo>. This works as expected, with the quote delaying evaluation and so yielding the symbol instead of the variable it would represent.
+C<Symbols> can be converted to and from strings via the C<intern> and 
+C<unintern> procedures.  Symbol literals are created by prefixing the
+symbol with the C<:> character, e.g. C<:foo>.  This works as expected,
+with the quote delaying evaluation and so yielding the symbol instead of
+the variable it would represent.
 
 I<Attributes>
 
@@ -1425,11 +1806,15 @@ I<Attributes>
 
 =item B<readable hashKey>
 
-Deprecated. Return a string suitable for representing this object as the key in a Perl hash. Used in class C<Hash>.
+Deprecated.  Return a string suitable for representing this object
+as the key in a Perl hash.  Used in class C<Hash>.
 
 =item B<readable maker>
 
-Sequence protocol: return a procedure which will create a collection suitable for holding the contents of self and which takes one argument, a number specifying the size. In this case, it's C<stringSized>.
+Sequence protocol: return a procedure which will create a collection
+suitable for holding the contents of self and which takes one
+argument, a number specifying the size.  In this case, it's
+C<stringSized>.
 
 =item B<readable printable>
 
@@ -1443,11 +1828,16 @@ I<Methods>
 
 =item B<method op_Add {obj}>
 
-C<+> operator, overloaded: Returns C<self> and C<obj> concatenated together. The result is the type returned by C<maker> (C<String> in this case). Note that C<obj> does B<not> have to be a C<String> or C<Symbol> but B<must> contain only strings of length 1 (i.e. characters).
+C<+> operator, overloaded: Returns C<self> and C<obj>
+concatenated together.  The result is the type returned by C<maker>
+(C<String> in this case).  Note that C<obj> does B<not> have
+to be a C<String> or C<Symbol> but B<must> contain only strings
+of length 1 (i.e. characters).
 
 =item B<method op_Equals {obj}>
 
-C<==> operator: true if self === obj or if obj is a string with the same characters in it.
+C<==> operator: true if self === obj or if obj is a string with the
+same characters in it.
 
 =item B<method op_Lte {other}>
 
@@ -1482,23 +1872,37 @@ require it.
 
 =item B<mproc IO::lsdir {dir; onError [default nil]}>
 
-Return a list containing the names of all directory entries in C<dir>. On error, return C<nil>. If exception C<onError> is not nil, it is thrown when an error occurs.
+Return a list containing the names of all directory entries in C<dir>.
+On error, return C<nil>.  If exception C<onError> is not nil, it is
+thrown when an error occurs.
 
 =item B<mproc IO::mkdir {path; mask [default 511]; onError [default nil]}>
 
-Create a directory specified by C<path>. C<mask> is the directory umask (standard Unix file permissions--see the perl documentation on umask for an explanation). This is typically an octal constant. with the individual bits specifing read, write and execute bits for the user, group and other permisions. C<onError>, if not nil, is thrown as an Exception if an error occurs. Otherwise, returns false on error and true on success.
+Create a directory specified by C<path>.  C<mask> is the directory
+umask (standard Unix file permissions--see the perl documentation on
+umask for an explanation). This is typically an octal constant.
+with the individual bits specifing read, write and execute bits for
+the user, group and other permisions.  C<onError>, if not nil, is thrown
+as an Exception if an error occurs.  Otherwise, returns false on error
+and true on success.
 
 =item B<mproc IO::rmdir {dir; onError [default nil]}>
 
-Delete directory C<dir>. Returns C<true> on success and C<false>. If Exception C<onError> is given, it is thrown instead on error. The directory must be empty.
+Delete directory C<dir>.  Returns C<true> on success and C<false>.  If
+Exception C<onError> is given, it is thrown instead on error.  The
+directory must be empty.
 
 =item B<mproc IO::stat {file; onError [default nil]}>
 
-Perform a stat operation on C<file>. If successful, returns a StatResult describing the object. On error, returns C<nil> unless C<onError> is non-nil (and is an Exception), in which case it is thrown with an error message.
+Perform a stat operation on C<file>.  If successful, returns a
+StatResult describing the object.  On error, returns C<nil> unless
+C<onError> is non-nil (and is an Exception), in which case it is
+thrown with an error message.
 
 =item B<mproc IO::unlink {file; onError [default nil]}>
 
-Delete (unlink) C<file>. Returns C<true> on success and C<false>. If Exception C<onError> is given, it is thrown instead on error.
+Delete (unlink) C<file>.  Returns C<true> on success and C<false>.  If
+Exception C<onError> is given, it is thrown instead on error.
 
 
 
@@ -1512,13 +1916,27 @@ Delete (unlink) C<file>. Returns C<true> on success and C<false>. If Exception C
 
 =item B<IO::FileHandle (Struct)> 
 
-FileHandle represents access to a file on disk. The filename is passed to the initializer along with a symbol indicating the mode (C<:read>, C<:write> or C<:readwrite>) and an Exception to throw if an error occurs. If C<nil> is given instead, no exception is thrown. Instead, the methods will all return nil on error. (But not the attribute getters--they return an appropriate value.)
+FileHandle represents access to a file on disk.  The filename is passed
+to the initializer along with a symbol indicating the mode (C<:read>,
+C<:write> or C<:readwrite>) and an Exception to throw if an error
+occurs.  If C<nil> is given instead, no exception is thrown.  Instead,
+the methods will all return nil on error.  (But not the attribute 
+getters--they return an appropriate value.)
 
-The exception is accessible through the field C<errorException> and may be replaced at any time.
+The exception is accessible through the field C<errorException> and may
+be replaced at any time.
 
-FileHandle can treat its file as binary or text or some combination of both, depending on how it is accessed. Methods C<read> and C<write> will read or write the contents as ByteArray instances while C<getChar>, C<getChars>, C<getLine>, C<put>, C<puts> and C<slurp> read and write strings. Note that although it is currently possible to store any series of bytes in a Deck string, this may not be the case in the future. If you need to manipulate binary data, use C<ByteArrays>.
+FileHandle can treat its file as binary or text or some combination of
+both, depending on how it is accessed.  Methods C<read> and C<write> will
+read or write the contents as ByteArray instances while C<getChar>,
+C<getChars>, C<getLine>, C<put>, C<puts> and C<slurp> read and write
+strings.  Note that although it is currently possible to store any series
+of bytes in a Deck string, this may not be the case in the future.  If
+you need to manipulate binary data, use C<ByteArrays>.
 
-C<FileHandles> need to be closed when they are no longer needed. There is no finalization mechanism (yet) to close them when they are garbage-collected.
+C<FileHandles> need to be closed when they are no longer needed.  There
+is no finalization mechanism (yet) to close them when they are
+garbage-collected.
 
 I<Attributes>
 
@@ -1538,15 +1956,20 @@ Test if this file handle is at the end of the file.
 
 =item B<writeable exception>
 
-Get/set the error exception. This is the exception that gets thrown if there is an I/O error.
+Get/set the error exception.  This is the exception that gets thrown
+if there is an I/O error.
 
 =item B<readable isOpen>
 
-Test if this FileHandle is open. If it has been closed (via C<close>), this attribute will return false; otherwise, it will return true. Naturally, this attribute is safe to call on a closed C<FileHandle>.
+Test if this FileHandle is open.  If it has been closed (via
+C<close>), this attribute will return false; otherwise, it will
+return true.  Naturally, this attribute is safe to call on a closed
+C<FileHandle>.
 
 =item B<readable pos>
 
-Returns the position B<in bytes> of this C<FileHandle> relative to the start of the file.
+Returns the position B<in bytes> of this C<FileHandle> relative to the
+start of the file.
 
 =back
 
@@ -1556,7 +1979,9 @@ I<Methods>
 
 =item B<method close {}>
 
-Close the underlying system file handle associated with this file. After C<close> has been called, this object should no longer be used.
+Close the underlying system file handle associated with this
+file.  After C<close> has been called, this object should no
+longer be used.
 
 =item B<method getChar {}>
 
@@ -1564,11 +1989,19 @@ Read a single character from this file and return it as a string.
 
 =item B<method getChars {count}>
 
-Read C<count> characters from the current input file and return them in a string. If C<count> is more than the number of characters to the end of the file, the remaining characters are returned. This is true even if the C<FileHandle> is already at the end of the file. In that case, the return value is an empty string.
+Read C<count> characters from the current input file and return them
+in a string.  If C<count> is more than the number of characters to
+the end of the file, the remaining characters are returned.  This is
+true even if the C<FileHandle> is already at the end of the file.  In
+that case, the return value is an empty string.
 
 =item B<method getLine {}>
 
-Read one line of text and return it as a String. The line delimiter is determined by the attribute C<eol>. It defaults to the UNIX newline (0x0a). The delimiter is not stripped from the string. If the C<FileHandle> is at the end of the file, C<getLine> returns an empty string.
+Read one line of text and return it as a String.  The line delimiter
+is determined by the attribute C<eol>.  It defaults to the UNIX
+newline (0x0a).  The delimiter is not stripped from the string.  If
+the C<FileHandle> is at the end of the file, C<getLine> returns an
+empty string.
 
 =item B<method put {string}>
 
@@ -1576,33 +2009,48 @@ Writes C<string> at the current file position.
 
 =item B<method puts {args}>
 
-Writes the printable form of each argument to the file starting from the current position, then appends a newline (as defined by C<eol>). Analogous to the C<puts> function.
+Writes the printable form of each argument to the file starting from
+the current position, then appends a newline (as defined by C<eol>).
+Analogous to the C<puts> function.
 
 =item B<method read {numBytes}>
 
-Reads C<numBytes> bytes from the file starting at the current position, then returns them in a ByteArray. If C<numBytes> is more than the number of bytes remaining in the file, only the number of remaining bytes are read. If the current position is at the end of the file, returns an empty ByteArray.
+Reads C<numBytes> bytes from the file starting at the current
+position, then returns them in a ByteArray.  If C<numBytes> is more
+than the number of bytes remaining in the file, only the number of
+remaining bytes are read.  If the current position is at the end of
+the file, returns an empty ByteArray.
 
 =item B<method seek {pos whence}>
 
-Sets the position of this C<FileHandle> to C<pos>. C<whence> controls how C<pos> is used: C<SEEK_SET> sets the position to C<pos>, C<SEEK_CUR> sets it to C<pos> plus the current position and C<SEEK_END> sets it to C<pos> plus the end of the file (C<pos> is typically negative.
+Sets the position of this C<FileHandle> to C<pos>.  C<whence>
+controls how C<pos> is used: C<SEEK_SET> sets the position to C<pos>,
+C<SEEK_CUR> sets it to C<pos> plus the current position and
+C<SEEK_END> sets it to C<pos> plus the end of the file (C<pos> is
+typically negative.
 
 =item B<method slurp {}>
 
-Read the remaining contents of this file and return them as a string. This can be an empty string if the file position is already at the end of the file.
+Read the remaining contents of this file and return them as a
+string.  This can be an empty string if the file position is already
+at the end of the file.
 
 =item B<method write {bytes}>
 
-Writes the bytes in C<bytes>, a ByteArray, to the current file at the current position.
+Writes the bytes in C<bytes>, a ByteArray, to the current file at
+the current position.
 
 =back
 
 =item B<IO::StatResult (Struct)> 
 
-StatResult is a data structure holding the results of a successful stat call. Readable fields are:
+StatResult is a data structure holding the results of a successful
+stat call.  Readable fields are:
 
 =over
 
-name dev ino mode nlink uid gid rdev size atime mtime ctime blksize blocks
+name dev ino mode nlink uid gid rdev size atime mtime ctime
+blksize blocks
 
 =back
 
@@ -1621,6 +2069,136 @@ I<Methods>
 =over
 
 =back
+
+=back
+
+=head2 Package Perl::Regex
+
+
+This package provides some access to Perl regular expressions via the
+underlying Perl interpreter.
+
+Most languages with regex support treat the regex as data, either as a
+string or as an opaque object.  This library is different.  It treats
+a regex as code.  The functions and mprocs it exports all take the
+regex in a string as an argument and return a function that performs
+the actual match or transformation.
+
+For example, in most languages, performing a match would look
+something like this:
+
+    if [match '^ *' str] {
+        puts 'Found leading whitespace.'
+    }
+
+Here, it looks like this:
+
+    var leadingWhitespace = [matchsub '^ *']
+    if [leadingWhitespace str] {
+        puts 'Found leading whitespace.'
+    }
+
+This treats regexes as code (which they are) and also lets you save
+the compiled regex for reuse.
+
+Note that all regular expressions are compiled and evaluated with the
+C<g>, C<m> and C<x> flags (except C<splitsub> for which C<g> is
+meaningless) as explained in the B<perlre> perldoc page.
+
+Note also that Perl will sometimes issue warnings if a regex looks
+funny and that this library does not suppress those warnings.
+
+Please refer to B<perlre> for a complete explanation of the syntax and
+semantics of Perl regular expressions.  You may also want to look at
+the C<perlop> page for an explanation of the C<s///> and C<m//>
+operators and the C<qr> construct, all of which are used under the
+hood.
+
+
+
+=head3 MProcs
+
+=over
+
+
+=item B<mproc Perl::Regex::replacesub {regex; sub [args] replaceElem}>
+
+Create and return a sub that takes one argument, a string, and
+returns a new string with the parts matching C<regex> replaced
+with the results of sub C<replaceElem>.
+
+C<replaceElem> can be either a callable object or a LoL
+containing valid Deck code which will be turned into a sub by the
+mproc.  It is expected to return a string; if it does not, the
+results are undefined.  It is passed zero or more arguments, one
+for each captured parenthesis with an upper limit of 9.  This can
+be troublesome if a capture group is optional because only the
+groups that are actually captured are passed.  For example, this:
+
+    re = replacesub '(foo)(bar)(quux)?'
+    re 'foobar' {|f b q| puts f b q}
+
+will fail with an error because the C<replaceElem> argument is
+called with 2 arguments instead of 3.  In a case like this, your
+best bet is to use C<args> argument:
+
+    re = replacesub '(foo)(bar)(quux)?'
+    re 'foobar' {|args| puts args}
+
+If C<regex> is empty or not a valid regex, C<replacesub> returns
+C<nil>.
+
+The underlying replacement is performed by the Perl
+C<s/PATTERN/REPLACEMENT/> operator where the pattern is C<regex>
+and the replacement is the function C<replaceElem>.  It is called
+with the C<e>, C<g>, C<m> and C<x> options.  These are explained
+in the Perl documentation.
+
+
+
+=back
+
+=head3 Procedures
+
+=over
+
+
+=item B<proc Perl::Regex::_check_and_compile {regex fun bail allowEmpty}>
+
+Compile the regex C<regex> into a Perl object after first
+performing some checks.
+
+=item B<proc Perl::Regex::matchsub {regex}>
+
+Create and return a sub that takes one argument, a string, and
+returns true only if C<regex> matches it.  C<regex> must be a
+non-empty string containing a valid Perl regex compiled with the
+C<g>, C<m> and C<x> flags.
+
+For example:
+
+    containsVowel = [matchsub '[aeiouAEIOU]']
+    [containsVowel str] && [puts 'Found a vowel!']
+
+If C<regex> is not valid, returns nil instead.  It is a fatal
+error for C<regex> to be a non-string.
+
+=item B<proc Perl::Regex::splitsub {regex}>
+
+Returns a function which splits a string into an array of strings
+where C<regex> defines the delimiter.
+
+C<regex> is a string containing a Perl regular expression.  If it
+is not valid, C<splitsub> will return C<nil>.  Unlike the other
+Regex functions, C<splitsub> allows an empty regular expression;
+it splits the string into its individual characters.
+
+C<splitsub> uses perl's C<split> function.  Regular expressions
+are compiled with the C<m> and C<x> modifiers (C<g> is
+meaningless in this context).  See the C<split> manual for a
+detailed explanation of it's behaviour.
+
+
 
 =back
 
@@ -1648,7 +2226,10 @@ Store a value in a sequence.
 
 =item B<proc _::class {superclass body name}> B<(Built-in)>
 
-Create the class specified by C<superclass> and C<body>. C<name> (a string) is not required to be the global const that typically references the class but it should be. Implements macro C<class>.
+Create the class specified by C<superclass> and C<body>.
+C<name> (a string) is not required to be the global
+const that typically references the class but it
+should be.  Implements macro C<class>.
 
 =item B<proc _::class_ext {class body}> B<(Built-in)>
 
@@ -1656,7 +2237,8 @@ Adds docstrings and methods to built-in classes.
 
 =item B<proc _::const {args}> B<(Built-in)>
 
-This is a symbol that the compiler expands into a const declaration. Calling it is a fatal error.
+This is a symbol that the compiler expands into a const
+declaration.  Calling it is a fatal error.
 
 =item B<proc _::defns {namespaceName}> B<(Built-in)>
 
@@ -1664,7 +2246,9 @@ Define a new namespace named by symbol C<namespaceName>.
 
 =item B<proc _::docstring_get {key}> B<(Built-in)>
 
-Return a list containing the docstring information for the object named by symbol C<key>. C<key> is typically a global variable.
+Return a list containing the docstring information for
+the object named by symbol C<key>.  C<key> is typically
+a global variable.
 
 The result is a list in one of the following forms:
 
@@ -1674,9 +2258,12 @@ The result is a list in one of the following forms:
 
 [:proc I<name> I<builtin> I<args> I<docstring>]
 
-[:method I<name> I<builtin> I<classname> I<methodname> I<args> I<docstring>]
+[:method I<name> I<builtin> I<classname> I<methodname>
+    I<args> I<docstring>]
 
-[:attrib I<name> I<builtin> I<classname> :readable/:writeable/:public I<attrib-name> I<docstring>]
+[:attrib I<name> I<builtin> I<classname>
+    :readable/:writeable/:public I<attrib-name>
+    I<docstring>]
 
 [:macro I<name> I<builtin> I<args> I<docstring>]
 
@@ -1686,19 +2273,39 @@ The result is a list in one of the following forms:
 
 =back
 
-The first field is always a symbol and identifies the type of object being referenced and, by extension, the format of the rest of the list.
+The first field is always a symbol and identifies the
+type of object being referenced and, by extension, the
+format of the rest of the list.
 
-The second item is its name. The third (I<builtin>) is a boolean that indicates whether the object is built into the interpreter.
+The second item is its name.  The third (I<builtin>) is
+a boolean that indicates whether the object is built into
+the interpreter.
 
-I<args> is the formal argument list and I<docstring> is a string containing the long-form POD-formatted documentation for the object.
+I<args> is the formal argument list and I<docstring> is
+a string containing the long-form POD-formatted
+documentation for the object.
 
-I<superclass> and I<classname> are references to classes that may be associated with the object. Note that not all classes are named or are named correctly. However, this generally only happens to classes that do not contain docstrings.
+I<superclass> and I<classname> are references to classes
+that may be associated with the object.  Note that not
+all classes are named or are named correctly.  However,
+this generally only happens to classes that do not contain
+docstrings.
 
-Attributes also have the I<attrib-name> field, which is the name of the attribute, as opposed to the get/set method which implements it. In addition, its fifth item indicates its access mode.
+Attributes also have the I<attrib-name> field, which is
+the name of the attribute, as opposed to the get/set
+method which implements it.  In addition, its fifth
+item indicates its access mode.
 
 =item B<proc _::docstring_keys {filter package}> B<(Built-in)>
 
-Return a list containing the keys (i.e. names) of all documented objects in memory. The list is sorted using Perl's C<cmp> operator. Keys are symbols and generally correspond to global variable names. C<filter> (a Symbol) is one of the docstring types (see C<_::docstring_get> for a list) and C<package> (a Symbol) is the name of the package to which results are restricted. Both arguments may be nil.
+Return a list containing the keys (i.e. names) of all
+documented objects in memory.  The list is sorted
+using Perl's C<cmp> operator.  Keys are symbols and
+generally correspond to global variable names. C<filter>
+(a Symbol) is one of the docstring types (see
+C<_::docstring_get> for a list) and C<package> (a Symbol)
+is the name of the package to which results are restricted.
+Both arguments may be nil.
 
 =item B<proc _::foreach {list fn}> B<(Built-in)>
 
@@ -1706,9 +2313,13 @@ Backend for the 'for'/'foreach' macro.
 
 =item B<proc _::getMethod {object methodName}> B<(Built-in)>
 
-Return the C<MethodCall> object that invokes the method named by symbol C<methodName> in object C<object>. If there is no matching method, the C<MethodCall> invokes C<doesNotUnderstand>.
+Return the C<MethodCall> object that invokes the
+method named by symbol C<methodName> in object
+C<object>.  If there is no matching method, the
+C<MethodCall> invokes C<doesNotUnderstand>.
 
-This is almost never called explicitly. Usually, calls are generated by the macro C<-E<gt>>.
+This is almost never called explicitly.  Usually, calls
+are generated by the macro C<-E<gt>>.
 
 (_::getMethod is an alias for Lang::getMethod)
 
@@ -1722,7 +2333,7 @@ It is usually invoked by the macro C<-E<gt>> and is not guaranteed to work unles
 
 =item B<proc _::if {test trueSub falseSub}> B<(Built-in)>
 
-Performs an 'if' comparison. This is the backend of a number of flow-control macros.
+Performs an 'if' comparison.  This is the backend of a number of flow-control macros.
 
 =item B<proc _::macro {name args body}> B<(Built-in)>
 
@@ -1734,7 +2345,7 @@ Primitive implementation of 'map'.
 
 =item B<proc _::mkstr {args}> B<(Built-in)>
 
-Return a string containing all of the arguments' B<internal> string representation (i.e. from the interpreter, B<not> the C<printable> attribute). This is used to expand double-quoted strings.
+Return a string containing all of the arguments' B<internal> string representation (i.e. from the interpreter, B<not> the C<printable> attribute).  This is used to expand double-quoted strings.
 
 (_::mkstr is an alias for Lang::mkstr)
 
@@ -1756,7 +2367,7 @@ Implement the C<perluse> statement.
 
 =item B<proc _::proc {name args body final}> B<(Built-in)>
 
-Defines a proc described by the arguments. Should only be invoked by the C<proc> macro.
+Defines a proc described by the arguments.  Should only be invoked by the C<proc> macro.
 
 =item B<proc _::puts {args}> B<(Built-in)>
 
@@ -1764,7 +2375,7 @@ Identical to C<_::say> except that it also prints a newline.
 
 =item B<proc _::say {args}> B<(Built-in)>
 
-Displays a printable representation of each of its arguments to stdout. The string representations of the arguments are generated internally, B<not> with the C<printable> attribute so C<_::say> (and C<_::puts>) will work on objects with a defective C<printable_get>.
+Displays a printable representation of each of its arguments to stdout.  The string representations of the arguments are generated internally, B<not> with the C<printable> attribute so C<_::say> (and C<_::puts>) will work on objects with a defective C<printable_get>.
 
 =item B<proc _::set {name value}> B<(Built-in)>
 
@@ -1780,11 +2391,12 @@ Implements the C<use> statement.
 
 =item B<proc _::value {args}> B<(Built-in)>
 
-Return the last item in the argument list. If none is given, return nil. All arguments are evaluated.
+Return the last item in the argument list.  If none is given, return nil.  All arguments are evaluated.
 
 =item B<proc _::var {args}> B<(Built-in)>
 
-This is a symbol that the compiler expands into a var declaration. Calling it is a fatal error.
+This is a symbol that the compiler expands into a var
+declaration.  Calling it is a fatal error.
 
 =item B<proc _::while {test body}> B<(Built-in)>
 

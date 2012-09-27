@@ -1,0 +1,8 @@
+# Test calling replacesub on a non-string
+
+use Perl::Regex
+
+var r = [replacesub '( [aeiouAEIOU] ) ( [^aeiouAEIOU] )' 'some string']
+
+
+

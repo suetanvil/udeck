@@ -2,33 +2,55 @@
 # This utility prints out the docstrings of the entire Deck systems.
 # This is not good code.
 
+# Note: Base indentation is determined by the first line with any
+# leading spaces.  Be careful not to break that.
+
+
 use IO
+use Perl::Regex
 
-# These are written in Perl for speed and to get at the Perl regexp
-# system.  (To do: add Regexp interface.)
 
-perlproc trimSpc {ts_s} '''
-    LL::Main::fail ("trimSpc called with undefined value.")
-        unless defined ($ts_s);
 
-    my @paragraphs = split(/\n\n+/, $ts_s);
+const splitLine = [splitsub '\n']
+const hasLeadingSpace = [matchsub '^\s+']
 
-    for my $par (@paragraphs) {
-        $par =~ s/\A\s*//gmx;   
-        $par =~ s/\s*\z//gmx;
-        $par =~ s/\s+/ /gmx;
+proc leadingSpace {doc} {
+    "Find the base indentation level of 'doc'.  This is currently done
+     by taking the indentation level of the first line found to be indented 
+     past zero."
+    var lines = [splitLine doc]
+
+    for ln in lines {
+        if [hasLeadingSpace ln] {
+            [replacesub '^(\s+)' {|l| return l.size}] ln
+        }
     }
 
-    my $result = join("\n\n", @paragraphs);
-    return $result;
-'''
+    return 0
+}
 
-perlproc podClean {s} '''
-    my $r = {'<' => 'lt', '>' => 'gt'};
-    $s =~ s{([<>])}{"E<".$r->{$1}.">"}eg;
 
-    return $s;
-'''
+const splitPara = [splitsub '\n\n+']
+const trimTrailingSpc = [replacesub '\s*\z' {=""}]
+
+proc trimSpc {doc} {
+    "Given a docstring, correct the indentation to compensate for
+     the padding normally put in to make it look good in source code."
+    var paragraphs = [splitPara doc]
+
+    # Figure out how much space to trim from the front of a line to
+    # keep verbatim blocks intact.
+    var indent = [leadingSpace doc]
+    const trimLeadingSpc = [replacesub "^\\s{$indent}" {=""}]
+
+    paragraphs = [map {|p|
+        p = [trimLeadingSpc p]
+        next [trimTrailingSpc p]
+    } paragraphs]
+
+    return [join "\n\n" paragraphs]
+}
+
 
 
 proc isProcOrMProc {doc} {
@@ -80,6 +102,9 @@ proc printFunctions {mproc pkg} {
     puts "\n\n=back\n"
 }
 
+
+const podClean = \
+    [replacesub '([<>])' {|elem| ="E<"+[if (elem == '<'){='lt'}{='gt'}]+">"} ]
 
 proc printMacros {pkg} {
     var keys = [_::docstring_keys :macro pkg]
@@ -142,11 +167,14 @@ proc uniq {aSeq} {
     return [slice result 0 (index - 1)]
 }
 
-perlproc _attribName{s} '''
-  return "" unless $s;
-  return "" unless scalar ($s =~ s/_[gs]et$//);
-  return $s;
-'''
+const attrib_re = '_[gs]et$'
+const stripAttrib = [replacesub attrib_re {=""}]
+const isAttrib = [matchsub attrib_re]
+
+proc fixAttrName {attr} {
+    (attr && [isAttrib attr]) || [return ""]
+    return [stripAttrib attr]
+}
 
 proc printAttribDoc {doc} {
     var builtin = (doc@2)
@@ -164,8 +192,8 @@ proc printAttribDoc {doc} {
 proc printAttributes {name} {
     var cl = [lookup [intern name]]
 
-    var attributes = [map {_attribName a} cl.methods]
-    attributes = [reduce {value a} attributes]
+    var attributes = [map {fixAttrName [unintern a]} cl.methods]
+    attributes = [filter {= a} attributes]
     attributes = [sort cmp attributes]
     attributes = [uniq attributes]
 
@@ -266,7 +294,7 @@ proc printPackage {pkg} {
 
 # Lang needs to go first
 var packages = [_::docstring_keys :package nil]
-packages = [reduce { value (a != [intern "Lang::"]) } packages]
+packages = [filter { value (a != [intern "Lang::"]) } packages]
 packages = [concat [list [intern "Lang::"]] packages]
 
 for pkg in packages {

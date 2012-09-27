@@ -1,0 +1,58 @@
+# Test Perl::Regex
+
+use Perl::Regex
+
+var m = [matchsub '^[a-z]+\.']
+puts "set m: $m"
+puts [m "fooo."]
+puts [m "asdf"]
+
+puts "Invalid regexp: " [matchsub "[not valid"]
+
+m = [matchsub '']
+puts "empty matchsub: $m"
+
+var r = [replacesub '( [aeiouAEIOU] ) ( [^aeiouAEIOU] )' {|a b| ="$b$a"}]
+puts "set r: $r"
+puts [r "This is some text."]
+
+# Varible arg list
+r = [replacesub '([aeiouAEIOU])([^aeiouAEIOU])' {|args| ="@args"}]
+puts [r "This is some text."]
+
+# LoL instead of a closure
+r = [replacesub '([aeiouAEIOU])([^aeiouAEIOU])' {="@args"}]
+puts [r "This is some text."]
+
+# More than 9 arguments (the extras are discarded)
+r = [replacesub 
+     '\A (.)(.)(.)(.)(.)(.)(.)(.)(.) (.)(.)(.)(.)(.)(.)'
+     {|args| =(args@0) + args.size.printable + (args@8)} ]
+
+puts [r "This is some text."]
+
+# This will fail if the 'quux' part isn't present in the input.
+r = [replacesub '(foo)(bar)(quux)?' {|a b c| ="a=$a b=$b c=$c"}]
+puts [r "foobarquux"]
+
+r = [replacesub '' {|args| =""}]
+puts "Empty replacesub: $r"
+
+
+# Test split
+var s = [splitsub '\s+']
+puts [join ":" [s "This is a sentence with spaces   in it."]]
+
+s = [splitsub '(\s+)']
+puts [join ":" [s "This is a sentence with spaces   in it."]]
+
+s = [splitsub '( \s + )']
+puts [join ":" [s "This is a sentence with spaces   in it."]]
+
+s = [splitsub '\s+']
+puts "Empty string: '" [join ":" [s ""]] "'"
+
+# Special case: empty pattern matches space between characters
+s = [splitsub '']
+puts [join ":" [s "Hi there!"]]
+

@@ -1,0 +1,4 @@
+# Test calling 'fold' on an empty list
+
+puts [fold {=a+b} :[]]
+

@@ -1,0 +1,178 @@
+package Perl::Regex
+
+'''
+This package provides some access to Perl regular expressions via the
+underlying Perl interpreter.
+
+Most languages with regex support treat the regex as data, either as a
+string or as an opaque object.  This library is different.  It treats
+a regex as code.  The functions and mprocs it exports all take the
+regex in a string as an argument and return a function that performs
+the actual match or transformation.
+
+For example, in most languages, performing a match would look
+something like this:
+
+    if [match '^ *' str] {
+        puts 'Found leading whitespace.'
+    }
+
+Here, it looks like this:
+
+    var leadingWhitespace = [matchsub '^ *']
+    if [leadingWhitespace str] {
+        puts 'Found leading whitespace.'
+    }
+
+This treats regexes as code (which they are) and also lets you save
+the compiled regex for reuse.
+
+Note that all regular expressions are compiled and evaluated with the
+C<g>, C<m> and C<x> flags (except C<splitsub> for which C<g> is
+meaningless) as explained in the B<perlre> perldoc page.
+
+Note also that Perl will sometimes issue warnings if a regex looks
+funny and that this library does not suppress those warnings.
+
+Please refer to B<perlre> for a complete explanation of the syntax and
+semantics of Perl regular expressions.  You may also want to look at
+the C<perlop> page for an explanation of the C<s///> and C<m//>
+operators and the C<qr> construct, all of which are used under the
+hood.
+'''
+
+# Perl bindings:
+perlproc _re_compile {re} '''
+    return eval { qr/$re/mx };
+'''
+
+perlproc _re_match {re str} '''
+    return scalar $str =~ m/$re/gmx;
+'''
+
+perlproc _re_replace_str {re repl str} '''
+    $str =~ s/$re/$repl/egmx;
+    return $str;
+'''
+
+perlproc _re_replace_proc {re repl str} '''
+    my $dorepl = sub {
+      my @args = @_;
+      pop @args while (scalar @args && !defined($args[-1]));
+      @args = map {LL::Main::decktype($_)} @args;
+      my $result = $repl->(@args);
+      return $result->deckCall('printable_get')->perlForm();
+    };
+
+    local ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    $str =~ s/$re/$dorepl->($1,$2,$3,$4,$5,$6,$7,$8,$9)/egmx;
+    return $str;
+'''
+
+perlproc _re_split {re str} '''
+    return [split(/$re/, $str)];
+'''
+
+
+proc _check_and_compile {regex fun bail allowEmpty} {
+    "Compile the regex C<regex> into a Perl object after first
+     performing some checks."
+    (regex.class == String) || [die "$fun arg 1 not a string."]
+    [not allowEmpty] && (regex == "") && [bail nil]
+
+    var compiled = [_re_compile regex]
+    (compiled) || [bail nil]
+
+    return compiled
+}
+
+proc matchsub {regex} {
+    "Create and return a sub that takes one argument, a string, and
+     returns true only if C<regex> matches it.  C<regex> must be a
+     non-empty string containing a valid Perl regex compiled with the
+     C<g>, C<m> and C<x> flags.
+
+     For example:
+
+         containsVowel = [matchsub '[aeiouAEIOU]']
+         [containsVowel str] && [puts 'Found a vowel!']
+
+     If C<regex> is not valid, returns nil instead.  It is a fatal
+     error for C<regex> to be a non-string."
+    
+    var compiled = [_check_and_compile regex "matchsub" return false]
+    return {|str|
+        (str.class == String) || [die "Called a matchsub on a non-string."]
+        next ([_re_match compiled str] != "")
+    }
+}
+
+proc _replacesub_proc {compiledRegex replaceStr} {
+    return {|str|
+        (str.class == String) || [die "Called a replacesub on a non-string."]
+        next [_re_replace_proc compiledRegex replaceStr str]
+    }
+}
+
+
+mproc replacesub {
+    regex
+    sub [args] replaceElem
+} {
+    "Create and return a sub that takes one argument, a string, and
+     returns a new string with the parts matching C<regex> replaced
+     with the results of sub C<replaceElem>.
+
+     C<replaceElem> can be either a callable object or a LoL
+     containing valid Deck code which will be turned into a sub by the
+     mproc.  It is expected to return a string; if it does not, the
+     results are undefined.  It is passed zero or more arguments, one
+     for each captured parenthesis with an upper limit of 9.  This can
+     be troublesome if a capture group is optional because only the
+     groups that are actually captured are passed.  For example, this:
+
+         re = replacesub '(foo)(bar)(quux)?'
+         re 'foobar' {|f b q| puts f b q}
+
+     will fail with an error because the C<replaceElem> argument is
+     called with 2 arguments instead of 3.  In a case like this, your
+     best bet is to use C<args> argument:
+
+         re = replacesub '(foo)(bar)(quux)?'
+         re 'foobar' {|args| puts args}
+
+     If C<regex> is empty or not a valid regex, C<replacesub> returns
+     C<nil>.
+
+     The underlying replacement is performed by the Perl
+     C<s/PATTERN/REPLACEMENT/> operator where the pattern is C<regex>
+     and the replacement is the function C<replaceElem>.  It is called
+     with the C<e>, C<g>, C<m> and C<x> options.  These are explained
+     in the Perl documentation."
+    var compiled = [_check_and_compile regex "replacesub" return false]
+
+    (replaceElem.isCallable) && [return [_replacesub_proc compiled replaceElem]]
+
+    die "'replacesub' argument 2 not a string or procedure."
+}
+
+proc splitsub {regex} {
+    "Returns a function which splits a string into an array of strings
+     where C<regex> defines the delimiter.
+
+     C<regex> is a string containing a Perl regular expression.  If it
+     is not valid, C<splitsub> will return C<nil>.  Unlike the other
+     Regex functions, C<splitsub> allows an empty regular expression;
+     it splits the string into its individual characters.
+
+     C<splitsub> uses perl's C<split> function.  Regular expressions
+     are compiled with the C<m> and C<x> modifiers (C<g> is
+     meaningless in this context).  See the C<split> manual for a
+     detailed explanation of it's behaviour."
+    var compiled = [_check_and_compile regex "splitsub" return true]
+
+    return {|str|
+        (str.class == String) || [die "Called a splitsub on a non-string."]
+        next [_re_split compiled str]
+    }
+}

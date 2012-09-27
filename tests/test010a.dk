@@ -17,3 +17,12 @@ proc bar {} {
 }
 
 quux
+
+var baz = [proc {} {puts "baz called"}]
+baz
+
+baz = [proc {a} {puts "baz called with arg $a"}]
+baz 42
+
+baz = [proc {a} {puts "baz called with arg $a"} {puts "...and returning!"}]
+baz 69

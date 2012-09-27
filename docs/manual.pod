@@ -945,12 +945,14 @@ the evaluation of its arguments.
 
 These are the types of various types of procedure.  The first two can
 be invoked as part of an expression and their C<isCallable> attribute
-returns true.  This lets you do a limited form of memoization easily:
+returns true.
+
+(You can use this to do quick-and-dirty memoization:
 
     (foo.isCallable) && [foo = [foo]]
     return foo
 
-(The main problem is what to do if C<foo> also returns a callable.)
+The main problem is what to do if C<foo> also returns a callable.)
 
 
 
@@ -1463,7 +1465,17 @@ C<name> is a bare word.  It is the name of the procedure to define.
 It may be a qualified name.  C<body> is a procedure body and C<final>
 is the optional final block.
 
-The const C<return> is bound to the function's return continuation.
+C<name> may also be omitted.  In this case, C<proc> will define the
+proc but will not bind it to a global name.  However, C<proc> always
+returns the resulting proc and so it can be assigned this way.  For
+example, the following to expressions are roughly identical.
+
+    proc foo {a b} {return (a + b)}
+    
+    const foo = [proc {a b} {return (a + b)}]
+
+Procs all define const C<return> when called.  It is bound to the
+function's return continuation.
 
 C<proc> may be called anywhere, including inside other procedures.
 The resulting procedure does not inherit the scope of the procedure
@@ -1620,9 +1632,9 @@ example:
     macro bobo {mn a} {
         return [list :Lang::puts [quote mn] " " a]
     }
-
+    
     # ...
-
+    
     bobo 42                 # Outputs: :bobo 42
 
 
@@ -2335,9 +2347,9 @@ name if the name part begins with an underscore and the namespace part
 is different from the current namespace:
 
     package Foo
-
+    
     puts Bar::_priv             # ERROR
-
+    
     puts Foo::_priv             # legal
     puts _priv                  # equivalent to the previous one
 
@@ -2386,7 +2398,7 @@ If the following statement is a string literal, it is treated as a
 docstring for the package.  For example:
 
    package IO::FileUtil
-
+   
    '''Utility functions for manipulating files.'''
 
 The usual requirements for docstrings apply.
