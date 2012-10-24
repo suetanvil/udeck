@@ -8,6 +8,6 @@
 <procedure>: no args, more spc and more newlines.
 <procedure>: args is w000000
 <procedure>: args are 1 and 2
-[_::sub :[] :[[Lang::value 42]] nil]
+[_::sub :[] :[[Lang::value 42]] :[]]
 abfoorquux
 abfoorquux

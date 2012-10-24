@@ -1,8 +1,8 @@
-Code error: '*dynamic sub*' expects 3 arguments but got 2.
+Code error: '[*top*]' expects 3 arguments but got 2.
 Backtrace:
-  *dynamic sub*
-  *dynamic sub*
-  *dynamic sub*
-  *dynamic sub*
+  [*top*]
+  [*top*]
+  [Perl::Regex::_replacesub_proc]
+  [Perl::Regex::_replacesub_proc]
   *top*
   *top*

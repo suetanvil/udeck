@@ -378,9 +378,9 @@ _::class_ext List {
     }
 
     method op_Add {otherSeq} {
-        "C<+> operator, overloaded: Returns C<self> and C<other> concatenated
-         together.  The result is the type returned by C<maker> (C<list> in
-         this case)."
+        "C<+> operator, overloaded: Returns C<self> and C<otherSeq> 
+         concatenated together.  The result is the type returned by
+         C<maker> (C<list> in this case)."
         var result = [listSized (self.size + otherSeq.size)]
         _write_seq self otherSeq result
         return result
@@ -1777,3 +1777,100 @@ class Hash {
 }
 
 
+
+class GrowList {
+
+    var contents
+    var contentLen
+
+    method _init {size} {
+        contents = [listSized size]
+        contentLen = size
+    }
+
+    method at {index} {
+        "Sequence Protocol: Return the item at position C<index>.  Indexes
+         must be contiguous and start at zero.  Negative indexes are
+         subtracted from the list's size."
+        return (contents@[self->_sanitizeIndex index])
+    }
+
+    method atPut {index value} {
+        "Sequence Protocol: Store C<value> at position C<index> and
+         return C<value>.  Indexes start at zero and must be
+         contiguous.  Negative indexes are subtracted from the list's
+         size."
+        contents@[self->_sanitizeIndex index] = value
+    }
+
+    method size_get {} {
+        "Sequence Protocol: Return the number of items in this object."
+        return contentLen
+    }
+
+    method isIndexable_get {} {
+        "Returns true, since C<GrowList> implements the sequence protocol."
+        return true
+    }
+
+    method append {args} {
+        "Append the arguments to this C<GrowList>, increasing its size as
+         needed."
+        self->appendAll args
+    }
+
+    method appendAll {seq} {
+        "Append all items in 'seq' to this object."
+        for item in seq {
+            self->_appendOne item
+        }
+    }        
+
+    method _appendOne {item} {
+        self->_growIfNeeded
+        contents@contentLen = item
+        contentLen = contentLen + 1
+    }
+
+    method _growIfNeeded {} {
+        (contentLen < contents.size) && [return]
+
+        var result = [listSized (contents.size*2 + 10)]
+        _write_seq contents :[] result
+        contents = result
+    }
+
+    method list_get {} {
+        "Return a C<List> containing the contents of this object."
+        var result = [listSized contentLen]
+        _write_seq contents :[] result
+        return result
+    }
+
+    method printable_get {} {
+        "Return a human-readable textual represention of this C<List>."
+        return self.list.printable
+    }
+
+    method shallowCopy {} {
+        "Create and return a shallow copy (i.e. references are copied
+         but the referenced items are not."
+        var result = [GrowList->new]
+        result->appendAll self
+        return result
+    }
+
+    method op_Equals {obj} {
+        "C<==> operator: True if C<obj> is also a List and all elements
+         equal (via C<op_Equals>) the corresponding element in C<obj>."
+        return [_seq_Equals self obj]
+    }
+
+    method maker_get {} {
+        "Sequence protocol: return a procedure which will create a collection
+         suitable for holding the contents of self and which takes one
+         argument, a number specifying the size.  In this case, it creates
+         a new C<GrowList>."        
+ #       return {|sz| GrowList->new sz}
+    }
+}

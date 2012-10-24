@@ -603,7 +603,7 @@ sub perlConstructorSrc {
 sub _allLocalNames {
   my ($self) = @_;
 
-  return () if $self->{isGlobal};
+  return () if $self->{isGlobal} || $self->{isClass};
 
   my @names = keys %{$self->{names}};
 
@@ -1854,7 +1854,7 @@ use File::Basename;
 
 sub NIL {return LL::Nil::NIL;}
 
-use constant VERSION => "0.04";
+use constant VERSION => "0.05";
 use constant TRUE => LL::Number->new(1);
 
 # Compilable source types
@@ -2236,7 +2236,7 @@ sub readLoLOrLolSub {
     LL::List->new([LL::Symbol->new('_::sub'),
                    LL::Quote->new($args),
                    $lol,
-                   LL::Symbol->new('nil')]);
+                   LL::Quote->new( LL::List->new([]) )]);
 }
 
 

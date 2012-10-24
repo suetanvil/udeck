@@ -1,5 +1,5 @@
 
-                              Deck 0.04
+                              Deck 0.05
                               =========
 
 Deck is a simple programming language.  It is dynamically typed,

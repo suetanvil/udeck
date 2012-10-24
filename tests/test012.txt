@@ -1,3 +1,7 @@
 10
 20
 Hello, world
+Declared in a proc: 3
+Declared in class: 3
+Changing BODY1:
+Again, declared in class: 9

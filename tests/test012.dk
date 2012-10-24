@@ -1,4 +1,4 @@
-# More closure returns
+\# More closure returns
 
 proc foo {a} {
     return [sub {puts a}]
@@ -14,4 +14,35 @@ b
 c
 
 
+# Closures where the sub is compiled at runtime:
 
+# Case 1: declared in a proc
+var BODY1 = {= a + b}
+proc bar {} {
+    var {a = 1; b = 2}
+    return [sub {} BODY1]
+}
+
+puts "Declared in a proc: " [[bar] ]
+
+
+# Case 2: Declared in a class
+class Bobo {
+    var a b
+    method _init {} {
+        a = 1;
+        b = 2;
+    }
+
+    method x_get {} {
+        return [sub {} BODY1]
+    }
+}
+
+var d = [new Bobo]
+puts "Declared in class: " [d.x]
+
+# And ensure that the sub is compiled at call time.
+puts "Changing BODY1:"
+BODY1 = {= 2*a + b + 5}
+puts "Again, declared in class: " [d.x]

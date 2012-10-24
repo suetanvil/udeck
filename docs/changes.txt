@@ -1,4 +1,10 @@
 
+Changes in 0.05:
+
+    + Fixed a severe bug which broke dynamic closures defined inside
+      methods and another one which made brace-delimited closures
+      dynamic.
+
 Changes in 0.04:
 
     + Now allows anonymous procs in addition to anonymous subs.
